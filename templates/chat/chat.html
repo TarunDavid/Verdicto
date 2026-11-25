@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block mainclass %}max-w-4xl{% endblock %}
 {% block content %}
 {% if error %}<p class="mb-3 text-red-400 text-sm text-center">{{ error }}</p>{% endif %}
@@ -6,16 +7,20 @@
 {% if not thread %}
   <div class="flex flex-col items-center text-center pt-10 md:pt-16">
     {% include "_emblem.html" with size="w-20 h-20" %}
-    <p class="mt-7 text-sm sm:text-base tracking-[.35em] text-zinc-300">WELCOME BACK, {{ user.display_name|upper }}{% if user.can_vote %} <svg class="inline w-5 h-5 -mt-1 text-sky-400" viewBox="0 0 24 24" aria-label="Verified verifier"><path fill="currentColor" d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3 1 3-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3-1-3 2.6-1.9 1-3 3.2.1z"/><path d="M8 12.3l2.6 2.6L16.2 9.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}</p>
-    <h1 class="mt-3 text-2xl sm:text-4xl font-medium">What do you want to check today?</h1>
+    <p class="mt-7 text-sm sm:text-base tracking-[.35em] text-zinc-300">{% translate "WELCOME BACK" %}, {{ user.display_name|upper }}{% if user.can_vote %} <svg class="inline w-5 h-5 -mt-1 text-sky-400" viewBox="0 0 24 24" aria-label="Verified verifier"><path fill="currentColor" d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3 1 3-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3-1-3 2.6-1.9 1-3 3.2.1z"/><path d="M8 12.3l2.6 2.6L16.2 9.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}</p>
+    <h1 class="mt-3 text-2xl sm:text-4xl font-medium">{% translate "What do you want to check today?" %}</h1>
   </div>
 
-  <form method="post" action="{% url 'chat_send' %}" class="mt-10 glass rounded-2xl p-4 bg-[#1a1d22]/80 shadow-2xl" id="checkform">{% csrf_token %}
+  <form method="post" action="{% url 'chat_send' %}" enctype="multipart/form-data" class="mt-10 glass rounded-2xl p-4 bg-[#1a1d22]/80 shadow-2xl" id="checkform">{% csrf_token %}
     <div class="flex gap-3">
       <svg class="w-6 h-6 mt-1 shrink-0 text-teal-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.4 4.6 2.9 7.6 8 8-5.1.4-7.6 3.4-8 8-.4-4.6-2.9-7.6-8-8 5.1-.4 7.6-3.4 8-8z"/></svg>
-      <textarea id="claimtext" name="text" rows="3" required placeholder="Paste a forwarded message, news or link…" class="flex-1 bg-transparent resize-none focus:outline-none text-base placeholder-zinc-500">{{ prefill }}</textarea>
+      <textarea id="claimtext" name="text" rows="3" placeholder="{% translate "Paste a forwarded message, news or link…" %}" class="flex-1 bg-transparent resize-none focus:outline-none text-base placeholder-zinc-500">{{ prefill }}</textarea>
     </div>
+    <div id="shotpreview" class="hidden mt-3 ml-9 items-center gap-2 text-xs text-zinc-300"><img id="shotimg" class="h-14 rounded-lg border border-white/10" alt=""><span id="shotname"></span><button type="button" id="shotclear" class="text-zinc-500 hover:text-white">✕</button></div>
     <div class="mt-3 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+      <label class="w-9 h-9 rounded-full glass grid place-items-center text-zinc-300 hover:text-white cursor-pointer" title="{% translate "Attach a screenshot" %}">
+        <input type="file" name="screenshot" id="shotinput" accept="image/png,image/jpeg,image/webp" class="sr-only">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></label>
       <label class="rounded-full glass px-3 py-1.5 flex items-center gap-1.5 text-zinc-300">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5h12M9 3v2m1.5 9A15 15 0 0 1 6 7.5m7.5 0C12 13 8 17 3 19m9-1 4-9 4 9m-7-2h6"/></svg>
         <select name="language" id="langsel" class="bg-transparent focus:outline-none"><option value="en" class="bg-zinc-900">English</option><option value="kn" class="bg-zinc-900">ಕನ್ನಡ</option></select>
@@ -23,16 +28,16 @@
       <label class="rounded-full glass px-3 py-1.5 flex items-center gap-1.5 text-zinc-300">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         <select name="sources" class="bg-transparent focus:outline-none">
-          <option value="all" class="bg-zinc-900">All sources</option><option value="news" class="bg-zinc-900">News</option>
-          <option value="official" class="bg-zinc-900">Official</option><option value="factcheck" class="bg-zinc-900">Fact-checkers</option>
-          <option value="research" class="bg-zinc-900">Research</option></select>
+          <option value="all" class="bg-zinc-900">{% translate "All sources" %}</option><option value="news" class="bg-zinc-900">{% translate "News" %}</option>
+          <option value="official" class="bg-zinc-900">{% translate "Official" %}</option><option value="factcheck" class="bg-zinc-900">{% translate "Fact-checkers" %}</option>
+          <option value="research" class="bg-zinc-900">{% translate "Research" %}</option></select>
       </label>
       <label class="rounded-full glass px-3 py-1.5 flex items-center gap-1.5 text-zinc-300 cursor-pointer has-[:checked]:border-teal-400/60 has-[:checked]:text-teal-200">
         <input type="checkbox" name="deep" class="sr-only">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg> Deep research
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg> {% translate "Deep research" %}
       </label>
       <button type="button" id="voicebtn" class="hidden ml-auto rounded-full glass px-3 py-1.5 items-center gap-1.5 text-zinc-300">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Voice</span></button>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>{% translate "Voice" %}</span></button>
       <button class="ml-auto sm:ml-0 w-10 h-10 rounded-full bg-white text-black grid place-items-center" aria-label="Check it">
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></svg></button>
     </div>
@@ -41,15 +46,29 @@
   <div class="grid sm:grid-cols-3 gap-4 mt-6 pb-6">
     <button type="button" onclick="document.getElementById('claimtext').focus()" class="text-left glass rounded-2xl p-5 bg-[#1a1d22]/60 hover:bg-white/5 shadow-lg">
       <div class="flex justify-between"><span class="w-9 h-9 rounded-full bg-white/10 grid place-items-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><span class="text-zinc-400">↗</span></div>
-      <p class="mt-4 font-semibold text-sm">Check a forward</p><p class="text-xs text-zinc-400 mt-1">Paste a WhatsApp message.</p></button>
+      <p class="mt-4 font-semibold text-sm">{% translate "Check a forward" %}</p><p class="text-xs text-zinc-400 mt-1">{% translate "Paste a WhatsApp message." %}</p></button>
     <a href="{% url 'chat' %}?prefill=https://" class="glass rounded-2xl p-5 bg-[#1a1d22]/60 hover:bg-white/5 shadow-lg">
       <div class="flex justify-between"><span class="w-9 h-9 rounded-full bg-white/10 grid place-items-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span class="text-zinc-400">↗</span></div>
-      <p class="mt-4 font-semibold text-sm">Check a link</p><p class="text-xs text-zinc-400 mt-1">Verify a news article URL.</p></a>
-    <a href="{% url 'archive' %}" class="glass rounded-2xl p-5 bg-[#1a1d22]/60 hover:bg-white/5 shadow-lg">
-      <div class="flex justify-between"><span class="w-9 h-9 rounded-full bg-white/10 grid place-items-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="text-zinc-400">↗</span></div>
-      <p class="mt-4 font-semibold text-sm">Search past verdicts</p><p class="text-xs text-zinc-400 mt-1">Maybe it's already been checked.</p></a>
+      <p class="mt-4 font-semibold text-sm">{% translate "Check a link" %}</p><p class="text-xs text-zinc-400 mt-1">{% translate "Verify a news article URL." %}</p></a>
+    <button type="button" onclick="document.getElementById('shotinput').click()" class="text-left glass rounded-2xl p-5 bg-[#1a1d22]/60 hover:bg-white/5 shadow-lg">
+      <div class="flex justify-between"><span class="w-9 h-9 rounded-full bg-white/10 grid place-items-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="m21 17-5-5-8 7"/></svg></span><span class="text-zinc-400">↗</span></div>
+      <p class="mt-4 font-semibold text-sm">{% translate "Check a screenshot" %}</p><p class="text-xs text-zinc-400 mt-1">{% translate "Upload an image of a message." %}</p></button>
   </div>
   <script>
+    (function(){  // screenshot preview + submit guard
+      const inp = document.getElementById('shotinput'), box = document.getElementById('shotpreview');
+      inp.addEventListener('change', () => {
+        const f = inp.files[0]; if (!f) return;
+        if (f.size > 5 * 1024 * 1024) { alert('Images must be 5 MB or smaller.'); inp.value = ''; return; }
+        document.getElementById('shotimg').src = URL.createObjectURL(f);
+        document.getElementById('shotname').textContent = f.name;
+        box.classList.remove('hidden'); box.classList.add('flex');
+      });
+      document.getElementById('shotclear').addEventListener('click', () => { inp.value=''; box.classList.add('hidden'); box.classList.remove('flex'); });
+      document.getElementById('checkform').addEventListener('submit', e => {
+        if (!inp.files.length && !document.getElementById('claimtext').value.trim()) { e.preventDefault(); document.getElementById('claimtext').focus(); }
+      });
+    })();
     (function(){
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition, btn = document.getElementById('voicebtn');
       if (!SR) return;
@@ -76,7 +95,7 @@
           <div class="min-w-0 flex-1">
             <p class="whitespace-pre-line text-zinc-200">{{ m.content }}</p>
             {% if m.card_claim %}
-              <div class="mt-3" hx-get="{% url 'research_card' m.card_claim.pk %}" hx-trigger="load" hx-swap="outerHTML"><p class="text-sm text-zinc-500">Loading…</p></div>
+              <div class="mt-3" hx-get="{% url 'research_card' m.card_claim.pk %}" hx-trigger="load" hx-swap="outerHTML"><p class="text-sm text-zinc-500">{% translate "Loading…" %}</p></div>
               {% if user.can_give_opinion and m.card_claim.status != "FINAL" %}{% include "verification/_opinion.html" with claim=m.card_claim next=request.path %}{% endif %}
             {% endif %}
           </div>
@@ -85,7 +104,7 @@
     {% endfor %}
   </div>
   <form method="post" action="{% url 'chat_reply' thread.pk %}" class="mt-8 glass rounded-2xl p-2 pl-4 flex items-center gap-2 bg-[#1a1d22]/80">{% csrf_token %}
-    <input name="text" required placeholder="Ask a follow-up, e.g. what do official sources say?" class="flex-1 bg-transparent focus:outline-none text-sm py-2">
+    <input name="text" required placeholder="{% translate "Ask a follow-up, e.g. what do official sources say?" %}" class="flex-1 bg-transparent focus:outline-none text-sm py-2">
     <button class="w-9 h-9 rounded-full bg-white text-black grid place-items-center" aria-label="Ask"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></svg></button>
   </form>
 {% endif %}

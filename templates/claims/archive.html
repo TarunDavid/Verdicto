@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block content %}
-<h1 class="text-2xl font-medium pt-2 mb-4">News &amp; Verdicts</h1>
+<h1 class="text-2xl font-medium pt-2 mb-4">{% translate "News & Verdicts" %}</h1>
 {% include "claims/_news_tabs.html" %}
-<form class="flex gap-2 mb-5 text-sm"><input name="q" value="{{ q }}" placeholder="Search past verdicts" class="flex-1 rounded-xl glass px-3 py-2 focus:outline-none"><button class="rounded-xl bg-white/10 px-4">Search</button></form>
+<form class="flex gap-2 mb-5 text-sm"><input name="q" value="{{ q }}" placeholder="{% translate "Search past verdicts" %}" class="flex-1 rounded-xl glass px-3 py-2 focus:outline-none"><button class="rounded-xl bg-white/10 px-4">{% translate "Search" %}</button></form>
 <div class="space-y-3">
 {% for claim in claims %}
   <a href="{% url 'claim_detail' claim.pk %}" class="block glass rounded-2xl p-4 bg-[#1a1c20] hover:border-accent/60">

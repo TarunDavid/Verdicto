@@ -11,7 +11,7 @@ from .models import User
 from .phone import normalize_phone
 
 SIGNUP = {"name": "Asha Rao", "phone": "+91 98450 12345", "interests": ["health", "education"],
-          "preferred_language": "kn", "password": "strong-pass-2026", "consent": "on"}
+          "preferred_language": "en", "password": "strong-pass-2026", "consent": "on"}
 
 
 class PhoneTests(SimpleTestCase):
@@ -64,7 +64,7 @@ class AuthFlowTests(TestCase):
         Claim.objects.create(text="Some news claim that must not show on chat home")
         page = self.client.get(reverse("chat"))
         self.assertContains(page, "WELCOME BACK, ASHA RAO")
-        self.assertContains(page, "News &amp; Verdicts")
+        self.assertContains(page, "News & Verdicts")
         self.assertNotContains(page, "Some news claim")
         self.assertNotContains(page, "Verify Queue")
 

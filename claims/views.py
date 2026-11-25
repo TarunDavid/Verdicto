@@ -4,7 +4,8 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db.models import F, Prefetch, Q
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.http import Http404
+from django.core.cache import cache
+from django.http import Http404, HttpResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -30,6 +31,7 @@ STATUS_OPTIONS = [("FALSE", "False"), ("TRUE", "True"), ("PARTIALLY_TRUE", "Part
 LATEST_RUN = Prefetch("research_runs", queryset=ResearchRun.objects.order_by("-created_at"),
                       to_attr="runs")
 from .models import Claim
+from .og_image import render as render_og
 from .ranking import importance
 
 
@@ -148,7 +150,29 @@ def share_context(request, claim):
     title = f"{label}: {claim.text[:90]}"
     message = f"Fact-check — {title}\nConfidence {claim.confidence_pct}%. Details:"
     return {"share_url": share_url, "og_title": title,
+            "og_image": settings.SITE_URL.rstrip("/") + reverse("og_image", args=[claim.share_slug]),
             "whatsapp_url": "https://wa.me/?text=" + quote(f"{message} {share_url}")}
+
+
+@login_not_required
+def og_image(request, slug):
+    """Preview image for WhatsApp / social cards. Cached until the claim's status changes."""
+    claim = _get_visible(request, share_slug=slug)
+    key = f"og:{claim.pk}:{claim.status}:{claim.verdict}:{claim.confidence_pct}"
+    png = cache.get(key)
+    if png is None:
+        label = claim.get_verdict_display().upper() if claim.display_verdict else "PENDING VERIFICATION"
+        if claim.language == "kn":
+            run = claim.research_runs.filter(status="done").first()
+            snippet = f"Kannada forward about {claim.get_domain_display().lower()}" + (
+                f" in {claim.district}" if claim.district else "")
+            if run and run.checkable_claim and run.checkable_claim.isascii():
+                snippet = run.checkable_claim
+        else:
+            snippet = claim.text
+        png = render_og(claim, label, snippet[:220])
+        cache.set(key, png, 3600)
+    return HttpResponse(png, content_type="image/png")
 
 
 @login_not_required

@@ -1,25 +1,26 @@
-{# flags: full = verifier/admin view (quotes, reasoning, connectors); live = poll for updates (chat) #}
+{% load i18n %}{# flags: full = verifier/admin view (quotes, reasoning, connectors); live = poll for updates (chat) #}
 <div id="card-{{ claim.pk }}" class="glass rounded-2xl p-4 text-sm bg-[#16191e]/80"
   {% if live and run and run.is_running %}hx-get="{% url 'research_card' claim.pk %}" hx-trigger="every 2s" hx-swap="outerHTML"
   {% elif live and claim.status != "FINAL" %}hx-get="{% url 'research_card' claim.pk %}" hx-trigger="every 20s" hx-swap="outerHTML"{% endif %}>
   <div class="flex items-center gap-2 flex-wrap">
     {% include "_badge.html" %}
-    <a href="{% url 'claim_detail' claim.pk %}" class="text-xs text-zinc-400 hover:text-white ml-auto">View claim page ↗</a>
+    <a href="{% url 'claim_detail' claim.pk %}" class="text-xs text-zinc-400 hover:text-white ml-auto">{% translate "View claim page ↗" %}</a>
   </div>
 
+  {% if claim.screenshot %}<a href="{{ claim.screenshot.url }}" target="_blank" rel="noopener"><img src="{{ claim.screenshot.url }}" alt="Submitted screenshot" class="mt-3 max-h-40 rounded-lg border border-white/10"></a>{% endif %}
   {% if claim.status == "FINAL" %}
     <p class="mt-3 font-medium">Final verdict by human verifiers: {{ claim.get_verdict_display }} ({{ claim.confidence_pct }}% weighted agreement){% if claim.finalized_at %}, {{ claim.finalized_at|date:"d M Y, H:i" }}{% endif %}.</p>
   {% endif %}
 
   {% if not run %}
-    <p class="mt-3 text-zinc-500">No AI research for this claim.</p>
+    <p class="mt-3 text-zinc-500">{% translate "No AI research for this claim." %}</p>
   {% elif run.is_running %}
     <ol class="mt-3 space-y-1.5 text-zinc-400">
       <li class="flex items-center gap-2 text-zinc-200"><span class="w-2 h-2 rounded-full bg-teal-400 animate-ping"></span>{{ run.step }}…</li>
     </ol>
   {% else %}
     <div class="mt-3 border-t border-white/5 pt-3">
-      <p class="text-[11px] tracking-[.15em] text-amber-300/90">AI-PROVISIONAL · THE FINAL VERDICT COMES FROM VERIFIED EXPERTS</p>
+      <p class="text-[11px] tracking-[.15em] text-amber-300/90">{% translate "AI-PROVISIONAL · THE FINAL VERDICT COMES FROM VERIFIED EXPERTS" %}</p>
       {% if run.label %}
       <div class="flex items-center gap-3 mt-2 flex-wrap">
         <span class="text-lg font-semibold {% if run.label == 'LIKELY_FALSE' %}text-red-300{% elif run.label == 'LIKELY_TRUE' %}text-green-300{% elif run.label == 'MIXED' %}text-orange-300{% else %}text-zinc-300{% endif %}">{{ run.get_label_display }}</span>
@@ -31,9 +32,9 @@
       {% endif %}
       {% if run.summary %}<p class="mt-2 whitespace-pre-line text-zinc-200">{{ run.summary }}</p>{% endif %}
       {% if full %}
-        {% if run.facts %}<p class="mt-3 text-xs text-green-400 font-medium">Established</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.facts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
-        {% if run.assumptions %}<p class="mt-2 text-xs text-amber-400 font-medium">Unconfirmed / assumed</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.assumptions %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
-        {% if run.conflicts %}<p class="mt-2 text-xs text-orange-400 font-medium">Conflicting</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.conflicts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+        {% if run.facts %}<p class="mt-3 text-xs text-green-400 font-medium">{% translate "Established" %}</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.facts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+        {% if run.assumptions %}<p class="mt-2 text-xs text-amber-400 font-medium">{% translate "Unconfirmed / assumed" %}</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.assumptions %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+        {% if run.conflicts %}<p class="mt-2 text-xs text-orange-400 font-medium">{% translate "Conflicting" %}</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.conflicts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
       {% endif %}
       {% with sources=run.sources.all %}{% if sources %}
       <details class="mt-3" {% if full %}open{% endif %}>
@@ -47,6 +48,7 @@
             <a href="{{ s.url }}" target="_blank" rel="nofollow noopener noreferrer" class="underline decoration-zinc-600 hover:decoration-white">{{ s.title|default:s.url|truncatechars:90 }}</a>
             <span class="text-zinc-500">— {{ s.publisher }}{% if s.published %}, {{ s.published|date:"d M Y" }}{% endif %}</span>
             {% if full and s.quote %}<p class="text-zinc-400 italic ml-6">“{{ s.quote }}”</p>{% endif %}
+            {% if full and user.can_vote %}{% include "research/_feedback.html" %}{% elif full %}{% with c=s.feedback_counts %}{% if c.useful or c.wrong %}<span class="ml-6 text-zinc-500">verifiers: {{ c.useful }} useful · {{ c.wrong }} wrong</span>{% endif %}{% endwith %}{% endif %}
           </li>
           {% endif %}{% endfor %}
         </ol>
@@ -55,5 +57,16 @@
       {% if full %}<p class="mt-3 text-xs text-zinc-500">Researched in {{ run.duration|default:"?" }}s{% if run.models_used %} with {{ run.models_used|join:", " }}{% endif %}. Truth score = credibility-weighted support ÷ (support + refute). {% if run.connectors %}Sources checked: {% for k, v in run.connectors.items %}{{ k }} {{ v }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p>{% endif %}
     </div>
   {% endif %}
-  {% if live and user.can_vote and claim.status != "FINAL" %}<a href="{% url 'verify_review' claim.pk %}" class="mt-3 inline-block text-xs rounded-lg bg-white text-black px-3 py-1.5 font-medium">Review as verifier</a>{% endif %}
+  {% if run and not run.is_running %}
+  <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
+    {% if live and user.can_vote and claim.status != "FINAL" %}<a href="{% url 'verify_review' claim.pk %}" class="rounded-lg bg-white text-black px-3 py-1.5 font-medium">{% translate "Review as verifier" %}</a>{% endif %}
+    <button type="button" class="listen rounded-lg glass px-3 py-1.5 text-zinc-300 hover:text-white" data-lang="{% if claim.language == 'kn' %}kn-IN{% else %}en-IN{% endif %}"
+      data-text="{% if claim.status == 'FINAL' %}Verified verdict: {{ claim.get_verdict_display }}. {% else %}Provisional AI assessment: {{ run.get_label_display }}. Awaiting verified experts. {% endif %}{{ run.summary|truncatechars:600 }}"
+      onclick="(function(b){if(!window.speechSynthesis){return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(b.dataset.text);u.lang=b.dataset.lang;const v=speechSynthesis.getVoices().find(x=>x.lang===b.dataset.lang)||speechSynthesis.getVoices().find(x=>x.lang==='en-IN');if(v)u.voice=v;speechSynthesis.speak(u)})(this)">{% translate "🔊 Listen" %}</button>
+    {% if user.is_authenticated and claim.status != "FINAL" %}
+    <form method="post" action="{% url 'recheck' claim.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.META.HTTP_REFERER|default:request.path }}">
+      <button class="rounded-lg glass px-3 py-1.5 text-zinc-300 hover:text-white" title="Run the AI research again with today's sources">{% translate "↻ Re-check with latest sources" %}</button></form>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>

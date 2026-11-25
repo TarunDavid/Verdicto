@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block mainclass %}max-w-6xl{% endblock %}
 {% block content %}
 <a href="{% url 'verify_dashboard' %}" class="text-xs text-zinc-400 hover:text-white">← Verify Queue</a>
@@ -6,9 +7,10 @@
   <section class="space-y-4">
     <div class="glass rounded-2xl p-5 bg-[#1a1c20]">
       <div class="flex items-center gap-2 text-xs text-zinc-400 flex-wrap">{% include "_badge.html" %}
-        {% if claim.urgency == "high" %}<b class="text-red-400">URGENT</b>{% endif %}
+        {% if claim.urgency == "high" %}<b class="text-red-400">{% translate "URGENT" %}</b>{% endif %}
         <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %} · reported {{ claim.submission_count }}×</span></div>
       <p class="mt-3 text-lg whitespace-pre-line">{{ claim.text }}</p>
+      {% if claim.screenshot %}<a href="{{ claim.screenshot.url }}" target="_blank" rel="noopener" class="block mt-3"><img src="{{ claim.screenshot.url }}" alt="Submitted screenshot" class="max-h-64 rounded-xl border border-white/10"></a>{% endif %}
       {% if claim.source_url %}<a href="{{ claim.source_url }}" target="_blank" rel="nofollow noopener noreferrer" class="text-xs underline text-zinc-400">{{ claim.source_url|truncatechars:70 }}</a>{% endif %}
       <p class="mt-3 text-sm text-zinc-300">Community: {% if community %}<b>{{ community.top_pct }}% {{ community.top }}</b>, {{ community.total }} vote{{ community.total|pluralize }}{% else %}no votes yet{% endif %}</p>
       {% if rows %}<p class="mt-1 text-xs font-mono text-zinc-500">{{ arithmetic }}</p>{% endif %}
@@ -16,7 +18,7 @@
 
     {% if can_vote %}
     <form method="post" class="glass rounded-2xl p-5 space-y-3 text-sm bg-[#1a1c20]">{% csrf_token %}
-      <p class="font-semibold">Your expert verdict</p>
+      <p class="font-semibold">{% translate "Your expert verdict" %}</p>
       {% for e in vote_form.non_field_errors %}<p class="text-red-400">{{ e }}</p>{% endfor %}
       <div class="flex flex-wrap gap-2">
         {% for v, l in vote_form.fields.verdict.choices %}
@@ -31,13 +33,13 @@
         {% for e in f.errors %}<p class="text-red-400 text-xs">{{ e }}</p>{% endfor %}
       {% endif %}{% endfor %}
       <p class="text-xs text-zinc-500">At least one evidence link is required unless you vote Unverified. Votes can't be changed.</p>
-      <button class="bg-white text-black rounded-xl px-5 py-2 font-semibold">Submit verdict</button>
+      <button class="bg-white text-black rounded-xl px-5 py-2 font-semibold">{% translate "Submit verdict" %}</button>
     </form>
     {% elif has_voted %}<p class="glass rounded-2xl p-4 text-sm text-zinc-400">You have already voted on this claim.</p>{% endif %}
   </section>
 
   <section>
-    <p class="text-xs tracking-[.18em] text-zinc-500 mb-2">AI RESEARCH (REFERENCE ONLY)</p>
+    <p class="text-xs tracking-[.18em] text-zinc-500 mb-2">{% translate "AI RESEARCH (REFERENCE ONLY)" %}</p>
     {% include "research/_card.html" with full=True %}
   </section>
 </div>

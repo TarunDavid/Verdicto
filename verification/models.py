@@ -129,6 +129,7 @@ class CommunityVote(models.Model):
                              related_name="community_votes")
     verdict = models.CharField(max_length=16, choices=Verdict.choices)
     reason = models.CharField(max_length=200, blank=True)
+    scored_as = models.CharField(max_length=16, choices=Verdict.choices, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

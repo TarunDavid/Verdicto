@@ -1,13 +1,15 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block content %}
 {# ---------- Claim + human verdict ---------- #}
 <div class="glass rounded-2xl p-5 bg-[#1a1c20] mt-2">
   <div class="flex items-center gap-2 text-xs text-zinc-400 flex-wrap">
     {% include "_badge.html" %}
-    {% if claim.urgency == "high" %}<b class="text-red-400">URGENT</b> ·{% endif %}
+    {% if claim.urgency == "high" %}<b class="text-red-400">{% translate "URGENT" %}</b> ·{% endif %}
     <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %} · reported {{ claim.submission_count }}×</span>
   </div>
   <p class="mt-3 text-lg sm:text-xl whitespace-pre-line">{{ claim.text }}</p>
+  {% if claim.screenshot %}<a href="{{ claim.screenshot.url }}" target="_blank" rel="noopener" class="block mt-3"><img src="{{ claim.screenshot.url }}" alt="Submitted screenshot" class="max-h-64 rounded-xl border border-white/10"></a>{% endif %}
   {% if claim.source_url %}<p class="mt-2 text-sm"><a href="{{ claim.source_url }}" rel="nofollow noopener noreferrer" target="_blank" class="underline decoration-zinc-600 text-zinc-400 hover:text-white">{{ claim.source_url|truncatechars:60 }}</a></p>{% endif %}
   <div class="mt-5">
     <div class="flex justify-between text-sm gap-3">
@@ -20,30 +22,30 @@
   </div>
   <div class="mt-5 flex flex-wrap gap-2 text-sm">
     <a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-xl font-medium">
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2s-1 .3-3.4-.7a11.7 11.7 0 0 1-4.6-4.1c-.3-.5-1-1.5-1-2.9s.7-2 1-2.3a1 1 0 0 1 .8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.2-.3.3-.1.6a8 8 0 0 0 3.9 3.4c.3.1.4.1.6-.1l.8-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3s0 .7-.2 1.3z"/></svg>Share on WhatsApp</a>
-    <a href="{% url 'share' claim.share_slug %}" class="glass hover:bg-white/10 px-4 py-2 rounded-xl">Public result page</a>
-    {% if can_vote %}<a href="{% url 'verify_review' claim.pk %}" class="bg-white text-black px-4 py-2 rounded-xl font-medium">Review as verifier</a>{% endif %}
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2s-1 .3-3.4-.7a11.7 11.7 0 0 1-4.6-4.1c-.3-.5-1-1.5-1-2.9s.7-2 1-2.3a1 1 0 0 1 .8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.2-.3.3-.1.6a8 8 0 0 0 3.9 3.4c.3.1.4.1.6-.1l.8-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3s0 .7-.2 1.3z"/></svg>{% translate "Share on WhatsApp" %}</a>
+    <a href="{% url 'share' claim.share_slug %}" class="glass hover:bg-white/10 px-4 py-2 rounded-xl">{% translate "Public result page" %}</a>
+    {% if can_vote %}<a href="{% url 'verify_review' claim.pk %}" class="bg-white text-black px-4 py-2 rounded-xl font-medium">{% translate "Review as verifier" %}</a>{% endif %}
   </div>
 </div>
 
 {# ---------- AI research ---------- #}
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">AI RESEARCH</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "AI RESEARCH" %}</h2>
 {% include "research/_card.html" %}
 
 {# ---------- Community ---------- #}
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">COMMUNITY OPINION</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "COMMUNITY OPINION" %}</h2>
 {% if community %}
 <div class="glass rounded-2xl p-4 text-sm bg-[#1a1c20]">
   <p>{{ community.total }} community vote{{ community.total|pluralize }}: <b>{{ community.top_pct }}% {{ community.top }}</b></p>
   <div class="mt-3 space-y-1.5">{% for label, n, pct in community.rows %}<div class="flex items-center gap-2 text-xs"><span class="w-28 text-zinc-400 truncate">{{ label }}</span><div class="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-zinc-300" style="width: {{ pct }}%"></div></div><span class="w-8 text-right text-zinc-400">{{ n }}</span></div>{% endfor %}</div>
   <p class="text-xs text-zinc-500 mt-3">Regular users' votes count 0.05 each and at most 20% combined. Verifiers decide.</p>
 </div>
-{% else %}<p class="text-sm text-zinc-400 glass rounded-2xl p-4 bg-[#1a1c20]">No community votes yet.</p>{% endif %}
+{% else %}<p class="text-sm text-zinc-400 glass rounded-2xl p-4 bg-[#1a1c20]">{% translate "No community votes yet." %}</p>{% endif %}
 {% if can_opine %}{% include "verification/_opinion.html" with next=request.path %}{% endif %}
 
 {# ---------- Verifiers ---------- #}
 {% if assignments %}
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">ASSIGNED VERIFIERS</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "ASSIGNED VERIFIERS" %}</h2>
 <div class="glass rounded-2xl bg-[#1a1c20] divide-y divide-white/5 text-sm">
   {% for a in assignments %}
   <div class="flex items-center gap-3 px-4 py-2.5 flex-wrap">
@@ -55,7 +57,7 @@
 </div>
 {% endif %}
 
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">HOW THE HUMAN VERDICT WAS COMPUTED</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "HOW THE HUMAN VERDICT WAS COMPUTED" %}</h2>
 {% if rows %}
 <div class="glass rounded-2xl bg-[#1a1c20] overflow-x-auto">
   <table class="w-full text-sm">
@@ -75,11 +77,11 @@
   <p class="mx-4 mb-4 mt-1 font-mono text-xs sm:text-sm bg-black/30 rounded-lg px-3 py-2">{{ arithmetic }}</p>
 </div>
 <p class="text-xs text-zinc-500 mt-2">Weight = (correct + 2) / (total + 4); a verified work email adds +1 to the prior. Weights are frozen when the vote is cast.</p>
-{% else %}<p class="text-sm text-zinc-400 glass rounded-2xl p-4 bg-[#1a1c20]">No verifier has voted yet.</p>{% endif %}
+{% else %}<p class="text-sm text-zinc-400 glass rounded-2xl p-4 bg-[#1a1c20]">{% translate "No verifier has voted yet." %}</p>{% endif %}
 
 {# ---------- Verifier vote (also on the two-pane review screen) ---------- #}
 {% if can_vote %}
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">YOUR EXPERT VERDICT</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "YOUR EXPERT VERDICT" %}</h2>
 <form method="post" action="{% url 'vote' claim.pk %}" class="glass rounded-2xl p-5 space-y-3 text-sm bg-[#1a1c20]">{% csrf_token %}
   {% for e in vote_form.non_field_errors %}<p class="text-red-400">{{ e }}</p>{% endfor %}
   <div class="flex flex-wrap gap-2">
@@ -94,7 +96,7 @@
     {% for e in f.errors %}<p class="text-red-400 text-xs">{{ e }}</p>{% endfor %}
   {% endif %}{% endfor %}
   <div class="flex items-center gap-3 flex-wrap">
-    <button class="bg-white text-black rounded-xl px-5 py-2 font-semibold">Submit verdict</button>
+    <button class="bg-white text-black rounded-xl px-5 py-2 font-semibold">{% translate "Submit verdict" %}</button>
     <a class="text-xs underline text-zinc-400" href="{% url 'verify_review' claim.pk %}">Use the two-pane review screen instead</a>
   </div>
 </form>
@@ -112,7 +114,7 @@
 {% endif %}
 
 {# ---------- Append-only change log ---------- #}
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">VERDICT CHANGE LOG</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "VERDICT CHANGE LOG" %}</h2>
 <ol class="text-sm space-y-3 border-l border-white/10 pl-5 ml-1 pb-4">
   {% for log in logs %}
   <li class="relative">

@@ -1,12 +1,16 @@
+from urllib.parse import urlencode
+
 from django.core.exceptions import ValidationError
 from django.db.models import F, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 
 from claims.duplicates import find_similar, normalize
 from claims.models import Claim
+from claims.uploads import clean_screenshot
 from claims.validators import sanitize_text, validate_safe_url
 from research import ai
 from research.fetch import fetch_article
@@ -44,6 +48,8 @@ def chat_home(request, pk=None):
 @ratelimit(key="user", rate="30/h", method="POST", block=True)
 def send(request, pk=None):
     text = sanitize_text(request.POST.get("text", ""))[:3000]
+    if not pk and request.FILES.get("screenshot"):
+        return _new_claim(request, text)
     if not text:
         return redirect(request.META.get("HTTP_REFERER") or "chat")
     if pk:
@@ -55,43 +61,62 @@ def send(request, pk=None):
     return _new_claim(request, text)
 
 
+def _error(message):
+    return redirect("/?" + urlencode({"error": message}))
+
+
 def _new_claim(request, text):
     language = request.POST.get("language") if request.POST.get("language") in ("en", "kn") else "en"
     source_url, claim_text = "", text
-    if text.split()[0].lower().startswith(("http:", "https:", "javascript:", "data:")) and len(text.split()) == 1:
+    screenshot = None
+    if request.FILES.get("screenshot"):
+        try:
+            screenshot, jpeg = clean_screenshot(request.FILES["screenshot"])
+        except ValidationError as exc:
+            return _error(exc.messages[0])
+        ocr_text, ocr_lang = ai.extract_text_from_image(jpeg)
+        if not text:
+            claim_text = sanitize_text(ocr_text)
+            language = ocr_lang or language
+        if not claim_text:
+            return _error(_("We couldn't read text in that image. Please paste the message as text too."))
+    elif text.split()[0].lower().startswith(("http:", "https:", "javascript:", "data:")) and len(text.split()) == 1:
         try:
             source_url = validate_safe_url(text)
         except ValidationError:
-            return redirect("/chat/?error=Only+http+and+https+links+are+allowed.")
+            return _error(_("Only http and https links are allowed."))
         try:
             title, body = fetch_article(source_url)
             claim_text = sanitize_text(f"{title}. {body[:600]}") if (title or body) else source_url
         except Exception:
             claim_text = source_url
     if len(claim_text) < 10:
-        return redirect("/chat/?error=Please+paste+the+full+message+(at+least+10+characters).")
+        return _error(_("Please paste the full message (at least 10 characters)."))
 
     owner = request.user
     thread = ChatThread.objects.create(owner=owner, title=claim_text[:80])
-    ChatMessage.objects.create(thread=thread, sender="user", content=text)
+    ChatMessage.objects.create(thread=thread, sender="user",
+                               content=text or _("📷 Screenshot: “%(text)s”") % {"text": claim_text[:500]})
 
     matches = find_similar(claim_text, source_url)
     best = next(((s, c) for s, c in matches if s >= DUPLICATE_SCORE and not c.is_hidden), None)
     if best:
         claim = best[1]
         Claim.objects.filter(pk=claim.pk).update(submission_count=F("submission_count") + 1)
-        reply = ("This looks like a claim we've already received. Here is its current status. "
-                 "Your report has been added to it.")
+        reply = _("This looks like a claim we've already received. Here is its current status. "
+                  "Your report has been added to it. You can ask me to re-check it with the latest sources.")
     else:
-        claim = Claim.objects.create(text=claim_text, normalized_text=normalize(claim_text),
-                                     source_url=source_url, language=language,
-                                     status=Claim.Status.RESEARCHING, submitted_by=owner)
+        claim = Claim(text=claim_text, normalized_text=normalize(claim_text), source_url=source_url,
+                      language=language, status=Claim.Status.RESEARCHING, submitted_by=owner)
+        if screenshot:
+            claim.screenshot.save("upload.jpg", screenshot, save=False)
+        claim.save()
         log_submission(claim, owner)
         start_research(claim, source_filter=request.POST.get("sources", "all"),
                        deep=request.POST.get("deep") == "on")
-        reply = ("Thanks. I'm researching this now using live news, fact-checkers and research "
-                 "databases. My answer will be provisional: verified human fact-checkers give the "
-                 "final verdict.")
+        reply = _("Thanks. I'm researching this now using live news, fact-checkers and research "
+                  "databases. My answer will be provisional: verified human fact-checkers give the "
+                  "final verdict.")
     thread.claim = claim
     thread.save(update_fields=["claim"])
     ChatMessage.objects.create(thread=thread, sender="bot", content=reply, card_claim=claim)
@@ -106,12 +131,12 @@ def _followup(thread, question):
         answer = ai.answer_followup(claim, run, question, list(thread.messages.all()))
     if answer is None:
         if run and run.is_running:
-            answer = "I'm still researching. Ask again in a few seconds."
+            answer = _("I'm still researching. Ask again in a few seconds.")
         elif claim and claim.status == Claim.Status.FINAL:
-            answer = f"Verifiers have published the final verdict: {claim.get_verdict_display()}."
+            answer = _("Verifiers have published the final verdict: %(v)s.") % {"v": claim.get_verdict_display()}
         else:
-            answer = ("I can't answer follow-up questions right now (AI unavailable). The sources "
-                      "found are listed on the claim card, and verifiers are reviewing it.")
+            answer = _("I can't answer follow-up questions right now (AI unavailable). The sources "
+                       "found are listed on the claim card, and verifiers are reviewing it.")
     ChatMessage.objects.create(thread=thread, sender="bot", content=answer, card_claim=None)
 
 

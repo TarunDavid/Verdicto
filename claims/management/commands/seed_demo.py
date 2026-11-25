@@ -172,12 +172,13 @@ class Command(BaseCommand):
 
         phones = iter(DEMO_PHONES)
 
-        def make(username, **kw):
+        def make(username, password=None, **kw):
             first, last = DEMO_NAMES.get(username, (fake.first_name(), fake.last_name()))
-            return User.objects.create_user(username, password=pw, first_name=first, last_name=last,
+            return User.objects.create_user(username, password=password or pw, first_name=first, last_name=last,
                                             phone=next(phones), **kw)
 
-        admin = make("admin", role=User.Role.ADMIN, is_staff=True, is_superuser=True)
+        admin = make("admin", password=settings.ADMIN_PASSWORD, role=User.Role.ADMIN, is_staff=True,
+                     is_superuser=True)
         citizens = [make(name, domains=["health", "education", "local-news"]) for name in CITIZENS]
         verifiers = {}
         for name, (langs, domains, district, org, approved, stats) in VERIFIERS.items():
@@ -218,8 +219,8 @@ class Command(BaseCommand):
 
     def print_logins(self):
         pw = settings.DEMO_PASSWORD
-        self.stdout.write(f"\nDemo logins: log in with the PHONE number (password for all: {pw})")
-        self.stdout.write("Django admin (/admin/) also accepts the username 'admin'.\n")
+        self.stdout.write(f"\nDemo logins: log in with the PHONE number (password: {pw})")
+        self.stdout.write(f"Admin: username 'admin' or its phone, password: {settings.ADMIN_PASSWORD}\n")
         for u in User.objects.filter(username__in=["admin", *CITIZENS, *VERIFIERS]).order_by("phone"):
             tag = u.get_role_display()
             if u.is_pending_verifier:

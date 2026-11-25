@@ -1,0 +1,6 @@
+{% load i18n %}{% get_current_language as LANG %}
+<form action="{% url 'set_language' %}" method="post" class="inline-flex rounded-full glass p-0.5 text-xs">{% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <button name="language" value="en" class="px-2.5 py-1 rounded-full {% if LANG == 'en' %}bg-white text-black{% else %}text-zinc-400 hover:text-white{% endif %}">EN</button>
+  <button name="language" value="kn" class="px-2.5 py-1 rounded-full {% if LANG == 'kn' %}bg-white text-black{% else %}text-zinc-400 hover:text-white{% endif %}">ಕನ್ನಡ</button>
+</form>

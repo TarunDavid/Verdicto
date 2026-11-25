@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ verifier.display_name }} · Verdicto verifier{% endblock %}
+{% block content %}
+<div class="pt-2 flex items-center gap-4">
+  <div class="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-teal-500 grid place-items-center text-xl font-semibold">{{ verifier.initials }}</div>
+  <div>
+    <h1 class="text-2xl font-medium">{% include "_name.html" with u=verifier %}</h1>
+    <p class="text-sm text-zinc-400">Verifier{% if verifier.district %} · {{ verifier.district }}{% endif %} · fields: {{ verifier.domains|join:", " }} · languages: {{ verifier.languages|join:", " }}</p>
+  </div>
+</div>
+<div class="mt-3">{% include "accounts/_badges.html" with u=verifier %}</div>
+<div class="grid grid-cols-2 gap-3 mt-6 text-sm">
+  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{{ verifier.votes.count }}</p><p class="text-zinc-400 text-xs">verdicts given</p></div>
+  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{% if scored %}{% widthratio correct scored 100 %}%{% else %}—{% endif %}</p><p class="text-zinc-400 text-xs">matched the final verdict ({{ correct }}/{{ scored }} on this platform)</p></div>
+</div>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">ACCURACY BY FIELD AND LANGUAGE</h2>
+{% include "accounts/_stats.html" %}
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">RECENT VERDICTS</h2>
+<div class="glass rounded-2xl bg-[#1a1c20] divide-y divide-white/5 text-sm">
+  {% for v in votes %}
+  <a href="{% url 'claim_detail' v.claim.pk %}" class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5">
+    <b class="w-28 shrink-0">{{ v.get_verdict_display }}</b>
+    <span class="truncate text-zinc-300">{{ v.claim.text }}</span>
+    <span class="ml-auto shrink-0 text-xs {% if v.scored_as and v.scored_as == v.verdict %}text-green-400{% elif v.scored_as %}text-red-400{% else %}text-zinc-500{% endif %}">{% if v.scored_as %}{% if v.scored_as == v.verdict %}matched final{% else %}final: {{ v.scored_as }}{% endif %}{% else %}open{% endif %}</span>
+  </a>
+  {% empty %}<p class="px-4 py-3 text-zinc-400">No verdicts yet.</p>{% endfor %}
+</div>
+{% endblock %}

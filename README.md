@@ -26,8 +26,8 @@ stances, so the provisional label shows "Unclear".
 5. After 3 verifier votes at 70% or more weighted agreement, the claim is **Verified**. The user's
    chat gets a "✅ Verified" message, and **News & Verdicts → Past verdicts** shows it.
 
-Log in with a **phone number**. `seed_demo` prints all demo phones; there is one password,
-`DEMO_PASSWORD`. Django admin also accepts the username `admin`.
+Log in with a **phone number**. `seed_demo` prints all demo phones; they share one password,
+`DEMO_PASSWORD`. The admin account (username `admin`, at `/admin/`) uses `ADMIN_PASSWORD` from `.env`.
 
 ## Where things live
 | Area | Files |
@@ -43,11 +43,18 @@ Log in with a **phone number**. `seed_demo` prints all demo phones; there is one
 | Human verdict engine | `verification/engine.py` (weighted Beta-prior votes, unchanged from SPEC §6) |
 | Feed ranking | `claims/ranking.py` (urgency × reach × domain risk × 24 h decay) |
 | Moderation | AI holds claims about private individuals' personal lives; admins can hide/unhide in `/admin/` |
+| Screenshots | `claims/uploads.py` (Pillow checks the real type, max 5 MB, re-encodes to strip EXIF/GPS, random file names) + `research/ai.py:extract_text_from_image` (Groq vision, `GROQ_VISION_MODEL`) |
+| WhatsApp preview image | `claims/og_image.py` → `/c/<slug>/og.png` (1200×630; Kannada claims get an English caption because Pillow can't shape Kannada without libraqm) |
+| Profiles | `/profile/` (details, track record, work-email check), `/verifiers/<id>/` (public: badges, accuracy per field/language, recent verdicts), `/my-votes/` |
+| Work-email verification | `accounts/work_email.py`: free providers rejected, domain must resolve, 6-digit code stored only as an HMAC, 10-minute expiry, 5 attempts, rate-limited. In development the code prints in the server terminal. Verified email gives the 0.6 starting weight. |
+| Source feedback | Verifiers mark AI sources 👍 useful / 👎 wrong (`SourceFeedback`); counts show to other verifiers |
+| Community accuracy | When a claim is finalised, regular users' votes are scored too (`User.community_correct/total`, no double counting); shown on their profile |
+| Re-check, listen, time left | "↻ Re-check with latest sources" on the research card; "🔊 Listen" reads the verdict aloud (kn-IN / en-IN); the Verify Queue shows time left before reassignment |
+| Kannada UI | EN / ಕನ್ನಡ switch in the top bar and on the login page; users' preferred language is the default. Translations live in `locale/kn_strings.py`; run `python manage.py compilemo` after editing (builds the `.po`/`.mo` without GNU gettext). |
 
 ## Deliberate limits
-- Not built yet from PRD2: screenshot upload/OCR (no Groq vision model on this account), phone OTP,
-  work-email OTP, the "useful / wrong" source buttons, a profile page, Kannada UI translations, and
-  community-accuracy tracking.
+- **Phone OTP** at sign-up is not built (PRD2 marks it optional/roadmap); login is phone + password.
+- Work-email check confirms the domain resolves; a proper MX lookup needs `dnspython` (not installed).
 - **Google Scholar and Web of Science are not used.** Scholar has no API and forbids scraping; Web of
   Science needs an institutional key. OpenAlex and Crossref cover scholarly literature legally.
 - **Social media:** we don't scrape it (against platform terms). Social posts come in only when web

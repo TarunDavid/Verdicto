@@ -1,5 +1,5 @@
-<!doctype html>
-<html lang="en">
+{% load i18n %}<!doctype html>
+{% get_current_language as LANG %}<html lang="{{ LANG }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,6 +13,7 @@
   <style>
     body{font-family:Inter,'Noto Sans Kannada',ui-sans-serif,system-ui}
     .glass{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+    html[lang=kn] [class*="tracking-"]{letter-spacing:0!important} /* spacing breaks Kannada letters apart */
     .glow{background:radial-gradient(120% 60% at 50% -10%,rgba(45,212,191,.18),rgba(56,189,248,.08) 35%,transparent 65%),#14161b}
   </style>
 </head>
@@ -30,27 +31,29 @@
         </button>
       </div>
       <form id="chatsearch" method="get" action="{% url 'chat' %}" class="{% if not chat_search %}hidden{% endif %} mb-2">
-        <input id="chatsearchinput" name="chats" value="{{ chat_search }}" placeholder="Search your checks" class="w-full rounded-lg glass px-3 py-2 text-sm focus:outline-none">
+        <input id="chatsearchinput" name="chats" value="{{ chat_search }}" placeholder="{% translate "Search your checks" %}" class="w-full rounded-lg glass px-3 py-2 text-sm focus:outline-none">
       </form>
       <a href="{% url 'chat' %}" class="flex items-center gap-2 rounded-xl glass px-3 py-2.5 text-teal-200 hover:bg-white/10">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg> New check
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg> {% translate "New check" %}
       </a>
 
-      <p class="mt-5 mb-1 px-1 text-[11px] tracking-[.18em] text-zinc-500">NAVIGATE</p>
+      <p class="mt-5 mb-1 px-1 text-[11px] tracking-[.18em] text-zinc-500">{% translate "NAVIGATE" %}</p>
       <a href="{% url 'chat' %}" class="flex items-center gap-3 px-2 py-2 rounded-lg {% if tab == 'check' %}text-white bg-white/5{% else %}text-zinc-300 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg> Check a Claim</a>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg> {% translate "Check a Claim" %}</a>
       <a href="{% url 'feed' %}" class="flex items-center gap-3 px-2 py-2 rounded-lg {% if tab == 'news' %}text-white bg-white/5{% else %}text-zinc-300 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg> News &amp; Verdicts</a>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg> {% translate "News & Verdicts" %}</a>
       {% if user.can_vote %}
       <a href="{% url 'verify_dashboard' %}" class="flex items-center gap-3 px-2 py-2 rounded-lg {% if tab == 'verify' %}text-white bg-white/5{% else %}text-zinc-300 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="m9 12 2 2 4-4"/></svg> Verify Queue
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="m9 12 2 2 4-4"/></svg> {% translate "Verify Queue" %}
         {% if queue_count %}<span class="ml-auto text-xs bg-accent rounded-full px-2">{{ queue_count }}</span>{% endif %}</a>
       {% endif %}
+      <a href="{% url 'my_votes' %}" class="flex items-center gap-3 px-2 py-2 rounded-lg {% if tab == 'votes' %}text-white bg-white/5{% else %}text-zinc-300 hover:text-white{% endif %}">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 11v9H4v-9zM7 11l4-8a3 3 0 0 1 3 3v4h5a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7"/></svg> {% translate "My votes" %}</a>
       {% if user.is_staff %}<a href="/admin/" class="flex items-center gap-3 px-2 py-2 rounded-lg text-zinc-300 hover:text-white">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> Admin</a>{% endif %}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> {% translate "Admin" %}</a>{% endif %}
 
       <div class="border-t border-white/5 my-4 mx-1"></div>
-      <p class="mb-1 px-1 text-[11px] tracking-[.18em] text-zinc-500">YOUR CHECKS</p>
+      <p class="mb-1 px-1 text-[11px] tracking-[.18em] text-zinc-500">{% translate "YOUR CHECKS" %}</p>
       <div class="flex-1 overflow-y-auto -mx-1 px-1">
         {% for t in sidebar_threads %}
           {% with c=t.claim %}
@@ -58,18 +61,18 @@
             <span class="w-2 h-2 rounded-full shrink-0 {% if c.status == 'FINAL' and c.verdict == 'FALSE' %}bg-red-500{% elif c.status == 'FINAL' and c.verdict == 'TRUE' %}bg-green-500{% elif c.status == 'FINAL' %}bg-amber-400{% else %}bg-zinc-500{% endif %}"></span>
             <span class="truncate">{{ t.title }}</span></a>
           {% endwith %}
-        {% empty %}<p class="px-2 text-zinc-600">{% if chat_search %}No matches.{% else %}Nothing checked yet.{% endif %}</p>{% endfor %}
+        {% empty %}<p class="px-2 text-zinc-600">{% if chat_search %}{% translate "No matches." %}{% else %}{% translate "Nothing checked yet." %}{% endif %}</p>{% endfor %}
       </div>
 
       {% if user.role == "citizen" %}
       <div class="mt-3 rounded-2xl glass p-4 relative overflow-hidden">
         <div class="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-teal-400/10 blur-xl"></div>
-        <p class="font-semibold">Become a verifier</p>
-        <p class="text-xs text-zinc-400 mt-1">Have expertise? Verified experts' verdicts carry far more weight.</p>
-        <a href="{% url 'become_verifier' %}" class="mt-3 block text-center bg-white text-black rounded-xl py-2 text-xs font-semibold">Apply now</a>
+        <p class="font-semibold">{% translate "Become a verifier" %}</p>
+        <p class="text-xs text-zinc-400 mt-1">{% translate "Have expertise? Verified experts' verdicts carry far more weight." %}</p>
+        <a href="{% url 'become_verifier' %}" class="mt-3 block text-center bg-white text-black rounded-xl py-2 text-xs font-semibold">{% translate "Apply now" %}</a>
       </div>
       {% elif user.is_pending_verifier %}
-      <div class="mt-3 rounded-2xl glass p-4 text-xs"><p class="font-semibold text-sm text-amber-300">Verification pending</p><p class="text-zinc-400 mt-1">An admin is reviewing your profile. Until then you vote as a regular user.</p></div>
+      <div class="mt-3 rounded-2xl glass p-4 text-xs"><p class="font-semibold text-sm text-amber-300">{% translate "Verification pending" %}</p><p class="text-zinc-400 mt-1">{% translate "An admin is reviewing your profile. Until then you vote as a regular user." %}</p></div>
       {% endif %}
     </aside>
 
@@ -79,29 +82,32 @@
         <button type="button" class="md:hidden text-zinc-300" onclick="document.getElementById('sidebar').classList.toggle('hidden');document.getElementById('sidebar').classList.toggle('flex')" aria-label="Menu">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <span class="hidden sm:inline-flex items-center gap-2 rounded-full glass px-3 py-1.5 text-xs text-zinc-300">
-          <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>{{ user.get_role_display }}{% if user.is_pending_verifier %} · pending{% endif %}{% if user.can_vote %}<svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" aria-label="Verified"><path fill="currentColor" d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3 1 3-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3-1-3 2.6-1.9 1-3 3.2.1z"/><path d="M8 12.3l2.6 2.6L16.2 9.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}</span>
-        <nav class="ml-auto flex items-center gap-1 sm:gap-5 text-sm">
-          <a href="{% url 'chat' %}" class="px-2 py-1 {% if tab == 'check' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">Check a Claim</a>
-          <a href="{% url 'feed' %}" class="px-2 py-1 {% if tab == 'news' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">News &amp; Verdicts</a>
-          {% if user.can_vote %}<a href="{% url 'verify_dashboard' %}" class="px-2 py-1 {% if tab == 'verify' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">Verify Queue{% if queue_count %} ({{ queue_count }}){% endif %}</a>{% endif %}
+          <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>{{ user.get_role_display }}{% if user.is_pending_verifier %} · {% translate "Verification pending" %}{% endif %}{% if user.can_vote %}<svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" aria-label="Verified"><path fill="currentColor" d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3 1 3-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3-1-3 2.6-1.9 1-3 3.2.1z"/><path d="M8 12.3l2.6 2.6L16.2 9.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}</span>
+        <nav class="ml-auto flex items-center gap-1 sm:gap-5 text-sm whitespace-nowrap">
+          <a href="{% url 'chat' %}" class="px-2 py-1 {% if tab == 'check' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">{% translate "Check a Claim" %}</a>
+          <a href="{% url 'feed' %}" class="px-2 py-1 {% if tab == 'news' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">{% translate "News & Verdicts" %}</a>
+          {% if user.can_vote %}<a href="{% url 'verify_dashboard' %}" class="px-2 py-1 {% if tab == 'verify' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">{% translate "Verify Queue" %}{% if queue_count %} ({{ queue_count }}){% endif %}</a>{% endif %}
         </nav>
+        {% include "_langswitch.html" %}
         <details class="relative">
           <summary class="list-none cursor-pointer w-9 h-9 rounded-full bg-gradient-to-br from-accent to-teal-500 grid place-items-center text-sm font-semibold">{{ user.initials }}</summary>
           <div class="absolute right-0 mt-2 w-56 rounded-xl bg-[#1a1d23] border border-white/10 p-3 text-sm z-20 shadow-xl">
-            <p class="font-semibold">{% include "_name.html" with u=user %}</p>
+            <p class="font-semibold">{% include "_name.html" with u=user nolink=True %}</p>
             <p class="text-xs text-zinc-400">{{ user.get_role_display }}{% if user.is_pending_verifier %} (pending approval){% endif %}</p>
             {% if user.domains %}<p class="text-xs text-zinc-500 mt-1">Interests: {{ user.domains|join:", " }}</p>{% endif %}
-            <form method="post" action="{% url 'logout' %}" class="mt-3">{% csrf_token %}<button class="w-full text-left text-zinc-300 hover:text-white">Log out</button></form>
+            <a href="{% url 'profile' %}" class="block mt-3 text-zinc-300 hover:text-white">{% translate "Profile & settings" %}</a>
+            <form method="post" action="{% url 'logout' %}" class="mt-2">{% csrf_token %}<button class="w-full text-left text-zinc-300 hover:text-white">{% translate "Log out" %}</button></form>
           </div>
         </details>
       </header>
-      {% if user.is_pending_verifier %}<div class="mx-4 md:mx-6 mb-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs text-amber-200">Verification pending: an admin is reviewing your verifier profile. Until approved, you can check claims and vote as a regular user.</div>{% endif %}
+      {% if user.is_pending_verifier %}<div class="mx-4 md:mx-6 mb-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs text-amber-200">{% translate "Verification pending: an admin is reviewing your verifier profile. Until approved, you can check claims and vote as a regular user." %}</div>{% endif %}
       <main class="flex-1 overflow-y-auto px-4 md:px-6 pb-8">
         <div class="{% block mainclass %}max-w-3xl{% endblock %} mx-auto">
 {% else %}
   <nav class="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3 text-sm">
     {% include "_emblem.html" with size="w-7 h-7" %}<span class="font-semibold italic text-lg">Verdicto</span>
-    <a href="{% url 'login' %}" class="ml-auto rounded-full bg-white text-black px-4 py-1.5 font-medium">Log in</a>
+    <span class="ml-auto">{% include "_langswitch.html" %}</span>
+    <a href="{% url 'login' %}" class="rounded-full bg-white text-black px-4 py-1.5 font-medium">{% translate "Log in" %}</a>
   </nav>
   <main class="max-w-3xl mx-auto px-4 pb-10"><div>
 {% endif %}

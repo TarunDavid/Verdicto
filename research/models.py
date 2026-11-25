@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from claims.models import Claim
 
@@ -13,10 +15,10 @@ class ResearchRun(models.Model):
         FAILED = "failed", "Failed"
 
     class Label(models.TextChoices):
-        LIKELY_TRUE = "LIKELY_TRUE", "Likely true"
-        LIKELY_FALSE = "LIKELY_FALSE", "Likely false"
-        MIXED = "MIXED", "Mixed evidence / possibly misleading"
-        UNCLEAR = "UNCLEAR", "Unclear (not enough evidence)"
+        LIKELY_TRUE = "LIKELY_TRUE", _("Likely true")
+        LIKELY_FALSE = "LIKELY_FALSE", _("Likely false")
+        MIXED = "MIXED", _("Mixed evidence / possibly misleading")
+        UNCLEAR = "UNCLEAR", _("Unclear (not enough evidence)")
 
     claim = models.ForeignKey(Claim, on_delete=models.CASCADE, related_name="research_runs")
     status = models.CharField(max_length=8, choices=Status.choices, default=Status.QUEUED)
@@ -55,10 +57,10 @@ class ResearchRun(models.Model):
 
 class Source(models.Model):
     class Stance(models.TextChoices):
-        SUPPORTS = "supports", "Supports"
-        REFUTES = "refutes", "Refutes"
-        NEUTRAL = "neutral", "Neutral"
-        IRRELEVANT = "irrelevant", "Irrelevant"
+        SUPPORTS = "supports", _("Supports")
+        REFUTES = "refutes", _("Refutes")
+        NEUTRAL = "neutral", _("Neutral")
+        IRRELEVANT = "irrelevant", _("Irrelevant")
 
     run = models.ForeignKey(ResearchRun, on_delete=models.CASCADE, related_name="sources")
     url = models.URLField(max_length=800)
@@ -75,3 +77,20 @@ class Source(models.Model):
 
     class Meta:
         ordering = ["-tier_weight", "id"]
+
+    def feedback_counts(self):
+        votes = list(self.feedback.values_list("useful", flat=True))
+        return {"useful": sum(votes), "wrong": len(votes) - sum(votes)}
+
+
+class SourceFeedback(models.Model):
+    """A verifier marks an AI-found source as useful or wrong (helps other verifiers; audit trail)."""
+    source = models.ForeignKey(Source, on_delete=models.CASCADE, related_name="feedback")
+    verifier = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    useful = models.BooleanField()
+    created_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["source", "verifier"], name="one_feedback_per_verifier"),
+        ]

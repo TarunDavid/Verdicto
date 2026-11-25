@@ -1,30 +1,31 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block content %}
-<h1 class="text-2xl font-medium pt-2 mb-4">News &amp; Verdicts</h1>
+<h1 class="text-2xl font-medium pt-2 mb-4">{% translate "News & Verdicts" %}</h1>
 {% include "claims/_news_tabs.html" %}
 <form class="flex flex-wrap gap-2 mb-5 text-sm">
   <input type="hidden" name="sort" value="{{ f.sort }}">
-  <input name="q" value="{{ f.q }}" placeholder="Search claims" class="flex-1 min-w-[10rem] rounded-xl glass px-3 py-2 focus:outline-none">
+  <input name="q" value="{{ f.q }}" placeholder="{% translate "Search claims" %}" class="flex-1 min-w-[10rem] rounded-xl glass px-3 py-2 focus:outline-none">
   <select name="language" class="rounded-xl glass px-2 py-2 bg-transparent">{% for v, l in langs %}<option class="bg-zinc-900" value="{{ v }}" {% if v == f.language %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
   <select name="domain" class="rounded-xl glass px-2 py-2 bg-transparent">{% for v, l in domains %}<option class="bg-zinc-900" value="{{ v }}" {% if v == f.domain %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
   <select name="status" class="rounded-xl glass px-2 py-2 bg-transparent">
-    <option class="bg-zinc-900" value="">All verdicts</option>
+    <option class="bg-zinc-900" value="">{% translate "All verdicts" %}</option>
     {% for v, l in status_options %}<option class="bg-zinc-900" value="{{ v }}" {% if f.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
   </select>
-  <button class="rounded-xl bg-white/10 px-4">Filter</button>
+  <button class="rounded-xl bg-white/10 px-4">{% translate "Filter" %}</button>
 </form>
 <div class="space-y-3">
 {% for claim in claims %}
   <a href="{% url 'claim_detail' claim.pk %}" class="block glass rounded-2xl p-4 bg-[#1a1c20] hover:border-accent/60">
     <div class="flex items-center gap-2 text-xs text-zinc-400 flex-wrap">
       {% include "_badge.html" %}
-      {% if claim.urgency == "high" %}<b class="text-red-400">URGENT</b> ·{% endif %}
+      {% if claim.urgency == "high" %}<b class="text-red-400">{% translate "URGENT" %}</b> ·{% endif %}
       <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %}</span>
       <span class="ml-auto">reported {{ claim.submission_count }}× · {{ claim.created_at|timesince }} ago</span>
     </div>
     <p class="mt-2 text-zinc-100">{{ claim.text|truncatechars:180 }}</p>
     {% if claim.status != "FINAL" %}{% with run=claim.runs.0 %}{% if run and run.label %}<p class="mt-1 text-xs text-zinc-500">AI: {{ run.get_label_display }}{% if run.truth_score is not None %} · {{ run.truth_score|floatformat:0 }}/100{% endif %}</p>{% endif %}{% endwith %}{% endif %}
   </a>
-{% empty %}<p class="text-zinc-400">No claims match these filters.</p>{% endfor %}
+{% empty %}<p class="text-zinc-400">{% translate "No claims match these filters." %}</p>{% endfor %}
 </div>
 {% endblock %}

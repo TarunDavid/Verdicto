@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 LANGUAGES = [("en", "English"), ("kn", "Kannada")]
 DOMAINS = [
@@ -17,9 +18,9 @@ DOMAINS = [
 
 class User(AbstractUser):
     class Role(models.TextChoices):
-        CITIZEN = "citizen", "Regular user"
-        VERIFIER = "verifier", "Verifier"
-        ADMIN = "admin", "Admin"
+        CITIZEN = "citizen", _("Regular user")
+        VERIFIER = "verifier", _("Verifier")
+        ADMIN = "admin", _("Admin")
 
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.CITIZEN)
     # Login identifier. Private: never rendered on public pages.
@@ -37,6 +38,13 @@ class User(AbstractUser):
     organisation = models.CharField(max_length=120, blank=True)
     work_email = models.EmailField(blank=True)
     linkedin_url = models.URLField(blank=True)
+    # Regular users' community-vote track record (shown on profile; a path to becoming a verifier).
+    community_correct = models.PositiveIntegerField(default=0)
+    community_total = models.PositiveIntegerField(default=0)
+
+    @property
+    def community_accuracy(self):
+        return round(100 * self.community_correct / self.community_total) if self.community_total else None
 
     @property
     def display_name(self):
@@ -71,3 +79,17 @@ class User(AbstractUser):
         if not self.verifier_stats.exists():
             out.append("New verifier")
         return out
+
+
+class WorkEmailOTP(models.Model):
+    """One-time code for verifying a verifier's work email. Only a hash of the code is stored."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="email_otps")
+    email = models.EmailField()
+    code_hash = models.CharField(max_length=64)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+    used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]

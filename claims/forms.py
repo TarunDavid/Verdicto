@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from accounts.models import DOMAINS, LANGUAGES
 
@@ -73,8 +74,8 @@ class VoteForm(forms.Form):
 
 
 class CommunityVoteForm(forms.Form):
-    verdict = forms.ChoiceField(choices=[("TRUE", "True"), ("FALSE", "False"),
-                                         ("MISLEADING", "Misleading"), ("UNVERIFIED", "Not sure")])
+    verdict = forms.ChoiceField(choices=[("TRUE", _("True")), ("FALSE", _("False")),
+                                         ("MISLEADING", _("Misleading")), ("UNVERIFIED", _("Not sure"))])
     reason = forms.CharField(max_length=200, required=False)
 
     def clean_reason(self):

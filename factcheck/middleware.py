@@ -1,5 +1,8 @@
 import logging
 
+from django.conf import settings
+from django.utils import translation
+
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django_ratelimit.exceptions import Ratelimited
@@ -29,3 +32,18 @@ class StructuredErrorMiddleware:
             return errors.not_found(request)
         logger.exception("Unhandled error on %s", request.path)
         return errors.server_error(request)
+
+
+class UserLanguageMiddleware:
+    """Use the logged-in user's preferred language unless they picked one with the switcher."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        user = getattr(request, "user", None)
+        if (user and user.is_authenticated and settings.LANGUAGE_COOKIE_NAME not in request.COOKIES
+                and user.preferred_language in dict(settings.LANGUAGES)):
+            translation.activate(user.preferred_language)
+            request.LANGUAGE_CODE = user.preferred_language
+        return self.get_response(request)

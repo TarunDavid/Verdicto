@@ -86,6 +86,12 @@ def dashboard(request):
     assigned = [a for a in Assignment.objects.filter(verifier=request.user, status=Assignment.Status.ASSIGNED)
                 .select_related("claim") if a.claim_id not in voted and not a.claim.is_hidden]
     assigned.sort(key=lambda a: -importance(a.claim))
+    from datetime import timedelta
+    from django.conf import settings as dj_settings
+    from django.utils import timezone
+    for a in assigned:
+        a.due = a.created_at + timedelta(hours=dj_settings.ASSIGNMENT_TIMEOUT_HOURS)
+        a.overdue = a.due <= timezone.now()
     assigned_ids = {a.claim_id for a in assigned}
     others = [c for c in Claim.objects.filter(status__in=["PENDING", "UNDER_REVIEW"], is_hidden=False,
                                               duplicate_of__isnull=True,

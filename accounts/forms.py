@@ -149,3 +149,43 @@ class VerifierApplicationForm(forms.Form):
         user.linkedin_url = d["linkedin_url"]
         user.district = sanitize_text(d["district"])
         user.save()
+
+
+class ProfileForm(forms.Form):
+    name = forms.CharField(max_length=80)
+    interests = forms.MultipleChoiceField(choices=DOMAINS, widget=forms.CheckboxSelectMultiple,
+                                          label="Fields of interest")
+    preferred_language = forms.ChoiceField(choices=LANGUAGES)
+    district = forms.CharField(max_length=60, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in self.fields.values():
+            if not isinstance(f.widget, forms.CheckboxSelectMultiple):
+                f.widget.attrs["class"] = FIELD
+
+    def save(self, user):
+        d = self.cleaned_data
+        user.first_name, user.last_name = sanitize_text(d["name"]), ""
+        user.domains = d["interests"]
+        user.preferred_language = d["preferred_language"]
+        user.district = sanitize_text(d["district"])
+        user.save()
+
+
+class WorkEmailForm(forms.Form):
+    email = forms.EmailField(label="Work email")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].widget.attrs.update({"class": FIELD, "placeholder": "you@yourorg.in"})
+
+
+class OTPForm(forms.Form):
+    code = forms.RegexField(regex=r"^\d{6}$", max_length=6, label="6-digit code",
+                            error_messages={"invalid": "Enter the 6-digit code."})
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["code"].widget.attrs.update({"class": FIELD, "inputmode": "numeric",
+                                                  "autocomplete": "one-time-code"})

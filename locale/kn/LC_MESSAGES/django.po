@@ -1,0 +1,396 @@
+# Kannada translations for Verdicto. Generated from locale/kn_strings.py.
+msgid ""
+msgstr ""
+"Project-Id-Version: Verdicto\n"
+"Language: kn\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Check a Claim"
+msgstr "ಹೇಳಿಕೆ ಪರಿಶೀಲಿಸಿ"
+
+msgid "News & Verdicts"
+msgstr "ಸುದ್ದಿ ಮತ್ತು ತೀರ್ಪುಗಳು"
+
+msgid "Verify Queue"
+msgstr "ಪರಿಶೀಲನಾ ಸರತಿ"
+
+msgid "My votes"
+msgstr "ನನ್ನ ಮತಗಳು"
+
+msgid "Admin"
+msgstr "ನಿರ್ವಾಹಕ"
+
+msgid "New check"
+msgstr "ಹೊಸ ಪರಿಶೀಲನೆ"
+
+msgid "NAVIGATE"
+msgstr "ಮೆನು"
+
+msgid "YOUR CHECKS"
+msgstr "ನಿಮ್ಮ ಪರಿಶೀಲನೆಗಳು"
+
+msgid "Nothing checked yet."
+msgstr "ಇನ್ನೂ ಏನನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ."
+
+msgid "No matches."
+msgstr "ಹೊಂದಾಣಿಕೆ ಇಲ್ಲ."
+
+msgid "Search your checks"
+msgstr "ನಿಮ್ಮ ಪರಿಶೀಲನೆಗಳನ್ನು ಹುಡುಕಿ"
+
+msgid "Become a verifier"
+msgstr "ಪರಿಶೀಲಕರಾಗಿ"
+
+msgid "Have expertise? Verified experts' verdicts carry far more weight."
+msgstr "ಪರಿಣತಿ ಇದೆಯೇ? ಪರಿಶೀಲಿತ ತಜ್ಞರ ತೀರ್ಪುಗಳಿಗೆ ಹೆಚ್ಚು ತೂಕವಿದೆ."
+
+msgid "Apply now"
+msgstr "ಈಗ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ"
+
+msgid "Verification pending"
+msgstr "ಪರಿಶೀಲನೆ ಬಾಕಿ ಇದೆ"
+
+msgid "An admin is reviewing your profile. Until then you vote as a regular user."
+msgstr "ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಪರಿಶೀಲಿಸುತ್ತಿದ್ದಾರೆ. ಅಲ್ಲಿಯವರೆಗೆ ನೀವು ಸಾಮಾನ್ಯ ಬಳಕೆದಾರರಾಗಿ ಮತ ಹಾಕುತ್ತೀರಿ."
+
+msgid "Verification pending: an admin is reviewing your verifier profile. Until approved, you can check claims and vote as a regular user."
+msgstr "ಪರಿಶೀಲನೆ ಬಾಕಿ: ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಪರಿಶೀಲಕ ಪ್ರೊಫೈಲ್ ಪರಿಶೀಲಿಸುತ್ತಿದ್ದಾರೆ. ಅನುಮೋದನೆ ಸಿಗುವವರೆಗೆ ನೀವು ಹೇಳಿಕೆಗಳನ್ನು ಪರಿಶೀಲಿಸಬಹುದು ಮತ್ತು ಸಾಮಾನ್ಯ ಬಳಕೆದಾರರಾಗಿ ಮತ ಹಾಕಬಹುದು."
+
+msgid "Profile & settings"
+msgstr "ಪ್ರೊಫೈಲ್ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು"
+
+msgid "Log out"
+msgstr "ಲಾಗ್ ಔಟ್"
+
+msgid "Log in"
+msgstr "ಲಾಗ್ ಇನ್"
+
+msgid "Regular user"
+msgstr "ಸಾಮಾನ್ಯ ಬಳಕೆದಾರ"
+
+msgid "Verifier"
+msgstr "ಪರಿಶೀಲಕ"
+
+msgid "WELCOME BACK"
+msgstr "ಮತ್ತೆ ಸ್ವಾಗತ"
+
+msgid "What do you want to check today?"
+msgstr "ಇಂದು ನೀವು ಏನನ್ನು ಪರಿಶೀಲಿಸಲು ಬಯಸುತ್ತೀರಿ?"
+
+msgid "Paste a forwarded message, news or link…"
+msgstr "ಫಾರ್ವರ್ಡ್ ಸಂದೇಶ, ಸುದ್ದಿ ಅಥವಾ ಲಿಂಕ್ ಅಂಟಿಸಿ…"
+
+msgid "All sources"
+msgstr "ಎಲ್ಲಾ ಮೂಲಗಳು"
+
+msgid "News"
+msgstr "ಸುದ್ದಿ"
+
+msgid "Official"
+msgstr "ಅಧಿಕೃತ"
+
+msgid "Fact-checkers"
+msgstr "ಸತ್ಯ ಪರಿಶೀಲಕರು"
+
+msgid "Research"
+msgstr "ಸಂಶೋಧನೆ"
+
+msgid "Deep research"
+msgstr "ಆಳವಾದ ಸಂಶೋಧನೆ"
+
+msgid "Voice"
+msgstr "ಧ್ವನಿ"
+
+msgid "Check a forward"
+msgstr "ಫಾರ್ವರ್ಡ್ ಪರಿಶೀಲಿಸಿ"
+
+msgid "Paste a WhatsApp message."
+msgstr "ವಾಟ್ಸ್‌ಆ್ಯಪ್ ಸಂದೇಶವನ್ನು ಅಂಟಿಸಿ."
+
+msgid "Check a link"
+msgstr "ಲಿಂಕ್ ಪರಿಶೀಲಿಸಿ"
+
+msgid "Verify a news article URL."
+msgstr "ಸುದ್ದಿ ಲೇಖನದ ಲಿಂಕ್ ಪರಿಶೀಲಿಸಿ."
+
+msgid "Check a screenshot"
+msgstr "ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಪರಿಶೀಲಿಸಿ"
+
+msgid "Upload an image of a message."
+msgstr "ಸಂದೇಶದ ಚಿತ್ರವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ."
+
+msgid "Ask a follow-up, e.g. what do official sources say?"
+msgstr "ಮುಂದಿನ ಪ್ರಶ್ನೆ ಕೇಳಿ, ಉದಾ: ಅಧಿಕೃತ ಮೂಲಗಳು ಏನು ಹೇಳುತ್ತವೆ?"
+
+msgid "Loading…"
+msgstr "ಲೋಡ್ ಆಗುತ್ತಿದೆ…"
+
+msgid "Attach a screenshot"
+msgstr "ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಲಗತ್ತಿಸಿ"
+
+msgid "FALSE"
+msgstr "ಸುಳ್ಳು"
+
+msgid "VERIFIED TRUE"
+msgstr "ಪರಿಶೀಲಿತ ಸತ್ಯ"
+
+msgid "PARTIALLY TRUE"
+msgstr "ಭಾಗಶಃ ಸತ್ಯ"
+
+msgid "MISLEADING"
+msgstr "ದಾರಿತಪ್ಪಿಸುವ"
+
+msgid "UNVERIFIED · INSUFFICIENT EVIDENCE"
+msgstr "ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ · ಸಾಕಷ್ಟು ಪುರಾವೆ ಇಲ್ಲ"
+
+msgid "UNDER INVESTIGATION"
+msgstr "ತನಿಖೆಯಲ್ಲಿದೆ"
+
+msgid "AI RESEARCHING"
+msgstr "AI ಸಂಶೋಧಿಸುತ್ತಿದೆ"
+
+msgid "HELD FOR MODERATION"
+msgstr "ಪರಿಶೀಲನೆಗಾಗಿ ತಡೆಹಿಡಿಯಲಾಗಿದೆ"
+
+msgid "PENDING VERIFICATION"
+msgstr "ಪರಿಶೀಲನೆ ಬಾಕಿ"
+
+msgid "URGENT"
+msgstr "ತುರ್ತು"
+
+msgid "AI-PROVISIONAL · THE FINAL VERDICT COMES FROM VERIFIED EXPERTS"
+msgstr "AI ತಾತ್ಕಾಲಿಕ ಮೌಲ್ಯಮಾಪನ · ಅಂತಿಮ ತೀರ್ಪು ಪರಿಶೀಲಿತ ತಜ್ಞರಿಂದ"
+
+msgid "View claim page ↗"
+msgstr "ಹೇಳಿಕೆ ಪುಟ ನೋಡಿ ↗"
+
+msgid "No AI research for this claim."
+msgstr "ಈ ಹೇಳಿಕೆಗೆ AI ಸಂಶೋಧನೆ ಇಲ್ಲ."
+
+msgid "🔊 Listen"
+msgstr "🔊 ಕೇಳಿ"
+
+msgid "↻ Re-check with latest sources"
+msgstr "↻ ಇತ್ತೀಚಿನ ಮೂಲಗಳೊಂದಿಗೆ ಮರುಪರಿಶೀಲಿಸಿ"
+
+msgid "Review as verifier"
+msgstr "ಪರಿಶೀಲಕರಾಗಿ ಪರಿಶೀಲಿಸಿ"
+
+msgid "Established"
+msgstr "ದೃಢಪಟ್ಟಿದೆ"
+
+msgid "Unconfirmed / assumed"
+msgstr "ದೃಢಪಟ್ಟಿಲ್ಲ / ಊಹೆ"
+
+msgid "Conflicting"
+msgstr "ವಿರೋಧಾಭಾಸ"
+
+msgid "Likely true"
+msgstr "ಬಹುಶಃ ಸತ್ಯ"
+
+msgid "Likely false"
+msgstr "ಬಹುಶಃ ಸುಳ್ಳು"
+
+msgid "Mixed evidence / possibly misleading"
+msgstr "ಮಿಶ್ರ ಪುರಾವೆ / ದಾರಿತಪ್ಪಿಸಬಹುದು"
+
+msgid "Unclear (not enough evidence)"
+msgstr "ಅಸ್ಪಷ್ಟ (ಸಾಕಷ್ಟು ಪುರಾವೆ ಇಲ್ಲ)"
+
+msgid "Supports"
+msgstr "ಬೆಂಬಲಿಸುತ್ತದೆ"
+
+msgid "Refutes"
+msgstr "ನಿರಾಕರಿಸುತ್ತದೆ"
+
+msgid "Neutral"
+msgstr "ತಟಸ್ಥ"
+
+msgid "Irrelevant"
+msgstr "ಸಂಬಂಧವಿಲ್ಲ"
+
+msgid "True"
+msgstr "ಸತ್ಯ"
+
+msgid "False"
+msgstr "ಸುಳ್ಳು"
+
+msgid "Partially true"
+msgstr "ಭಾಗಶಃ ಸತ್ಯ"
+
+msgid "Misleading"
+msgstr "ದಾರಿತಪ್ಪಿಸುವ"
+
+msgid "Unverified (insufficient evidence)"
+msgstr "ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ (ಸಾಕಷ್ಟು ಪುರಾವೆ ಇಲ್ಲ)"
+
+msgid "Not sure"
+msgstr "ಖಚಿತವಿಲ್ಲ"
+
+msgid "Give your verdict"
+msgstr "ನಿಮ್ಮ ತೀರ್ಪು ನೀಡಿ"
+
+msgid "(community vote · counts a little)"
+msgstr "(ಸಮುದಾಯ ಮತ · ಕಡಿಮೆ ತೂಕ)"
+
+msgid "Why? (optional, one line)"
+msgstr "ಏಕೆ? (ಐಚ್ಛಿಕ, ಒಂದು ಸಾಲು)"
+
+msgid "Most important"
+msgstr "ಅತ್ಯಂತ ಮುಖ್ಯ"
+
+msgid "Latest"
+msgstr "ಇತ್ತೀಚಿನ"
+
+msgid "Past verdicts"
+msgstr "ಹಿಂದಿನ ತೀರ್ಪುಗಳು"
+
+msgid "Filter"
+msgstr "ಫಿಲ್ಟರ್"
+
+msgid "Search claims"
+msgstr "ಹೇಳಿಕೆಗಳನ್ನು ಹುಡುಕಿ"
+
+msgid "Search past verdicts"
+msgstr "ಹಿಂದಿನ ತೀರ್ಪುಗಳನ್ನು ಹುಡುಕಿ"
+
+msgid "Search"
+msgstr "ಹುಡುಕಿ"
+
+msgid "All verdicts"
+msgstr "ಎಲ್ಲಾ ತೀರ್ಪುಗಳು"
+
+msgid "No claims match these filters."
+msgstr "ಈ ಫಿಲ್ಟರ್‌ಗಳಿಗೆ ಹೊಂದುವ ಹೇಳಿಕೆಗಳಿಲ್ಲ."
+
+msgid "Claims routed to you by field, language, accuracy and workload. Most important first."
+msgstr "ಕ್ಷೇತ್ರ, ಭಾಷೆ, ನಿಖರತೆ ಮತ್ತು ಕೆಲಸದ ಹೊರೆಯ ಆಧಾರದಲ್ಲಿ ನಿಮಗೆ ನಿಯೋಜಿಸಲಾದ ಹೇಳಿಕೆಗಳು. ಮುಖ್ಯವಾದವು ಮೊದಲು."
+
+msgid "Nothing assigned to you right now."
+msgstr "ಸದ್ಯಕ್ಕೆ ನಿಮಗೆ ಯಾವುದೂ ನಿಯೋಜಿಸಿಲ್ಲ."
+
+msgid "AI RESEARCH (REFERENCE ONLY)"
+msgstr "AI ಸಂಶೋಧನೆ (ಉಲ್ಲೇಖಕ್ಕೆ ಮಾತ್ರ)"
+
+msgid "Your expert verdict"
+msgstr "ನಿಮ್ಮ ತಜ್ಞ ತೀರ್ಪು"
+
+msgid "Submit verdict"
+msgstr "ತೀರ್ಪು ಸಲ್ಲಿಸಿ"
+
+msgid "AI RESEARCH"
+msgstr "AI ಸಂಶೋಧನೆ"
+
+msgid "COMMUNITY OPINION"
+msgstr "ಸಮುದಾಯದ ಅಭಿಪ್ರಾಯ"
+
+msgid "ASSIGNED VERIFIERS"
+msgstr "ನಿಯೋಜಿತ ಪರಿಶೀಲಕರು"
+
+msgid "HOW THE HUMAN VERDICT WAS COMPUTED"
+msgstr "ಮಾನವ ತೀರ್ಪನ್ನು ಹೇಗೆ ಲೆಕ್ಕಹಾಕಲಾಯಿತು"
+
+msgid "VERDICT CHANGE LOG"
+msgstr "ತೀರ್ಪು ಬದಲಾವಣೆ ದಾಖಲೆ"
+
+msgid "YOUR EXPERT VERDICT"
+msgstr "ನಿಮ್ಮ ತಜ್ಞ ತೀರ್ಪು"
+
+msgid "Share on WhatsApp"
+msgstr "ವಾಟ್ಸ್‌ಆ್ಯಪ್‌ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ"
+
+msgid "Public result page"
+msgstr "ಸಾರ್ವಜನಿಕ ಫಲಿತಾಂಶ ಪುಟ"
+
+msgid "No community votes yet."
+msgstr "ಇನ್ನೂ ಸಮುದಾಯ ಮತಗಳಿಲ್ಲ."
+
+msgid "No verifier has voted yet."
+msgstr "ಇನ್ನೂ ಯಾವ ಪರಿಶೀಲಕರೂ ಮತ ಹಾಕಿಲ್ಲ."
+
+msgid "See evidence and how the verdict was computed"
+msgstr "ಪುರಾವೆ ಮತ್ತು ತೀರ್ಪನ್ನು ಹೇಗೆ ಲೆಕ್ಕಹಾಕಲಾಯಿತು ನೋಡಿ"
+
+msgid "Check before you forward"
+msgstr "ಫಾರ್ವರ್ಡ್ ಮಾಡುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ"
+
+msgid "Log in with your phone number to check claims."
+msgstr "ಹೇಳಿಕೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯೊಂದಿಗೆ ಲಾಗ್ ಇನ್ ಮಾಡಿ."
+
+msgid "Phone number"
+msgstr "ಫೋನ್ ಸಂಖ್ಯೆ"
+
+msgid "Password"
+msgstr "ಪಾಸ್‌ವರ್ಡ್"
+
+msgid "New to Verdicto?"
+msgstr "Verdicto ಗೆ ಹೊಸಬರೇ?"
+
+msgid "Create an account"
+msgstr "ಖಾತೆ ತೆರೆಯಿರಿ"
+
+msgid "How will you use Verdicto?"
+msgstr "ನೀವು Verdicto ಅನ್ನು ಹೇಗೆ ಬಳಸುತ್ತೀರಿ?"
+
+msgid "Pick one. Verifiers are reviewed by an admin before their votes count as expert votes."
+msgstr "ಒಂದನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಪರಿಶೀಲಕರ ಮತಗಳು ತಜ್ಞ ಮತಗಳಾಗಿ ಎಣಿಕೆಯಾಗುವ ಮೊದಲು ನಿರ್ವಾಹಕರು ಅವರನ್ನು ಪರಿಶೀಲಿಸುತ್ತಾರೆ."
+
+msgid "I want to check claims"
+msgstr "ನಾನು ಹೇಳಿಕೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಬಯಸುತ್ತೇನೆ"
+
+msgid "I want to verify claims"
+msgstr "ನಾನು ಹೇಳಿಕೆಗಳನ್ನು ದೃಢೀಕರಿಸಲು ಬಯಸುತ್ತೇನೆ"
+
+msgid "Regular user. Paste forwards, get an AI-researched answer, and give your own opinion."
+msgstr "ಸಾಮಾನ್ಯ ಬಳಕೆದಾರ. ಫಾರ್ವರ್ಡ್‌ಗಳನ್ನು ಅಂಟಿಸಿ, AI ಸಂಶೋಧಿತ ಉತ್ತರ ಪಡೆಯಿರಿ ಮತ್ತು ನಿಮ್ಮ ಅಭಿಪ್ರಾಯ ನೀಡಿ."
+
+msgid "Verifier. Review AI research and give expert verdicts that are weighted by your accuracy."
+msgstr "ಪರಿಶೀಲಕ. AI ಸಂಶೋಧನೆಯನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ನಿಮ್ಮ ನಿಖರತೆಗೆ ಅನುಗುಣವಾದ ತೂಕವಿರುವ ತಜ್ಞ ತೀರ್ಪು ನೀಡಿ."
+
+msgid "Already have an account?"
+msgstr "ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ?"
+
+msgid "Create your account"
+msgstr "ನಿಮ್ಮ ಖಾತೆ ತೆರೆಯಿರಿ"
+
+msgid "Join as a verifier"
+msgstr "ಪರಿಶೀಲಕರಾಗಿ ಸೇರಿ"
+
+msgid "Change role"
+msgstr "ಪಾತ್ರ ಬದಲಿಸಿ"
+
+msgid "YOUR EXPERTISE"
+msgstr "ನಿಮ್ಮ ಪರಿಣತಿ"
+
+msgid "Create account"
+msgstr "ಖಾತೆ ತೆರೆಯಿರಿ"
+
+msgid "Thanks. I'm researching this now using live news, fact-checkers and research databases. My answer will be provisional: verified human fact-checkers give the final verdict."
+msgstr "ಧನ್ಯವಾದಗಳು. ನೇರ ಸುದ್ದಿ, ಸತ್ಯ ಪರಿಶೀಲಕರು ಮತ್ತು ಸಂಶೋಧನಾ ದತ್ತಾಂಶಗಳನ್ನು ಬಳಸಿ ನಾನು ಇದನ್ನು ಈಗ ಸಂಶೋಧಿಸುತ್ತಿದ್ದೇನೆ. ನನ್ನ ಉತ್ತರ ತಾತ್ಕಾಲಿಕ: ಅಂತಿಮ ತೀರ್ಪನ್ನು ಪರಿಶೀಲಿತ ಮಾನವ ಸತ್ಯ ಪರಿಶೀಲಕರು ನೀಡುತ್ತಾರೆ."
+
+msgid "This looks like a claim we've already received. Here is its current status. Your report has been added to it. You can ask me to re-check it with the latest sources."
+msgstr "ಈ ಹೇಳಿಕೆ ನಮಗೆ ಈಗಾಗಲೇ ಬಂದಿದೆ. ಅದರ ಪ್ರಸ್ತುತ ಸ್ಥಿತಿ ಇಲ್ಲಿದೆ. ನಿಮ್ಮ ವರದಿಯನ್ನು ಅದಕ್ಕೆ ಸೇರಿಸಲಾಗಿದೆ. ಇತ್ತೀಚಿನ ಮೂಲಗಳೊಂದಿಗೆ ಮರುಪರಿಶೀಲಿಸಲು ನೀವು ಕೇಳಬಹುದು."
+
+msgid "I'm still researching. Ask again in a few seconds."
+msgstr "ನಾನು ಇನ್ನೂ ಸಂಶೋಧಿಸುತ್ತಿದ್ದೇನೆ. ಕೆಲವು ಸೆಕೆಂಡುಗಳ ನಂತರ ಮತ್ತೆ ಕೇಳಿ."
+
+msgid "Verifiers have published the final verdict: %(v)s."
+msgstr "ಪರಿಶೀಲಕರು ಅಂತಿಮ ತೀರ್ಪು ಪ್ರಕಟಿಸಿದ್ದಾರೆ: %(v)s."
+
+msgid "I can't answer follow-up questions right now (AI unavailable). The sources found are listed on the claim card, and verifiers are reviewing it."
+msgstr "ಸದ್ಯಕ್ಕೆ ಮುಂದಿನ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ (AI ಲಭ್ಯವಿಲ್ಲ). ಕಂಡುಬಂದ ಮೂಲಗಳು ಹೇಳಿಕೆ ಕಾರ್ಡ್‌ನಲ್ಲಿವೆ ಮತ್ತು ಪರಿಶೀಲಕರು ಅದನ್ನು ಪರಿಶೀಲಿಸುತ್ತಿದ್ದಾರೆ."
+
+msgid "Only http and https links are allowed."
+msgstr "http ಮತ್ತು https ಲಿಂಕ್‌ಗಳಿಗೆ ಮಾತ್ರ ಅವಕಾಶ."
+
+msgid "Please paste the full message (at least 10 characters)."
+msgstr "ದಯವಿಟ್ಟು ಪೂರ್ಣ ಸಂದೇಶವನ್ನು ಅಂಟಿಸಿ (ಕನಿಷ್ಠ 10 ಅಕ್ಷರಗಳು)."
+
+msgid "We couldn't read text in that image. Please paste the message as text too."
+msgstr "ಆ ಚಿತ್ರದಲ್ಲಿನ ಪಠ್ಯವನ್ನು ಓದಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಸಂದೇಶವನ್ನು ಪಠ್ಯವಾಗಿಯೂ ಅಂಟಿಸಿ."
+
+msgid "📷 Screenshot: “%(text)s”"
+msgstr "📷 ಸ್ಕ್ರೀನ್‌ಶಾಟ್: “%(text)s”"

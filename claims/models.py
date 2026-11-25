@@ -2,6 +2,7 @@ import secrets
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from accounts.models import DOMAINS, LANGUAGES
 
@@ -12,12 +13,18 @@ def new_slug():
     return secrets.token_urlsafe(6)
 
 
+def screenshot_path(instance, filename):
+    """Random file names: never trust (or reveal) the uploaded name."""
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "png"
+    return f"screenshots/{secrets.token_hex(16)}.{ext}"
+
+
 class Verdict(models.TextChoices):
-    TRUE = "TRUE", "True"
-    FALSE = "FALSE", "False"
-    PARTIALLY_TRUE = "PARTIALLY_TRUE", "Partially true"
-    MISLEADING = "MISLEADING", "Misleading"
-    UNVERIFIED = "UNVERIFIED", "Unverified (insufficient evidence)"
+    TRUE = "TRUE", _("True")
+    FALSE = "FALSE", _("False")
+    PARTIALLY_TRUE = "PARTIALLY_TRUE", _("Partially true")
+    MISLEADING = "MISLEADING", _("Misleading")
+    UNVERIFIED = "UNVERIFIED", _("Unverified (insufficient evidence)")
 
 
 URGENCY = [("low", "Low"), ("medium", "Medium"), ("high", "High")]
@@ -34,6 +41,7 @@ class Claim(models.Model):
     text = models.TextField(max_length=2000)
     normalized_text = models.TextField(blank=True)
     source_url = models.URLField(blank=True, validators=[validate_safe_url], max_length=500)
+    screenshot = models.ImageField(upload_to=screenshot_path, blank=True)
     language = models.CharField(max_length=2, choices=LANGUAGES, default="en")
     domain = models.CharField(max_length=20, choices=DOMAINS, default="other")
     district = models.CharField(max_length=60, blank=True)

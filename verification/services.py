@@ -3,6 +3,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
 
+from accounts.models import User
 from claims.models import Claim
 
 from . import engine
@@ -146,6 +147,15 @@ def score_votes(claim):
         VerifierStat.objects.filter(pk=stat.pk).update(correct=F("correct") + dc, total=F("total") + dt)
         vote.scored_as = final
         vote.save(update_fields=["scored_as"])
+    # Regular users' community accuracy (tracked, but doesn't change their weight in this version).
+    for cv in claim.community_votes.select_related("user"):
+        if cv.scored_as == final:
+            continue
+        dc, dt = engine.score_delta(cv.verdict, cv.scored_as, final)
+        User.objects.filter(pk=cv.user_id).update(community_correct=F("community_correct") + dc,
+                                                  community_total=F("community_total") + dt)
+        cv.scored_as = final
+        cv.save(update_fields=["scored_as"])
 
 
 def log_submission(claim, user=None):

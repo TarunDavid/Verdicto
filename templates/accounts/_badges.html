@@ -1,0 +1,8 @@
+{% load i18n %}<div class="flex flex-wrap gap-2 text-xs">
+  {% if u.can_vote %}<span class="rounded-full bg-sky-500/15 text-sky-300 px-2.5 py-1">✓ Verified verifier</span>{% endif %}
+  {% if u.is_pending_verifier %}<span class="rounded-full bg-amber-400/15 text-amber-300 px-2.5 py-1">{% translate "Verification pending" %}</span>{% endif %}
+  {% if u.work_email_verified %}<span class="rounded-full bg-green-500/15 text-green-300 px-2.5 py-1">Work email verified · {{ u.org_domain }}</span>{% endif %}
+  {% if u.linkedin_url %}<span class="rounded-full bg-white/5 text-zinc-300 px-2.5 py-1">LinkedIn provided</span>{% endif %}
+  {% if u.role == "verifier" and not u.verifier_stats.exists %}<span class="rounded-full bg-white/5 text-zinc-300 px-2.5 py-1">New verifier</span>{% endif %}
+  {% if u.profession %}<span class="rounded-full bg-white/5 text-zinc-300 px-2.5 py-1">{{ u.profession }}{% if u.organisation %} · {{ u.organisation }}{% endif %}</span>{% endif %}
+</div>

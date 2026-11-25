@@ -27,10 +27,12 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",                # English / Kannada UI
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.auth.middleware.LoginRequiredMiddleware",  # every page needs login unless marked
+    "factcheck.middleware.UserLanguageMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "factcheck.middleware.StructuredErrorMiddleware",
@@ -78,11 +80,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en"
+LANGUAGES = [("en", "English"), ("kn", "ಕನ್ನಡ")]
+LOCALE_PATHS = [BASE_DIR / "locale"]
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+
+# Work-email OTPs print to the console in development.
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="Verdicto <no-reply@verdicto.local>")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # django-ratelimit uses the default cache. LocMem is fine for a single-process demo.
@@ -95,6 +107,7 @@ SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
 GROQ_API_KEY = config("GROQ_API_KEY", default="")
 GROQ_MODEL = config("GROQ_MODEL", default="openai/gpt-oss-120b")          # assess + summarise
 GROQ_FAST_MODEL = config("GROQ_FAST_MODEL", default="qwen/qwen3.8-27b")    # classify + follow-ups
+GROQ_VISION_MODEL = config("GROQ_VISION_MODEL", default="qwen/qwen3.8-27b")  # screenshot OCR
 GROQ_SEARCH_MODEL = config("GROQ_SEARCH_MODEL", default="openai/gpt-oss-20b")  # browser_search tool
 GROQ_TIMEOUT = config("GROQ_TIMEOUT", default=25, cast=int)
 GOOGLE_FACTCHECK_API_KEY = config("GOOGLE_FACTCHECK_API_KEY", default="")
@@ -109,6 +122,7 @@ ASSIGN_TOP_N = 3
 ASSIGNMENT_TIMEOUT_HOURS = 2
 
 DEMO_PASSWORD = config("DEMO_PASSWORD", default="demo-pass-2026")
+ADMIN_PASSWORD = config("ADMIN_PASSWORD", default="") or DEMO_PASSWORD  # seed_demo's admin account
 
 LOGGING = {
     "version": 1,

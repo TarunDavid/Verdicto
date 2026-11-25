@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<h1 class="text-2xl font-medium pt-2 mb-1">{% translate "My votes" %}</h1>
+<p class="text-sm text-zinc-400 mb-5">Your opinions and verdicts, and how they compare with the final verdict.</p>
+{% if verifier_votes %}
+<h2 class="mb-3 text-[11px] tracking-[.18em] text-zinc-500">EXPERT VERDICTS</h2>
+<div class="glass rounded-2xl bg-[#1a1c20] divide-y divide-white/5 text-sm mb-8">
+  {% for v in verifier_votes %}<a href="{% url 'claim_detail' v.claim.pk %}" class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5"><b class="w-28 shrink-0">{{ v.get_verdict_display }}</b><span class="truncate text-zinc-300">{{ v.claim.text }}</span><span class="ml-auto shrink-0 text-xs font-mono text-zinc-500">w {{ v.weight_at_vote|floatformat:2 }}</span><span class="shrink-0 text-xs {% if v.scored_as and v.scored_as == v.verdict %}text-green-400{% elif v.scored_as %}text-red-400{% else %}text-zinc-500{% endif %}">{% if v.scored_as %}{% if v.scored_as == v.verdict %}✓ matched{% else %}✗ final {{ v.scored_as }}{% endif %}{% else %}open{% endif %}</span></a>{% endfor %}
+</div>
+{% endif %}
+<h2 class="mb-3 text-[11px] tracking-[.18em] text-zinc-500">COMMUNITY VOTES</h2>
+<div class="glass rounded-2xl bg-[#1a1c20] divide-y divide-white/5 text-sm">
+  {% for v in community %}<a href="{% url 'claim_detail' v.claim.pk %}" class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5"><b class="w-28 shrink-0">{{ v.get_verdict_display }}</b><span class="truncate text-zinc-300">{{ v.claim.text }}</span><span class="ml-auto shrink-0 text-xs {% if v.scored_as and v.scored_as == v.verdict %}text-green-400{% elif v.scored_as %}text-red-400{% else %}text-zinc-500{% endif %}">{% if v.scored_as %}{% if v.scored_as == v.verdict %}✓ matched{% else %}✗ final {{ v.scored_as }}{% endif %}{% else %}open{% endif %}</span></a>
+  {% empty %}<p class="px-4 py-3 text-zinc-400">You haven't voted yet. Open a claim and use “Give your verdict”.</p>{% endfor %}
+</div>
+{% endblock %}

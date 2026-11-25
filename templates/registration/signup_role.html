@@ -1,19 +1,20 @@
 {% extends "auth_base.html" %}
+{% load i18n %}
 {% block title %}Sign up · Verdicto{% endblock %}
-{% block heading %}How will you use Verdicto?{% endblock %}
-{% block sub %}Pick one. Verifiers are reviewed by an admin before their votes count as expert votes.{% endblock %}
+{% block heading %}{% translate "How will you use Verdicto?" %}{% endblock %}
+{% block sub %}{% translate "Pick one. Verifiers are reviewed by an admin before their votes count as expert votes." %}{% endblock %}
 {% block content %}
 <div class="grid sm:grid-cols-2 gap-4">
   <a href="{% url 'signup' %}?role=citizen" class="glass rounded-2xl p-6 hover:border-teal-400/50 hover:bg-white/5 transition block">
     <div class="w-10 h-10 rounded-full bg-white/10 grid place-items-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></div>
-    <p class="mt-4 font-semibold">I want to check claims</p>
-    <p class="text-xs text-zinc-400 mt-1">Regular user. Paste forwards, get an AI-researched answer, and give your own opinion.</p>
+    <p class="mt-4 font-semibold">{% translate "I want to check claims" %}</p>
+    <p class="text-xs text-zinc-400 mt-1">{% translate "Regular user. Paste forwards, get an AI-researched answer, and give your own opinion." %}</p>
   </a>
   <a href="{% url 'signup' %}?role=verifier" class="glass rounded-2xl p-6 hover:border-teal-400/50 hover:bg-white/5 transition block">
     <div class="w-10 h-10 rounded-full bg-white/10 grid place-items-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="m9 12 2 2 4-4"/></svg></div>
-    <p class="mt-4 font-semibold">I want to verify claims</p>
-    <p class="text-xs text-zinc-400 mt-1">Verifier. Review AI research and give expert verdicts that are weighted by your accuracy.</p>
+    <p class="mt-4 font-semibold">{% translate "I want to verify claims" %}</p>
+    <p class="text-xs text-zinc-400 mt-1">{% translate "Verifier. Review AI research and give expert verdicts that are weighted by your accuracy." %}</p>
   </a>
 </div>
-<p class="text-center text-sm text-zinc-400 mt-6">Already have an account? <a href="{% url 'login' %}" class="text-white underline">Log in</a></p>
+<p class="text-center text-sm text-zinc-400 mt-6">{% translate "Already have an account?" %} <a href="{% url 'login' %}" class="text-white underline">{% translate "Log in" %}</a></p>
 {% endblock %}
