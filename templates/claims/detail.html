@@ -20,7 +20,17 @@
 </div>
 
 <h2 class="mt-6 mb-2 font-bold">AI research</h2>
-{% include "research/_card.html" with compact=True %}
+{% include "research/_card.html" %}
+
+<h2 class="mt-6 mb-2 font-bold">Community opinion</h2>
+{% if community %}
+<div class="glass rounded-2xl p-4 text-sm">
+  <p>{{ community.total }} community vote{{ community.total|pluralize }}: <b>{{ community.top_pct }}% {{ community.top }}</b></p>
+  <div class="mt-2 space-y-1">{% for label, n, pct in community.rows %}<div class="flex items-center gap-2 text-xs"><span class="w-28 text-zinc-400">{{ label }}</span><div class="flex-1 h-1.5 rounded bg-white/10"><div class="h-full rounded bg-zinc-400" style="width: {{ pct }}%"></div></div><span class="w-10 text-right text-zinc-400">{{ n }}</span></div>{% endfor %}</div>
+  <p class="text-xs text-zinc-500 mt-2">Regular users' votes count 0.05 each and at most 20% combined. Verifiers decide.</p>
+</div>
+{% else %}<p class="text-sm text-zinc-400">No community votes yet.</p>{% endif %}
+{% if can_opine %}{% include "verification/_opinion.html" with next=request.path %}{% endif %}
 
 {% if assignments %}
 <h2 class="mt-6 mb-2 font-bold">Assigned verifiers</h2>
@@ -49,6 +59,7 @@
 
 {% if can_vote %}
 <h2 class="mt-6 mb-2 font-bold">Your vote</h2>
+<p class="text-sm mb-2"><a class="underline" href="{% url 'verify_review' claim.pk %}">Open the two-pane review screen</a> to see the full AI research while voting.</p>
 <form method="post" action="{% url 'vote' claim.pk %}" class="space-y-2 text-sm bg-zinc-900 border border-zinc-800 rounded p-4">{% csrf_token %}
   {% for e in vote_form.non_field_errors %}<p class="text-red-400">{{ e }}</p>{% endfor %}
   {{ vote_form.verdict }}
@@ -57,7 +68,7 @@
   <button class="bg-accent px-4 py-2 rounded font-medium">Submit vote</button>
 </form>
 {% elif has_voted %}<p class="mt-6 text-sm text-zinc-400">You have voted on this claim. Votes cannot be changed.</p>
-{% elif user.is_authenticated and user.role == "verifier" %}<p class="mt-6 text-sm text-zinc-400">Your verifier account is awaiting approval.</p>{% endif %}
+{% endif %}
 
 {% if is_admin %}
 <h2 class="mt-6 mb-2 font-bold">Admin override</h2>

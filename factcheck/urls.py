@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
-from django_ratelimit.decorators import ratelimit
 
 from accounts import views as account_views
 from claims import views as claim_views
@@ -12,13 +11,14 @@ handler403 = "factcheck.errors.permission_denied"
 handler404 = "factcheck.errors.not_found"
 handler500 = "factcheck.errors.server_error"
 
-login_view = ratelimit(key="ip", rate="20/h", method="POST", block=True)(auth_views.LoginView.as_view())
 
 urlpatterns = [
-    path("", claim_views.feed, name="feed"),
-    path("chat/", include("chat.urls")),
-    path("verdicts/", claim_views.archive, name="archive"),
+    path("", include("chat.urls")),                       # Check a Claim (chat) is home
+    path("news/", claim_views.feed, name="feed"),           # News & Verdicts
+    path("news/past/", claim_views.archive, name="archive"),
     path("verify/", verification_views.dashboard, name="verify_dashboard"),
+    path("verify/<int:pk>/", verification_views.review, name="verify_review"),
+    path("claims/<int:pk>/opinion/", claim_views.community_vote, name="community_vote"),
     path("claims/new/", claim_views.submit, name="submit"),
     path("claims/similar/", claim_views.similar, name="similar"),
     path("claims/<int:pk>/", claim_views.detail, name="claim_detail"),
@@ -28,8 +28,9 @@ urlpatterns = [
     path("c/<str:slug>/", claim_views.share, name="share"),
     path("api/claims/<int:pk>/", verification_views.api_claim, name="api_claim"),
     path("api/claims/<int:pk>/votes/", verification_views.api_vote, name="api_vote"),
-    path("accounts/login/", login_view, name="login"),
+    path("accounts/login/", account_views.PhoneLoginView.as_view(), name="login"),
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("accounts/signup/", account_views.signup, name="signup"),
+    path("accounts/become-verifier/", account_views.become_verifier, name="become_verifier"),
     path("admin/", admin.site.urls),
 ]

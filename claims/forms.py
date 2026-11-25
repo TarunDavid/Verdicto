@@ -35,7 +35,9 @@ class ClaimForm(forms.ModelForm):
 
 class VoteForm(forms.Form):
     verdict = forms.ChoiceField(choices=Verdict.choices)
-    note = forms.CharField(max_length=500, required=False, widget=forms.Textarea(attrs={"rows": 3}))
+    note = forms.CharField(max_length=500, widget=forms.Textarea(attrs={"rows": 3}),
+                           help_text="Required: explain your verdict.",
+                           error_messages={"required": "Please explain your verdict."})
     evidence_1 = forms.CharField(required=False, max_length=500)
     evidence_2 = forms.CharField(required=False, max_length=500)
     evidence_3 = forms.CharField(required=False, max_length=500)
@@ -46,7 +48,10 @@ class VoteForm(forms.Form):
             f.widget.attrs["class"] = INPUT
 
     def clean_note(self):
-        return sanitize_text(self.cleaned_data.get("note", ""))
+        note = sanitize_text(self.cleaned_data.get("note", ""))
+        if not note:
+            raise forms.ValidationError("Please explain your verdict.")
+        return note
 
     def clean(self):
         data = super().clean()
@@ -65,6 +70,15 @@ class VoteForm(forms.Form):
             self.add_error("evidence_1", "At least one evidence link is required for this verdict.")
         data["evidence_urls"] = urls
         return data
+
+
+class CommunityVoteForm(forms.Form):
+    verdict = forms.ChoiceField(choices=[("TRUE", "True"), ("FALSE", "False"),
+                                         ("MISLEADING", "Misleading"), ("UNVERIFIED", "Not sure")])
+    reason = forms.CharField(max_length=200, required=False)
+
+    def clean_reason(self):
+        return sanitize_text(self.cleaned_data.get("reason", ""))
 
 
 class OverrideForm(forms.Form):

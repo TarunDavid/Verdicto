@@ -22,9 +22,10 @@ class ChatMessage(models.Model):
     class Sender(models.TextChoices):
         USER = "user", "User"
         BOT = "bot", "Verdicto"
+        SYSTEM = "system", "System"
 
     thread = models.ForeignKey(ChatThread, on_delete=models.CASCADE, related_name="messages")
-    sender = models.CharField(max_length=4, choices=Sender.choices)
+    sender = models.CharField(max_length=6, choices=Sender.choices)
     content = models.TextField(max_length=4000)
     # A bot message that shows a claim's live research card.
     card_claim = models.ForeignKey(Claim, on_delete=models.SET_NULL, null=True, blank=True)

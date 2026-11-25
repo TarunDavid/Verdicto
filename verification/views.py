@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_not_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -65,6 +66,7 @@ def override(request, pk):
     return render(request, "claims/detail.html", ctx, status=400)
 
 
+@login_not_required
 def api_claim(request, pk):
     claim = Claim.objects.filter(pk=pk).first()
     if claim is None:
@@ -89,4 +91,21 @@ def dashboard(request):
                                               duplicate_of__isnull=True,
                                               domain__in=request.user.domains or [])
               .exclude(pk__in=voted | assigned_ids)[:20]]
-    return render(request, "verification/dashboard.html", {"assigned": assigned, "others": others})
+    return render(request, "verification/dashboard.html", {"assigned": assigned, "others": others,
+                                                           "tab": "verify"})
+
+
+@verifier_required
+def review(request, pk):
+    """Two-pane review: claim + community signal + vote form | full AI research panel."""
+    claim = get_object_or_404(Claim, pk=pk, is_hidden=False)
+    form = VoteForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            cast_vote(claim, request.user, form.cleaned_data["verdict"], form.cleaned_data["note"],
+                      form.cleaned_data["evidence_urls"])
+            return redirect("verify_dashboard")
+        except AlreadyVoted as exc:
+            form.add_error(None, str(exc))
+    ctx = {"claim": claim, **vote_context(request, claim, vote_form=form), "tab": "verify"}
+    return render(request, "verification/review.html", ctx, status=400 if form.errors else 200)

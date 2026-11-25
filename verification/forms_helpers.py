@@ -1,6 +1,6 @@
-from claims.forms import OverrideForm, VoteForm
+from claims.forms import CommunityVoteForm, OverrideForm, VoteForm
 
-from .services import breakdown
+from .services import breakdown, community_summary
 
 
 def vote_context(request, claim, vote_form=None, override_form=None):
@@ -17,5 +17,10 @@ def vote_context(request, claim, vote_form=None, override_form=None):
         "is_admin": user.is_authenticated and user.is_admin_role,
         "override_form": override_form or OverrideForm(),
         "run": claim.research_runs.first(),
+        "community": community_summary(claim),
+        "can_opine": user.is_authenticated and user.can_give_opinion and claim.status != "FINAL",
+        "my_opinion": (claim.community_votes.filter(user=user).first() if user.is_authenticated else None),
+        "community_form": CommunityVoteForm(),
+        "full": user.is_authenticated and (user.can_vote or user.is_admin_role),
         "assignments": claim.assignments.select_related("verifier"),
     }

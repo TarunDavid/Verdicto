@@ -1,7 +1,9 @@
 from urllib.parse import quote
 
 from django.conf import settings
-from django.db.models import F, Q
+from django.core.exceptions import PermissionDenied
+from django.db.models import F, Prefetch, Q
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.http import Http404
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,13 +11,24 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 
+from django.contrib.auth.decorators import login_not_required
+
 from accounts.decorators import login_required
 from verification.forms_helpers import vote_context
 from research.pipeline import start_research
 from verification.services import log_submission
 
 from .duplicates import find_similar, normalize
-from .forms import FILTER_DOMAIN, FILTER_LANG, ClaimForm
+from research.models import ResearchRun
+from verification.services import ClaimClosed, cast_community_vote
+
+from .forms import FILTER_DOMAIN, FILTER_LANG, ClaimForm, CommunityVoteForm
+
+STATUS_OPTIONS = [("FALSE", "False"), ("TRUE", "True"), ("PARTIALLY_TRUE", "Partially true"),
+                  ("MISLEADING", "Misleading"), ("UNVERIFIED", "Unverified"),
+                  ("PENDING", "Pending verification"), ("UNDER_REVIEW", "Under investigation")]
+LATEST_RUN = Prefetch("research_runs", queryset=ResearchRun.objects.order_by("-created_at"),
+                      to_attr="runs")
 from .models import Claim
 from .ranking import importance
 
@@ -38,13 +51,15 @@ def feed(request):
     if q:
         qs = qs.filter(Q(text__icontains=q) | Q(district__icontains=q))
     sort = request.GET.get("sort", "important")
-    claims = list(qs.order_by("-created_at")[:200])
+    claims = list(qs.order_by("-created_at").prefetch_related(LATEST_RUN)[:200])
     if sort != "latest":
         now = timezone.now()
         claims.sort(key=lambda c: -importance(c, now))
     return render(request, "claims/feed.html", {
         "claims": claims[:50], "langs": FILTER_LANG, "domains": FILTER_DOMAIN,
         "f": {"language": lang, "domain": domain, "status": status, "q": q, "sort": sort},
+        "tab": "news", "subtab": "latest" if sort == "latest" else "important",
+        "status_options": STATUS_OPTIONS,
     })
 
 
@@ -54,7 +69,28 @@ def archive(request):
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(Q(text__icontains=q) | Q(normalized_text__icontains=normalize(q)))
-    return render(request, "claims/archive.html", {"claims": qs[:100], "q": q})
+    return render(request, "claims/archive.html", {"claims": qs[:100], "q": q, "tab": "news",
+                                                   "subtab": "past"})
+
+
+@require_POST
+@ratelimit(key="user", rate="60/h", method="POST", block=True)
+def community_vote(request, pk):
+    """A regular user's own verdict (low weight). Approved verifiers use the verifier vote instead."""
+    claim = _get_visible(request, pk=pk)
+    back = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(back, allowed_hosts={request.get_host()}):
+        back = reverse("claim_detail", args=[pk])
+    if not request.user.can_give_opinion:
+        raise PermissionDenied("Approved verifiers vote from the Verify Queue.")
+    form = CommunityVoteForm(request.POST)
+    if form.is_valid():
+        try:
+            cast_community_vote(claim, request.user, form.cleaned_data["verdict"],
+                                form.cleaned_data["reason"])
+        except ClaimClosed:
+            pass
+    return redirect(back)
 
 
 @login_required
@@ -97,6 +133,7 @@ def _get_visible(request, **lookup):
     return claim
 
 
+@login_not_required
 def detail(request, pk):
     claim = _get_visible(request, pk=pk)
     if claim.duplicate_of_id:
@@ -114,6 +151,7 @@ def share_context(request, claim):
             "whatsapp_url": "https://wa.me/?text=" + quote(f"{message} {share_url}")}
 
 
+@login_not_required
 def share(request, slug):
     claim = _get_visible(request, share_slug=slug)
     return render(request, "claims/share.html", {"claim": claim, **share_context(request, claim)})

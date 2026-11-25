@@ -159,6 +159,7 @@ class PipelineTests(TestCase):
         self.assertEqual(self.claim.status, "REJECTED")
         self.assertEqual(self.claim.assignments.count(), 0)
         self.assertEqual(self.client.get(reverse("claim_detail", args=[self.claim.pk])).status_code, 404)
+        self.client.force_login(User.objects.create_user("reader", password="pw-123456"))
         self.assertNotContains(self.client.get(reverse("feed")), "Chikkamagaluru, says DC")
 
 
@@ -205,8 +206,10 @@ class ChatTests(TestCase):
         self.patch = mock.patch.dict(connectors.CONNECTORS, {"fake": fake_connector})
         self.patch.start()
         self.addCleanup(self.patch.stop)
+        self.user = User.objects.create_user("asha", password="pw-123456", first_name="Asha")
+        self.client.force_login(self.user)
 
-    def test_guest_submission_creates_thread_claim_and_research(self):
+    def test_submission_creates_thread_claim_and_research(self):
         resp = self.client.post(reverse("chat_send"), {"text": "Free laptops for all PU students, register now",
                                                        "language": "en"})
         thread = ChatThread.objects.get()
@@ -215,7 +218,7 @@ class ChatTests(TestCase):
         self.assertEqual(thread.claim.status, "PENDING")
         self.assertEqual(ResearchRun.objects.get().status, "done")
         card = self.client.get(reverse("research_card", args=[thread.claim.pk]))
-        self.assertContains(card, "AI provisional assessment")
+        self.assertContains(card, "AI-PROVISIONAL")
         self.assertContains(card, "pib.gov.in")
 
     def test_duplicate_attaches_to_existing_claim(self):
@@ -230,7 +233,9 @@ class ChatTests(TestCase):
         self.client.post(reverse("chat_send"), {"text": "Free laptops for all PU students, register now"})
         thread = ChatThread.objects.get()
         other = self.client_class()
+        other.force_login(User.objects.create_user("someone", password="pw-123456"))
         self.assertEqual(other.get(reverse("chat_thread", args=[thread.pk])).status_code, 404)
+        self.assertEqual(self.client_class().get(reverse("chat_thread", args=[thread.pk])).status_code, 302)
 
     def test_rejects_javascript_link(self):
         resp = self.client.post(reverse("chat_send"), {"text": "javascript:alert(1)"})

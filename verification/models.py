@@ -120,3 +120,19 @@ class Assignment(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["claim", "verifier"], name="one_assignment_per_verifier"),
         ]
+
+
+class CommunityVote(models.Model):
+    """A regular user's opinion. Low weight (see engine.community_weights); changeable until FINAL."""
+    claim = models.ForeignKey(Claim, on_delete=models.CASCADE, related_name="community_votes")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name="community_votes")
+    verdict = models.CharField(max_length=16, choices=Verdict.choices)
+    reason = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["claim", "user"], name="one_community_vote_per_user"),
+        ]
