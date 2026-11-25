@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import include, path
 from django_ratelimit.decorators import ratelimit
 
 from accounts import views as account_views
@@ -16,6 +16,9 @@ login_view = ratelimit(key="ip", rate="20/h", method="POST", block=True)(auth_vi
 
 urlpatterns = [
     path("", claim_views.feed, name="feed"),
+    path("chat/", include("chat.urls")),
+    path("verdicts/", claim_views.archive, name="archive"),
+    path("verify/", verification_views.dashboard, name="verify_dashboard"),
     path("claims/new/", claim_views.submit, name="submit"),
     path("claims/similar/", claim_views.similar, name="similar"),
     path("claims/<int:pk>/", claim_views.detail, name="claim_detail"),

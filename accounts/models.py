@@ -8,6 +8,8 @@ DOMAINS = [
     ("government", "Government"),
     ("local-news", "Local news"),
     ("technology", "Technology"),
+    ("science", "Science"),
+    ("politics", "Politics"),
     ("other", "Other"),
 ]
 

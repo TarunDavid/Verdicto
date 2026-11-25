@@ -19,6 +19,8 @@ INSTALLED_APPS = [
     "accounts",
     "claims",
     "verification",
+    "research",
+    "chat",
     "django_ratelimit",
 ]
 
@@ -56,6 +58,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+        "OPTIONS": {"timeout": 20},  # research runs in a background thread
     }
 }
 
@@ -81,6 +84,23 @@ CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"
 RATELIMIT_ENABLE = config("RATELIMIT_ENABLE", default=True, cast=bool)
 RATELIMIT_VIEW = "factcheck.errors.ratelimited"
 SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
+
+# AI research (PRD section 7). The app works without a key, using fallbacks.
+GROQ_API_KEY = config("GROQ_API_KEY", default="")
+GROQ_MODEL = config("GROQ_MODEL", default="openai/gpt-oss-120b")          # assess + summarise
+GROQ_FAST_MODEL = config("GROQ_FAST_MODEL", default="qwen/qwen3.8-27b")    # classify + follow-ups
+GROQ_SEARCH_MODEL = config("GROQ_SEARCH_MODEL", default="openai/gpt-oss-20b")  # browser_search tool
+GROQ_TIMEOUT = config("GROQ_TIMEOUT", default=25, cast=int)
+GOOGLE_FACTCHECK_API_KEY = config("GOOGLE_FACTCHECK_API_KEY", default="")
+RESEARCH_CONNECTORS = config(
+    "RESEARCH_CONNECTORS",
+    default="groq_web,google_news,factcheck,wikipedia,openalex",
+    cast=Csv(),
+)
+RESEARCH_CONTACT = config("RESEARCH_CONTACT", default="https://example.org/verdicto")
+RESEARCH_SYNC = config("RESEARCH_SYNC", default=False, cast=bool)  # run inline (tests)
+ASSIGN_TOP_N = 3
+ASSIGNMENT_TIMEOUT_HOURS = 2
 
 DEMO_PASSWORD = config("DEMO_PASSWORD", default="demo-pass-2026")
 

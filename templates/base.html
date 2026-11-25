@@ -13,7 +13,10 @@
   <nav class="border-b border-zinc-800">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-4 text-sm">
       <a href="{% url 'feed' %}" class="font-bold text-lg"><span class="text-accent">Verd</span>icto</a>
-      <a href="{% url 'submit' %}" class="ml-auto bg-accent px-3 py-1.5 rounded font-medium">Check a claim</a>
+      <a href="{% url 'feed' %}" class="text-zinc-300 hover:text-white">Feed</a>
+      <a href="{% url 'archive' %}" class="text-zinc-300 hover:text-white hidden sm:inline">Past verdicts</a>
+      {% if user.is_authenticated and user.can_vote %}<a href="{% url 'verify_dashboard' %}" class="text-zinc-300 hover:text-white">Verify</a>{% endif %}
+      <a href="{% url 'chat' %}" class="ml-auto bg-accent px-3 py-1.5 rounded font-medium">Check a claim</a>
       {% if user.is_authenticated %}
         <span class="text-zinc-400 hidden sm:inline">{{ user.username }} · {{ user.get_role_display }}</span>
         <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="text-zinc-400 hover:text-white">Log out</button></form>
@@ -22,6 +25,6 @@
       {% endif %}
     </div>
   </nav>
-  <main class="max-w-3xl mx-auto px-4 py-6">{% block content %}{% endblock %}</main>
+  <main class="{% block mainclass %}max-w-3xl{% endblock %} mx-auto px-4 py-6">{% block content %}{% endblock %}</main>
 </body>
 </html>

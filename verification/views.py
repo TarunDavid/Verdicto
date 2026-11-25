@@ -72,3 +72,21 @@ def api_claim(request, pk):
     return JsonResponse({"id": claim.pk, "status": claim.status, "verdict": claim.verdict,
                          "leading": claim.leading, "confidence": round(claim.confidence, 4),
                          "votes": claim.votes.count()})
+
+
+@verifier_required
+def dashboard(request):
+    """Verifier queue: assigned claims first (by importance), then other open claims in their domains."""
+    from claims.ranking import importance
+    from .models import Assignment
+
+    voted = set(request.user.votes.values_list("claim_id", flat=True))
+    assigned = [a for a in Assignment.objects.filter(verifier=request.user, status=Assignment.Status.ASSIGNED)
+                .select_related("claim") if a.claim_id not in voted and not a.claim.is_hidden]
+    assigned.sort(key=lambda a: -importance(a.claim))
+    assigned_ids = {a.claim_id for a in assigned}
+    others = [c for c in Claim.objects.filter(status__in=["PENDING", "UNDER_REVIEW"], is_hidden=False,
+                                              duplicate_of__isnull=True,
+                                              domain__in=request.user.domains or [])
+              .exclude(pk__in=voted | assigned_ids)[:20]]
+    return render(request, "verification/dashboard.html", {"assigned": assigned, "others": others})
