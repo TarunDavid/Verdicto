@@ -1,8 +1,10 @@
-<div id="card-{{ claim.pk }}" class="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-sm"
-  {% if run and run.is_running %}hx-get="{% url 'research_card' claim.pk %}" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+{# flags: full = verifier/admin view (quotes, reasoning, connectors); live = poll for updates (chat) #}
+<div id="card-{{ claim.pk }}" class="glass rounded-2xl p-4 text-sm bg-[#16191e]/80"
+  {% if live and run and run.is_running %}hx-get="{% url 'research_card' claim.pk %}" hx-trigger="every 2s" hx-swap="outerHTML"
+  {% elif live and claim.status != "FINAL" %}hx-get="{% url 'research_card' claim.pk %}" hx-trigger="every 20s" hx-swap="outerHTML"{% endif %}>
   <div class="flex items-center gap-2 flex-wrap">
     {% include "_badge.html" %}
-    <a href="{% url 'claim_detail' claim.pk %}" class="text-xs underline text-zinc-400 ml-auto">Open claim page</a>
+    <a href="{% url 'claim_detail' claim.pk %}" class="text-xs text-zinc-400 hover:text-white ml-auto">View claim page ↗</a>
   </div>
 
   {% if claim.status == "FINAL" %}
@@ -10,41 +12,48 @@
   {% endif %}
 
   {% if not run %}
-    <p class="mt-3 text-zinc-400">No AI research for this claim.</p>
+    <p class="mt-3 text-zinc-500">No AI research for this claim.</p>
   {% elif run.is_running %}
-    <p class="mt-3 text-zinc-300"><span class="inline-block w-2 h-2 rounded-full bg-accent animate-ping mr-2"></span>{{ run.step }}…</p>
+    <ol class="mt-3 space-y-1.5 text-zinc-400">
+      <li class="flex items-center gap-2 text-zinc-200"><span class="w-2 h-2 rounded-full bg-teal-400 animate-ping"></span>{{ run.step }}…</li>
+    </ol>
   {% else %}
-    <div class="mt-3 border-t border-zinc-800 pt-3">
-      <p class="text-xs uppercase tracking-wide text-amber-400">AI provisional assessment. Not a verdict</p>
+    <div class="mt-3 border-t border-white/5 pt-3">
+      <p class="text-[11px] tracking-[.15em] text-amber-300/90">AI-PROVISIONAL · THE FINAL VERDICT COMES FROM VERIFIED EXPERTS</p>
       {% if run.label %}
-      <div class="flex items-center gap-3 mt-1">
-        <span class="text-lg font-bold">{{ run.get_label_display }}</span>
-        {% if run.truth_score is not None %}<span class="text-zinc-400">truth score {{ run.truth_score|floatformat:0 }}/100</span>{% endif %}
-        <span class="text-zinc-500 text-xs">confidence: {{ run.confidence|default:"low" }}</span>
+      <div class="flex items-center gap-3 mt-2 flex-wrap">
+        <span class="text-lg font-semibold {% if run.label == 'LIKELY_FALSE' %}text-red-300{% elif run.label == 'LIKELY_TRUE' %}text-green-300{% elif run.label == 'MIXED' %}text-orange-300{% else %}text-zinc-300{% endif %}">{{ run.get_label_display }}</span>
+        {% if run.truth_score is not None %}
+        <div class="flex items-center gap-2 text-xs text-zinc-400"><div class="w-28 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full bg-gradient-to-r from-red-500 via-amber-400 to-green-500" style="width: {{ run.truth_score|floatformat:0 }}%"></div></div>truth score {{ run.truth_score|floatformat:0 }}/100</div>
+        {% endif %}
+        <span class="text-xs text-zinc-500">confidence: {{ run.confidence|default:"low" }}</span>
       </div>
       {% endif %}
-      {% if run.summary %}<p class="mt-2 whitespace-pre-line">{{ run.summary }}</p>{% endif %}
-      {% if run.facts %}<p class="mt-2 text-xs text-green-400 font-medium">Established</p><ul class="list-disc ml-5 text-xs">{% for f in run.facts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
-      {% if run.assumptions %}<p class="mt-2 text-xs text-amber-400 font-medium">Unconfirmed / assumed</p><ul class="list-disc ml-5 text-xs">{% for f in run.assumptions %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
-      {% if run.conflicts %}<p class="mt-2 text-xs text-orange-400 font-medium">Conflicting</p><ul class="list-disc ml-5 text-xs">{% for f in run.conflicts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+      {% if run.summary %}<p class="mt-2 whitespace-pre-line text-zinc-200">{{ run.summary }}</p>{% endif %}
+      {% if full %}
+        {% if run.facts %}<p class="mt-3 text-xs text-green-400 font-medium">Established</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.facts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+        {% if run.assumptions %}<p class="mt-2 text-xs text-amber-400 font-medium">Unconfirmed / assumed</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.assumptions %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+        {% if run.conflicts %}<p class="mt-2 text-xs text-orange-400 font-medium">Conflicting</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.conflicts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+      {% endif %}
       {% with sources=run.sources.all %}{% if sources %}
-      <details class="mt-3" {% if not compact %}open{% endif %}>
+      <details class="mt-3" {% if full %}open{% endif %}>
         <summary class="cursor-pointer text-xs text-zinc-400">{{ sources|length }} sources</summary>
         <ol class="mt-2 space-y-2">
-          {% for s in sources %}
+          {% for s in sources %}{% if full or forloop.counter <= 6 %}
           <li class="text-xs">
             <span class="font-mono text-zinc-500">[{{ forloop.counter }}]</span>
-            <span class="px-1 rounded {% if s.stance == 'supports' %}bg-green-900 text-green-300{% elif s.stance == 'refutes' %}bg-red-900 text-red-300{% else %}bg-zinc-800 text-zinc-400{% endif %}">{{ s.get_stance_display }}</span>
-            <span class="text-zinc-500">{{ s.tier }}</span>
-            <a href="{{ s.url }}" target="_blank" rel="nofollow noopener noreferrer" class="underline">{{ s.title|default:s.url|truncatechars:90 }}</a>
+            <span class="px-1.5 py-0.5 rounded {% if s.stance == 'supports' %}bg-green-900/60 text-green-300{% elif s.stance == 'refutes' %}bg-red-900/60 text-red-300{% else %}bg-white/5 text-zinc-400{% endif %}">{{ s.get_stance_display }}</span>
+            {% if full %}<span class="text-zinc-500">{{ s.tier }}</span>{% endif %}
+            <a href="{{ s.url }}" target="_blank" rel="nofollow noopener noreferrer" class="underline decoration-zinc-600 hover:decoration-white">{{ s.title|default:s.url|truncatechars:90 }}</a>
             <span class="text-zinc-500">— {{ s.publisher }}{% if s.published %}, {{ s.published|date:"d M Y" }}{% endif %}</span>
-            {% if s.quote %}<p class="text-zinc-400 italic ml-6">“{{ s.quote }}”</p>{% endif %}
+            {% if full and s.quote %}<p class="text-zinc-400 italic ml-6">“{{ s.quote }}”</p>{% endif %}
           </li>
-          {% endfor %}
+          {% endif %}{% endfor %}
         </ol>
       </details>
       {% endif %}{% endwith %}
-      <p class="mt-3 text-xs text-zinc-500">Researched in {{ run.duration|default:"?" }}s{% if run.models_used %} with {{ run.models_used|join:", " }}{% endif %}. Truth score = credibility-weighted support ÷ (support + refute). {% if run.connectors %}Sources checked: {% for k, v in run.connectors.items %}{{ k }} {{ v }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p>
+      {% if full %}<p class="mt-3 text-xs text-zinc-500">Researched in {{ run.duration|default:"?" }}s{% if run.models_used %} with {{ run.models_used|join:", " }}{% endif %}. Truth score = credibility-weighted support ÷ (support + refute). {% if run.connectors %}Sources checked: {% for k, v in run.connectors.items %}{{ k }} {{ v }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p>{% endif %}
     </div>
   {% endif %}
+  {% if live and user.can_vote and claim.status != "FINAL" %}<a href="{% url 'verify_review' claim.pk %}" class="mt-3 inline-block text-xs rounded-lg bg-white text-black px-3 py-1.5 font-medium">Review as verifier</a>{% endif %}
 </div>

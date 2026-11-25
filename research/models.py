@@ -23,6 +23,8 @@ class ResearchRun(models.Model):
     step = models.CharField(max_length=80, default="Queued")
     checkable_claim = models.TextField(blank=True)
     queries = models.JSONField(default=list, blank=True)
+    source_filter = models.CharField(max_length=12, default="all")
+    deep = models.BooleanField(default=False)
     label = models.CharField(max_length=12, choices=Label.choices, blank=True)
     truth_score = models.FloatField(null=True, blank=True)   # 0-100, from the formula
     confidence = models.CharField(max_length=6, blank=True)  # low / medium / high

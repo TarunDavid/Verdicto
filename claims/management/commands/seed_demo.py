@@ -10,7 +10,7 @@ from claims.models import Claim
 from verification.models import VerifierStat
 from research.ai import fallback_understanding
 from verification.assignment import assign_verifiers
-from verification.services import admin_override, cast_vote, log_submission
+from verification.services import admin_override, cast_community_vote, cast_vote, log_submission
 
 # username: (languages, domains, district, work_email_org or None, approved, {(domain, lang): (correct, total)})
 VERIFIERS = {
@@ -28,6 +28,20 @@ VERIFIERS = {
     "pending_vikram": (["kn"], ["local-news"], "Shivamogga", None, False, {}),
 }
 CITIZENS = ["citizen_anil", "citizen_bhavya", "citizen_chetan"]
+# Fictional demo numbers, in order: admin, citizens, verifiers.
+DEMO_PHONES = [f"+9190000000{i:02d}" for i in range(1, 30)]
+# Fixed, fictional names so the demo is easy to follow (Faker fills any others).
+DEMO_NAMES = {"admin": ("Site", "Admin"), "citizen_anil": ("Anil", "Kumar"),
+              "citizen_bhavya": ("Bhavya", "Murthy"), "citizen_chetan": ("Chetan", "Rao"),
+              "dr_meera": ("Dr Meera", "Hegde"), "nurse_asha": ("Asha", "Kulkarni"),
+              "kiran_new": ("Kiran", "Gowda"), "prof_ravi": ("Prof Ravi", "Shankar"),
+              "journo_divya": ("Divya", "Bhat"), "tech_arjun": ("Arjun", "Nair"),
+              "clerk_suma": ("Suma", "Patil"), "pending_vikram": ("Vikram", "Shetty")}
+PROFESSIONS = {"dr_meera": "Doctor", "nurse_asha": "Nurse", "kiran_new": "Postgraduate student",
+               "prof_ravi": "Professor", "journo_divya": "Journalist", "tech_arjun": "Software engineer",
+               "clerk_suma": "Government clerk", "pending_vikram": "Teacher"}
+COMMUNITY = {"metro": ["FALSE", "FALSE", "TRUE"], "kn_ration": ["TRUE", "UNVERIFIED"],
+             "paracetamol": ["FALSE", "FALSE", "FALSE"]}
 
 OFFICIAL = "https://pib.gov.in/factcheck"
 VTU = "https://vtu.ac.in/en/examination-notices/"
@@ -156,17 +170,21 @@ class Command(BaseCommand):
         Faker.seed(26)
         pw = settings.DEMO_PASSWORD
 
+        phones = iter(DEMO_PHONES)
+
         def make(username, **kw):
-            return User.objects.create_user(username, password=pw, first_name=fake.first_name(),
-                                            last_name=fake.last_name(), **kw)
+            first, last = DEMO_NAMES.get(username, (fake.first_name(), fake.last_name()))
+            return User.objects.create_user(username, password=pw, first_name=first, last_name=last,
+                                            phone=next(phones), **kw)
 
         admin = make("admin", role=User.Role.ADMIN, is_staff=True, is_superuser=True)
-        citizens = [make(name) for name in CITIZENS]
+        citizens = [make(name, domains=["health", "education", "local-news"]) for name in CITIZENS]
         verifiers = {}
         for name, (langs, domains, district, org, approved, stats) in VERIFIERS.items():
             verifiers[name] = make(name, role=User.Role.VERIFIER, languages=langs, domains=domains,
                                    district=district, verifier_approved=approved,
-                                   work_email_verified=bool(org), org_domain=org or "")
+                                   work_email_verified=bool(org), org_domain=org or "",
+                                   profession=PROFESSIONS.get(name, ""))
             for (domain, lang), (correct, total) in stats.items():
                 VerifierStat.objects.create(verifier=verifiers[name], domain=domain, language=lang,
                                             correct=correct, total=total)
@@ -182,6 +200,11 @@ class Command(BaseCommand):
                 cast_vote(claim, verifiers[username], verdict, note, urls)
             created[key] = claim
 
+        # Community opinions from regular users (low weight) on open claims.
+        for key, opinions in COMMUNITY.items():
+            for citizen, verdict in zip(citizens, opinions):
+                cast_community_vote(created[key], citizen, verdict, "Seen this forwarded in my groups")
+
         admin_override(created["mangaluru"], admin, "TRUE",
                        "District administration published the red-alert holiday order (demo data)")
         for claim in Claim.objects.filter(status__in=["PENDING", "UNDER_REVIEW"]):
@@ -195,12 +218,12 @@ class Command(BaseCommand):
 
     def print_logins(self):
         pw = settings.DEMO_PASSWORD
-        self.stdout.write("\nDemo logins (password for all: %s)" % pw)
-        self.stdout.write("  admin            admin (override + Django admin at /admin/)")
-        for name in CITIZENS:
-            self.stdout.write(f"  {name:<16} citizen")
-        for name, spec in VERIFIERS.items():
-            tag = "verifier" + ("" if spec[4] else " (PENDING approval)")
-            if spec[3]:
-                tag += f", work email verified · {spec[3]}"
-            self.stdout.write(f"  {name:<16} {tag}")
+        self.stdout.write(f"\nDemo logins: log in with the PHONE number (password for all: {pw})")
+        self.stdout.write("Django admin (/admin/) also accepts the username 'admin'.\n")
+        for u in User.objects.filter(username__in=["admin", *CITIZENS, *VERIFIERS]).order_by("phone"):
+            tag = u.get_role_display()
+            if u.is_pending_verifier:
+                tag += " (PENDING approval)"
+            if u.work_email_verified:
+                tag += f", work email verified · {u.org_domain}"
+            self.stdout.write(f"  {u.phone}  {u.display_name:<20} {u.username:<16} {tag}")

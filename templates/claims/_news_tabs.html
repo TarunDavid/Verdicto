@@ -1,0 +1,5 @@
+<div class="flex items-center gap-6 text-sm border-b border-white/5 mb-5">
+  <a href="{% url 'feed' %}" class="pb-2 {% if subtab == 'important' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">Most important</a>
+  <a href="{% url 'feed' %}?sort=latest" class="pb-2 {% if subtab == 'latest' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">Latest</a>
+  <a href="{% url 'archive' %}" class="pb-2 {% if subtab == 'past' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">Past verdicts</a>
+</div>

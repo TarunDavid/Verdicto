@@ -22,8 +22,19 @@ MAX_SOURCES = 10
 CONNECTOR_TIMEOUT = 12
 
 
-def start_research(claim):
-    run = ResearchRun.objects.create(claim=claim)
+SOURCE_FILTERS = {
+    "all": None,
+    "news": {"groq_web", "google_news"},
+    "official": {"groq_web", "google_news"},   # then keep only official-tier sources
+    "factcheck": {"factcheck", "groq_web", "google_news"},
+    "research": {"openalex", "crossref", "wikipedia"},
+}
+FILTER_TIERS = {"official": {"official"}, "factcheck": {"fact-checker"}}
+
+
+def start_research(claim, source_filter="all", deep=False):
+    run = ResearchRun.objects.create(claim=claim, deep=deep,
+                                     source_filter=source_filter if source_filter in SOURCE_FILTERS else "all")
     if settings.RESEARCH_SYNC:
         run_research(run.pk)
     else:
@@ -162,6 +173,10 @@ def _search_all(run, info, claim):
                 if not fut.done():
                     status.setdefault(name, "error: timeout")
     run.connectors = status
+    tiers = FILTER_TIERS.get(run.source_filter)
+    if tiers:
+        results = [r for r in results if (r.get("force_tier") or
+                   classify(r.get("publisher_url") or r["url"])[0]) in tiers]
     # Prefer credible, diverse sources: sort by tier weight, cap per connector.
     results.sort(key=lambda r: -(TIERS.get(r.get("force_tier"), 0) or classify(r.get("publisher_url") or r["url"])[1]))
     capped, per = [], {}
@@ -169,7 +184,7 @@ def _search_all(run, info, claim):
         if per.get(r["connector"], 0) < 4:
             capped.append(r)
             per[r["connector"]] = per.get(r["connector"], 0) + 1
-    return capped[:MAX_SOURCES]
+    return capped[:MAX_SOURCES + (4 if run.deep else 0)]
 
 
 def _enrich(raw):

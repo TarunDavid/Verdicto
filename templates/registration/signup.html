@@ -1,8 +1,36 @@
-{% extends "base.html" %}
+{% extends "auth_base.html" %}
+{% block title %}Sign up · Verdicto{% endblock %}
+{% block heading %}{% if role == "verifier" %}Join as a verifier{% else %}Create your account{% endif %}{% endblock %}
+{% block sub %}<a href="{% url 'signup' %}" class="underline">Change role</a>{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-4">Create an account</h1>
-<form method="post" class="space-y-3 max-w-sm [&_input]:w-full [&_input]:rounded [&_input]:bg-zinc-900 [&_input]:border [&_input]:border-zinc-700 [&_input]:p-2 [&_select]:bg-zinc-900 [&_select]:p-2 text-sm">{% csrf_token %}
-  {{ form.as_p }}
-  <button class="bg-accent px-4 py-2 rounded font-medium">Sign up</button>
+<form method="post" class="glass rounded-2xl p-6 space-y-4 text-sm">{% csrf_token %}
+  {{ form.role }}
+  {% for e in form.non_field_errors %}<p class="text-red-400">{{ e }}</p>{% endfor %}
+  {% include "registration/_field.html" with f=form.name %}
+  {% include "registration/_field.html" with f=form.phone %}
+  {% include "registration/_field.html" with f=form.interests %}
+  <div class="grid grid-cols-2 gap-3">
+    {% include "registration/_field.html" with f=form.preferred_language %}
+    {% include "registration/_field.html" with f=form.password %}
+  </div>
+  {% if role == "verifier" %}
+  <div class="border-t border-white/10 pt-4 space-y-4">
+    <p class="text-xs tracking-[.18em] text-zinc-500">YOUR EXPERTISE</p>
+    <div class="grid grid-cols-2 gap-3">
+      <div>{% include "registration/_field.html" with f=form.profession %}</div>
+      <div>{% include "registration/_field.html" with f=form.organisation %}</div>
+    </div>
+    {% include "registration/_field.html" with f=form.languages %}
+    <div class="grid grid-cols-2 gap-3">
+      <div>{% include "registration/_field.html" with f=form.work_email %}</div>
+      <div>{% include "registration/_field.html" with f=form.district %}</div>
+    </div>
+    {% include "registration/_field.html" with f=form.linkedin_url %}
+    <p class="text-xs text-zinc-500">We never scrape LinkedIn: an admin checks the profile manually.</p>
+  </div>
+  {% endif %}
+  <label class="flex items-start gap-2 text-xs text-zinc-400">{{ form.consent }} <span>{{ form.consent.label }}</span></label>
+  {% for e in form.consent.errors %}<p class="text-red-400 text-xs">{{ e }}</p>{% endfor %}
+  <button class="w-full bg-white text-black rounded-xl py-2.5 font-semibold">Create account</button>
 </form>
 {% endblock %}

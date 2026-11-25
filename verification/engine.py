@@ -5,8 +5,10 @@ OPTIONS = ("FALSE", "TRUE", "MISLEADING", "PARTIALLY_TRUE", "UNVERIFIED")  # ord
 PRIOR_A = 2
 PRIOR_B = 2
 VERIFIED_PRIOR_A = 3   # trust bonus for a verified work email
-MIN_VOTES = 3
+MIN_VOTES = 3            # verifier votes needed before a verdict can be final
 FINAL_CONFIDENCE = 0.70
+COMMUNITY_WEIGHT = 0.05  # each regular user's vote
+COMMUNITY_CAP = 0.20     # all community votes together: at most 20% of the total weight
 
 
 def beta_weight(correct, total, work_email_verified=False):
@@ -37,6 +39,18 @@ def verifier_weight(stats, domain, language, work_email_verified=False):
     return beta_weight(correct, total, work_email_verified)
 
 
+def community_vote_weight(n_community, verifier_total):
+    """Weight of ONE community vote: 0.05, scaled down so that the community's combined weight
+    is at most COMMUNITY_CAP of the total (c / (v + c) <= 0.2  <=>  c <= 0.25 v)."""
+    if n_community == 0:
+        return 0.0
+    raw = COMMUNITY_WEIGHT * n_community
+    if verifier_total <= 0:
+        return COMMUNITY_WEIGHT  # no experts yet: shows a leaning only (cannot be final)
+    cap = verifier_total * COMMUNITY_CAP / (1 - COMMUNITY_CAP)
+    return min(raw, cap) / n_community
+
+
 @dataclass
 class VerdictResult:
     totals: dict
@@ -44,17 +58,24 @@ class VerdictResult:
     confidence: float
     status: str          # "FINAL" or "UNDER_REVIEW"
     verdict: str | None  # set only when FINAL
-    vote_count: int
+    vote_count: int      # verifier votes
+    community_count: int = 0
+    community_vote_weight: float = 0.0
 
 
-def compute_verdict(votes):
-    """votes: iterable of (verdict, weight). Returns a VerdictResult."""
+def compute_verdict(votes, community=()):
+    """votes: iterable of (verdict, weight) from verifiers. community: iterable of verdicts from
+    regular users. Final needs >= 3 verifier votes and >= 70% of the total weighted votes."""
     votes = list(votes)
+    community = list(community)
     totals = {opt: 0.0 for opt in OPTIONS}
     for verdict, weight in votes:
         totals[verdict] += weight
+    cw = community_vote_weight(len(community), sum(totals.values()))
+    for verdict in community:
+        totals[verdict] += cw
     total_weight = sum(totals.values())
-    if not votes or total_weight == 0:
+    if total_weight == 0:
         return VerdictResult(totals, None, 0.0, "UNDER_REVIEW", None, 0)
 
     leading = max(OPTIONS, key=lambda o: (totals[o], -OPTIONS.index(o)))
@@ -67,13 +88,16 @@ def compute_verdict(votes):
         status="FINAL" if is_final else "UNDER_REVIEW",
         verdict=leading if is_final else None,
         vote_count=len(votes),
+        community_count=len(community),
+        community_vote_weight=cw,
     )
 
 
-def explain(votes):
+def explain(votes, community=()):
     """Human-readable arithmetic, e.g. 'FALSE = 0.83 + 0.67 = 1.50; TRUE = 0.50; confidence = 75%'."""
     votes = list(votes)
-    result = compute_verdict(votes)
+    community = list(community)
+    result = compute_verdict(votes, community)
     parts = []
     for opt in OPTIONS:
         weights = [w for v, w in votes if v == opt]
@@ -83,6 +107,11 @@ def explain(votes):
             parts.append(f"{opt} = {weights[0]:.2f}")
         else:
             parts.append(f"{opt} = {' + '.join(f'{w:.2f}' for w in weights)} = {sum(weights):.2f}")
+    if community:
+        cw = result.community_vote_weight
+        tallies = ", ".join(f"{opt} {community.count(opt)}" for opt in OPTIONS if opt in community)
+        parts.append(f"community = {len(community)} votes × {cw:.3f} = {cw * len(community):.2f}"
+                     f" ({tallies})")
     parts.append(f"confidence = {result.confidence:.0%}")
     return "; ".join(parts)
 

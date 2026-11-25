@@ -18,16 +18,8 @@ from .models import ChatMessage, ChatThread
 DUPLICATE_SCORE = 90
 
 
-def _session_key(request):
-    if not request.session.session_key:
-        request.session.save()
-    return request.session.session_key
-
-
 def _threads_for(request):
-    if request.user.is_authenticated:
-        return ChatThread.objects.filter(owner=request.user)
-    return ChatThread.objects.filter(owner__isnull=True, session_key=_session_key(request))
+    return ChatThread.objects.filter(owner=request.user)
 
 
 def _get_thread(request, pk):
@@ -40,15 +32,16 @@ def _get_thread(request, pk):
 def chat_home(request, pk=None):
     thread = _get_thread(request, pk) if pk else None
     return render(request, "chat/chat.html", {
-        "threads": _threads_for(request)[:30],
         "thread": thread,
         "messages_list": thread.messages.select_related("card_claim") if thread else [],
         "error": request.GET.get("error", ""),
+        "prefill": request.GET.get("prefill", "")[:20],
+        "tab": "check",
     })
 
 
 @require_POST
-@ratelimit(key="ip", rate="20/h", method="POST", block=True)
+@ratelimit(key="user", rate="30/h", method="POST", block=True)
 def send(request, pk=None):
     text = sanitize_text(request.POST.get("text", ""))[:3000]
     if not text:
@@ -78,9 +71,8 @@ def _new_claim(request, text):
     if len(claim_text) < 10:
         return redirect("/chat/?error=Please+paste+the+full+message+(at+least+10+characters).")
 
-    owner = request.user if request.user.is_authenticated else None
-    thread = ChatThread.objects.create(owner=owner, session_key="" if owner else _session_key(request),
-                                       title=claim_text[:80])
+    owner = request.user
+    thread = ChatThread.objects.create(owner=owner, title=claim_text[:80])
     ChatMessage.objects.create(thread=thread, sender="user", content=text)
 
     matches = find_similar(claim_text, source_url)
@@ -95,7 +87,8 @@ def _new_claim(request, text):
                                      source_url=source_url, language=language,
                                      status=Claim.Status.RESEARCHING, submitted_by=owner)
         log_submission(claim, owner)
-        start_research(claim)
+        start_research(claim, source_filter=request.POST.get("sources", "all"),
+                       deep=request.POST.get("deep") == "on")
         reply = ("Thanks. I'm researching this now using live news, fact-checkers and research "
                  "databases. My answer will be provisional: verified human fact-checkers give the "
                  "final verdict.")
@@ -123,10 +116,12 @@ def _followup(thread, question):
 
 
 def card(request, claim_pk):
-    """HTMX partial: the live research card. Polls while research is running."""
+    """HTMX partial: the live research card. Polls while research runs, then slowly until final."""
     claim = get_object_or_404(Claim, pk=claim_pk)
-    if claim.is_hidden and not (request.user.is_authenticated and request.user.is_admin_role):
+    if claim.is_hidden and not request.user.is_admin_role:
         # The submitter still sees the moderation notice through their own thread.
         if not _threads_for(request).filter(claim=claim).exists():
             raise Http404
-    return render(request, "research/_card.html", {"claim": claim, "run": claim.research_runs.first()})
+    return render(request, "research/_card.html", {"claim": claim, "run": claim.research_runs.first(),
+                                                   "live": True,
+                                                   "full": request.user.can_vote or request.user.is_admin_role})

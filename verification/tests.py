@@ -145,7 +145,8 @@ class RoleTests(TestCase):
         self.pending = make_verifier("pending", approved=False)
         self.verifier = make_verifier("ver")
         self.admin = User.objects.create_user("adm", password="pw-123456", role=User.Role.ADMIN)
-        self.vote_data = {"verdict": "FALSE", "evidence_1": "https://vtu.ac.in/notice"}
+        self.vote_data = {"verdict": "FALSE", "note": "No such circular on VTU site",
+                          "evidence_1": "https://vtu.ac.in/notice"}
 
     def post_vote(self, user, url_name="vote"):
         self.client.force_login(user)
@@ -192,7 +193,7 @@ class RoleTests(TestCase):
 
         self.client.force_login(self.verifier)
         url = reverse("api_vote", args=[self.claim.pk])
-        resp = self.client.post(url, {"verdict": "FALSE", "evidence_1": "javascript:alert(1)"})
+        resp = self.client.post(url, {"verdict": "FALSE", "note": "x", "evidence_1": "javascript:alert(1)"})
         self.assertEqual(resp.status_code, 400)
         body = resp.json()["error"]
         self.assertEqual(body["code"], "validation_error")
@@ -212,7 +213,8 @@ class RoleTests(TestCase):
         self.assertEqual(Claim.objects.count(), 1)
 
     def test_public_pages_render(self):
-        self.assertEqual(self.client.get(reverse("feed")).status_code, 200)
+        # Share links and claim pages are public; everything else needs login.
+        self.assertEqual(self.client.get(reverse("claim_detail", args=[self.claim.pk])).status_code, 200)
         resp = self.client.get(reverse("share", args=[self.claim.share_slug]))
         self.assertContains(resp, 'property="og:title"')
         self.assertContains(resp, "https://wa.me/?text=")

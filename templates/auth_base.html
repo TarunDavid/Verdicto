@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Verdicto{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{accent:'#E0383E'}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <style>input[type=checkbox]{accent-color:#2dd4bf}body{font-family:Inter,'Noto Sans Kannada',ui-sans-serif,system-ui}.glass{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}</style>
+</head>
+<body class="min-h-screen text-zinc-100" style="background:radial-gradient(90% 55% at 50% 0%,rgba(45,212,191,.16),rgba(56,189,248,.06) 40%,transparent 70%),#0d0f13">
+  <div class="max-w-xl mx-auto px-4 py-10">
+    <div class="flex flex-col items-center text-center mb-8">
+      {% include "_emblem.html" with size="w-16 h-16" %}
+      <p class="mt-5 text-xs tracking-[.3em] text-zinc-400">VERDICTO</p>
+      <h1 class="text-2xl sm:text-3xl font-medium mt-2">{% block heading %}{% endblock %}</h1>
+      <p class="text-sm text-zinc-400 mt-2">{% block sub %}{% endblock %}</p>
+    </div>
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

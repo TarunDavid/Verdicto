@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="text-xl font-bold">Past verdicts</h1>
-<p class="text-sm text-zinc-400 mb-4">Every claim our verifiers have finished checking. Search before you forward.</p>
-<form class="flex gap-2 mb-5"><input name="q" value="{{ q }}" placeholder="Search past verdicts" class="flex-1 rounded bg-zinc-900 border border-zinc-700 p-2 text-sm"><button class="bg-zinc-800 px-3 rounded text-sm">Search</button></form>
+<h1 class="text-2xl font-medium pt-2 mb-4">News &amp; Verdicts</h1>
+{% include "claims/_news_tabs.html" %}
+<form class="flex gap-2 mb-5 text-sm"><input name="q" value="{{ q }}" placeholder="Search past verdicts" class="flex-1 rounded-xl glass px-3 py-2 focus:outline-none"><button class="rounded-xl bg-white/10 px-4">Search</button></form>
 <div class="space-y-3">
 {% for claim in claims %}
-  <a href="{% url 'claim_detail' claim.pk %}" class="block bg-zinc-900 border border-zinc-800 hover:border-accent rounded p-4">
-    <div class="flex items-center gap-2 text-xs text-zinc-400">{% include "_badge.html" %}<span>{{ claim.get_domain_display }} · verified {{ claim.finalized_at|date:"d M Y" }}</span><span class="ml-auto">{{ claim.confidence_pct }}%</span></div>
+  <a href="{% url 'claim_detail' claim.pk %}" class="block glass rounded-2xl p-4 bg-[#1a1c20] hover:border-accent/60">
+    <div class="flex items-center gap-2 text-xs text-zinc-400">{% include "_badge.html" %}<span>{{ claim.get_domain_display }} · verified {{ claim.finalized_at|date:"d M Y" }}</span><span class="ml-auto">{{ claim.confidence_pct }}% agreement</span></div>
     <p class="mt-2">{{ claim.text|truncatechars:180 }}</p>
   </a>
 {% empty %}<p class="text-zinc-400">No past verdicts match.</p>{% endfor %}

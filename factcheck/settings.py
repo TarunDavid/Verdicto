@@ -30,6 +30,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.LoginRequiredMiddleware",  # every page needs login unless marked
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "factcheck.middleware.StructuredErrorMiddleware",
@@ -47,6 +48,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "factcheck.context.shell",
             ],
         },
     },
@@ -63,9 +65,13 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = "accounts.User"
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.PhoneBackend",              # phone + password (app login)
+    "django.contrib.auth.backends.ModelBackend",   # username + password (Django admin)
+]
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "feed"
-LOGOUT_REDIRECT_URL = "feed"
+LOGIN_REDIRECT_URL = "chat"
+LOGOUT_REDIRECT_URL = "login"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
