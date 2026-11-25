@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from claims.forms import CommunityVoteForm, OverrideForm, VoteForm
 
 from .services import breakdown, community_summary
@@ -22,5 +24,6 @@ def vote_context(request, claim, vote_form=None, override_form=None):
         "my_opinion": (claim.community_votes.filter(user=user).first() if user.is_authenticated else None),
         "community_form": CommunityVoteForm(),
         "full": user.is_authenticated and (user.can_vote or user.is_admin_role),
-        "assignments": claim.assignments.select_related("verifier"),
+        "assignments": claim.assignments.select_related("verifier__verifier_profile"),
+        "min_human": settings.FINAL_MIN_HUMAN_VOTES,
     }

@@ -42,11 +42,17 @@ class EngineTests(SimpleTestCase):
         result = engine.compute_verdict([("FALSE", 0.5), ("TRUE", 0.5), ("FALSE", 0.5)])
         self.assertEqual(result.status, "UNDER_REVIEW")  # 67% < 70%
 
-    def test_stat_lookup_falls_back_to_domain_then_prior(self):
+    def test_stat_lookup_falls_back_to_domain_then_overall_then_prior(self):
         stats = [("health", "en", 4, 5), ("health", "kn", 2, 3)]
         self.assertEqual(engine.lookup_record(stats, "health", "kn"), (2, 3))
         self.assertEqual(engine.lookup_record(stats, "health", "hi"), (6, 8))
-        self.assertEqual(engine.lookup_record(stats, "education", "en"), (0, 0))
+        self.assertEqual(engine.lookup_record(stats, "education", "en"), (6, 8))
+        self.assertEqual(engine.lookup_record([], "education", "en"), (0, 0))
+
+    def test_final_can_require_a_human_vote(self):
+        votes = [("FALSE", 0.5)] * 3
+        self.assertEqual(engine.compute_verdict(votes, human_votes=0, min_human=1).status, "UNDER_REVIEW")
+        self.assertEqual(engine.compute_verdict(votes, human_votes=1, min_human=1).status, "FINAL")
 
     def test_score_delta_no_double_counting(self):
         self.assertEqual(engine.score_delta("FALSE", None, "FALSE"), (1, 1))

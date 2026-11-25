@@ -105,6 +105,7 @@ def fallback_understanding(text):
         "english_query": query,
         "targets_private_individual": False,
         "moderation_reason": "",
+        "organisations": [],
     }
 
 
@@ -123,7 +124,11 @@ def understand(text, language):
         '  "english_query": the single best English search query,\n'
         '  "targets_private_individual": true if the message is about the private life, sexuality, '
         "health, or alleged misconduct of a named private (non-public) person, or is harassment; else false,\n"
-        '  "moderation_reason": a short reason if the previous field is true, else "".'
+        '  "moderation_reason": a short reason if the previous field is true, else "",\n'
+        '  "organisations": up to 4 organisations the claim is about (universities, boards, companies, '
+        'government departments, hospitals...), each {"name": official English name, "short": common '
+        'abbreviation or ""}; [] if none. Example: [{"name": "Visvesvaraya Technological University", '
+        '"short": "VTU"}].'
     )
     try:
         out, model = chat_json(prompt, model=settings.GROQ_FAST_MODEL, max_tokens=500)
@@ -142,6 +147,11 @@ def understand(text, language):
     data["checkable_claim"] = str(out.get("checkable_claim") or data["checkable_claim"])[:500]
     data["targets_private_individual"] = bool(out.get("targets_private_individual"))
     data["moderation_reason"] = str(out.get("moderation_reason", ""))[:200]
+    orgs = []
+    for o in out.get("organisations") or []:
+        if isinstance(o, dict) and str(o.get("name") or "").strip():
+            orgs.append({"name": str(o["name"]).strip()[:120], "short": str(o.get("short") or "").strip()[:20]})
+    data["organisations"] = orgs[:4]
     return data, model
 
 
@@ -258,7 +268,7 @@ def _norm_ws(s):
     return re.sub(r"\s+", " ", (s or "")).strip().lower()
 
 
-def assess(checkable_claim, sources, language):
+def assess(checkable_claim, sources, language, model=None):
     """sources: list of dicts with id, title, publisher, tier, snippet.
 
     Returns dict(stances={id: (stance, quote)}, summary, facts, assumptions, conflicts), model.
@@ -286,7 +296,7 @@ def assess(checkable_claim, sources, language):
         '"assumptions": ["unconfirmed point"], "conflicts": ["where sources disagree"]}'
     )
     try:
-        out, model = chat_json(prompt, max_tokens=1500)
+        out, model = chat_json(prompt, model=model, max_tokens=1500)
     except Exception as exc:
         logger.warning("assess() fell back: %s", exc)
         return empty, None

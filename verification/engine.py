@@ -22,7 +22,8 @@ def lookup_record(stats, domain, language):
 
     1. exact (domain, language) stat
     2. otherwise the sum across languages for that domain
-    3. otherwise (0, 0) -> the prior
+    3. otherwise the verifier's record across all fields (a strong track record carries over)
+    4. otherwise (0, 0) -> the prior
     """
     stats = list(stats)
     for d, lang, correct, total in stats:
@@ -31,7 +32,7 @@ def lookup_record(stats, domain, language):
     same_domain = [(c, t) for d, _lang, c, t in stats if d == domain]
     if same_domain:
         return sum(c for c, _ in same_domain), sum(t for _, t in same_domain)
-    return 0, 0
+    return sum(s[2] for s in stats), sum(s[3] for s in stats)
 
 
 def verifier_weight(stats, domain, language, work_email_verified=False):
@@ -63,9 +64,10 @@ class VerdictResult:
     community_vote_weight: float = 0.0
 
 
-def compute_verdict(votes, community=()):
+def compute_verdict(votes, community=(), human_votes=None, min_human=0):
     """votes: iterable of (verdict, weight) from verifiers. community: iterable of verdicts from
-    regular users. Final needs >= 3 verifier votes and >= 70% of the total weighted votes."""
+    regular users. Final needs >= 3 verifier votes and >= 70% of the total weighted votes, and, when
+    AI agents vote, at least `min_human` of those votes from people (`human_votes`)."""
     votes = list(votes)
     community = list(community)
     totals = {opt: 0.0 for opt in OPTIONS}
@@ -80,7 +82,8 @@ def compute_verdict(votes, community=()):
 
     leading = max(OPTIONS, key=lambda o: (totals[o], -OPTIONS.index(o)))
     confidence = totals[leading] / total_weight
-    is_final = len(votes) >= MIN_VOTES and confidence >= FINAL_CONFIDENCE
+    humans = len(votes) if human_votes is None else human_votes
+    is_final = len(votes) >= MIN_VOTES and confidence >= FINAL_CONFIDENCE and humans >= min_human
     return VerdictResult(
         totals=totals,
         leading=leading,

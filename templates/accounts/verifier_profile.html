@@ -6,7 +6,9 @@
   <div class="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-teal-500 grid place-items-center text-xl font-semibold">{{ verifier.initials }}</div>
   <div>
     <h1 class="text-2xl font-medium">{% include "_name.html" with u=verifier %}</h1>
-    <p class="text-sm text-zinc-400">{% translate "Verifier" %}{% if verifier.district %} · {{ verifier.district }}{% endif %} · {% translate "fields:" %} {{ verifier.domains|join:", " }} · {% translate "languages:" %} {{ verifier.languages|join:", " }}</p>
+    {% if verifier.profession or verifier.organisation %}<p class="text-sm text-zinc-300">{{ verifier.profession }}{% if verifier.profession and verifier.organisation %} · {% endif %}{{ verifier.organisation }}</p>{% endif %}
+    <p class="text-sm mt-0.5">{% include "_record.html" with u=verifier %}</p>
+    <p class="text-sm text-zinc-400">{% if verifier.is_ai_agent %}{% translate "AI agent verifier" %}{% else %}{% translate "Verifier" %}{% endif %}{% if verifier.district %} · {{ verifier.district }}{% endif %} · {% translate "fields:" %} {{ verifier.domains|join:", " }} · {% translate "languages:" %} {{ verifier.languages|join:", " }}</p>
   </div>
 </div>
 <div class="mt-3">{% include "accounts/_badges.html" with u=verifier %}</div>

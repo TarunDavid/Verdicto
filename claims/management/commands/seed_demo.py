@@ -26,7 +26,11 @@ VERIFIERS = {
     "clerk_suma": (["kn"], ["government"], "Udupi", "taluk-office.example.in", True,
                    {("government", "kn"): (3, 3)}),
     "pending_vikram": (["kn"], ["local-news"], "Shivamogga", None, False, {}),
+    # Insiders: assigned first to claims about their own organisation (fictional people).
+    "vtu_nandini": (["en", "kn"], ["education"], "Belagavi", None, True, {("education", "en"): (9, 10)}),
+    "nvidia_rahul": (["en"], ["technology"], "Bengaluru", None, True, {("technology", "en"): (4, 5)}),
 }
+ORGANISATIONS = {"vtu_nandini": "VTU (Board of Examinations)", "nvidia_rahul": "NVIDIA"}
 CITIZENS = ["citizen_anil", "citizen_bhavya", "citizen_chetan"]
 # Fictional demo numbers, in order: admin, citizens, verifiers.
 DEMO_PHONES = [f"+9190000000{i:02d}" for i in range(1, 30)]
@@ -36,10 +40,12 @@ DEMO_NAMES = {"admin": ("Site", "Admin"), "citizen_anil": ("Anil", "Kumar"),
               "dr_meera": ("Dr Meera", "Hegde"), "nurse_asha": ("Asha", "Kulkarni"),
               "kiran_new": ("Kiran", "Gowda"), "prof_ravi": ("Prof Ravi", "Shankar"),
               "journo_divya": ("Divya", "Bhat"), "tech_arjun": ("Arjun", "Nair"),
-              "clerk_suma": ("Suma", "Patil"), "pending_vikram": ("Vikram", "Shetty")}
+              "clerk_suma": ("Suma", "Patil"), "pending_vikram": ("Vikram", "Shetty"),
+              "vtu_nandini": ("Dr Nandini", "Rao"), "nvidia_rahul": ("Rahul", "Menon")}
 PROFESSIONS = {"dr_meera": "Doctor", "nurse_asha": "Nurse", "kiran_new": "Postgraduate student",
                "prof_ravi": "Professor", "journo_divya": "Journalist", "tech_arjun": "Software engineer",
-               "clerk_suma": "Government clerk", "pending_vikram": "Teacher"}
+               "clerk_suma": "Government clerk", "pending_vikram": "Teacher",
+               "vtu_nandini": "Board member", "nvidia_rahul": "Software developer"}
 COMMUNITY = {"metro": ["FALSE", "FALSE", "TRUE"], "kn_ration": ["TRUE", "UNVERIFIED"],
              "paracetamol": ["FALSE", "FALSE", "FALSE"]}
 
@@ -122,6 +128,10 @@ CLAIMS = [
          ("journo_divya", "TRUE", "Partial closure announced for one stretch.", ["https://example.org/news"]),
          ("tech_arjun", "FALSE", "Only one section is closed, not the full line.", ["https://example.org/news2"]),
      ]),
+    ("vtu_project", "VTU has announced that final-year students of the 2026 batch can skip the final-year project and still graduate.",
+     "en", "education", "Belagavi", 4, []),
+    ("nvidia_mysuru", "Nvidia is opening a chip design campus in Mysuru next month and will hire 10,000 freshers without interviews.",
+     "en", "technology", "Mysuru", 3, []),
     ("paracetamol", "Warning: P-500 paracetamol tablets contain a deadly virus. Do not buy them!",
      "en", "health", "Shivamogga", 1, []),
     ("mangaluru", "Mangaluru schools closed tomorrow due to red alert, says DC.",
@@ -185,7 +195,8 @@ class Command(BaseCommand):
             verifiers[name] = make(name, role=User.Role.VERIFIER, languages=langs, domains=domains,
                                    district=district, verifier_approved=approved,
                                    work_email_verified=bool(org), org_domain=org or "",
-                                   profession=PROFESSIONS.get(name, ""))
+                                   profession=PROFESSIONS.get(name, ""),
+                                   organisation=ORGANISATIONS.get(name, ""))
             for (domain, lang), (correct, total) in stats.items():
                 VerifierStat.objects.create(verifier=verifiers[name], domain=domain, language=lang,
                                             correct=correct, total=total)
@@ -208,6 +219,8 @@ class Command(BaseCommand):
 
         admin_override(created["mangaluru"], admin, "TRUE",
                        "District administration published the red-alert holiday order (demo data)")
+        from research.agents import ensure_agents
+        ensure_agents()   # AI agent verifiers; they research and vote when research runs (--research)
         for claim in Claim.objects.filter(status__in=["PENDING", "UNDER_REVIEW"]):
             assign_verifiers(claim)
         text, original = DUPLICATE

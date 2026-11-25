@@ -3,7 +3,7 @@
 Verdicto: a chat-first fact-check assistant for Karnataka. The AI researches a claim on live sources
 and gives a provisional answer; approved verifiers give the final, weighted verdict.
 
-## Status: feature-complete against SPEC.md, PRD.md and PRD2.md (102 tests passing, incl. 2 Playwright browser tests)
+## Status: feature-complete against SPEC.md, PRD.md and PRD2.md (113 tests passing, incl. 2 Playwright browser tests)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -30,6 +30,10 @@ and gives a provisional answer; approved verifiers give the final, weighted verd
 | Local front-end assets | ✅ | Tailwind built locally (`buildcss`, standalone CLI), HTMX vendored; `USE_CDN_ASSETS` to switch back |
 | VerifierProfile table | ✅ | Verifier details moved off `User` with a data migration (0005–0007) |
 | API key checker | ✅ | `manage.py checkkeys` |
+| Insider assignment (org match) | ✅ | VTU staff get VTU claims first, Nvidia staff get Nvidia claims; abbreviations, work-email domain, AI-extracted organisations |
+| Track records ("_% accurate in _ verdicts") | ✅ | Shown everywhere a verifier appears; drives weight and assignment order |
+| AI agent verifiers | ✅ | `research/agents.py`, 3 agents with separate sources; vote with all sources as evidence; abstain on thin evidence; ≥1 human vote still needed to finalise (`FINAL_MIN_HUMAN_VOTES`) |
+| Public per-verifier verdicts + sources | ✅ | Claim page "Verified by" cards, share page |
 | End-to-end journey test | ✅ | `claims/test_journey.py`: sign-up → chat → research → votes → final → notice → archive/share/Kannada |
 | Production setup | ✅ | `RESEARCH_MODE=worker` + `run_worker`, `Procfile`, `gunicorn.conf.py`, `.env.production.example`, `DEPLOY.md` (nginx + checklist), Postgres via `DATABASE_URL`, shared cache, SMTP, HTTPS settings; `check --deploy` clean except optional HSTS preload |
 

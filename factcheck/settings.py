@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from decouple import Csv, config
@@ -154,6 +155,15 @@ RESEARCH_SYNC = config("RESEARCH_SYNC", default=False, cast=bool)  # run inline 
 # "worker": web requests only queue research; run `manage.py run_worker` as a separate process.
 RESEARCH_MODE = config("RESEARCH_MODE", default="thread")
 ASSIGN_TOP_N = 3
+# AI agent verifiers (research/agents.py): each researches open claims on its own set of sources and
+# votes like a verifier, weighted by its own track record. They need GROQ_API_KEY.
+AI_AGENTS_ENABLED = config("AI_AGENTS_ENABLED", default=True, cast=bool) and "test" not in sys.argv[1:2]
+# Model per agent (spread across models: Groq limits tokens per minute per model).
+GROQ_AGENT_MODELS = config("GROQ_AGENT_MODELS", default="qwen/qwen3.8-27b,openai/gpt-oss-20b,openai/gpt-oss-120b",
+                           cast=lambda v: [m.strip() for m in v.split(",") if m.strip()])
+# A verdict only becomes final with at least this many votes from people (0 = AI agents alone can
+# finalise a claim).
+FINAL_MIN_HUMAN_VOTES = config("FINAL_MIN_HUMAN_VOTES", default=1, cast=int)
 ASSIGNMENT_TIMEOUT_HOURS = 2
 
 PHONE_OTP_ENABLED = config("PHONE_OTP_ENABLED", default=False, cast=bool)  # SMS code at sign-up

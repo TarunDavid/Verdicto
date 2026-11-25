@@ -3,7 +3,17 @@ from django.contrib.auth.admin import UserAdmin
 from django.db.models import Case, IntegerField, Value, When
 from django.utils import timezone
 
+from verification.assignment import assign_open_claims_to
+
 from .models import User, VerifierProfile
+
+
+def _after_approval(request, users):
+    """Give newly approved verifiers the open claims about their own organisation."""
+    n = sum(len(assign_open_claims_to(u)) for u in users)
+    if n:
+        from django.contrib import messages
+        messages.info(request, f"Assigned {n} open claim(s) about their organisation(s).")
 
 
 class VerifierProfileInline(admin.StackedInline):
@@ -42,11 +52,14 @@ class VerdictoUserAdmin(UserAdmin):
 
     def save_formset(self, request, form, formset, change):
         """Record who approved a verifier when the status is changed on the edit page."""
+        approved = []
         for f in formset.forms:
             if isinstance(f.instance, VerifierProfile) and "status" in f.changed_data \
                     and f.instance.status == VerifierProfile.Status.APPROVED:
                 f.instance.approved_by, f.instance.approved_at = request.user, timezone.now()
+                approved.append(f.instance.user)
         super().save_formset(request, form, formset, change)
+        _after_approval(request, approved)
 
     @admin.display(description="Name", ordering="first_name")
     def display_name(self, obj):
@@ -75,9 +88,11 @@ class VerdictoUserAdmin(UserAdmin):
 
     @admin.action(description="Approve selected verifiers")
     def approve(self, request, queryset):
-        n = VerifierProfile.objects.filter(user__in=queryset).exclude(status="approved").update(
-            status="approved", approved_by=request.user, approved_at=timezone.now())
+        profiles = VerifierProfile.objects.filter(user__in=queryset).exclude(status="approved")
+        users = list(User.objects.filter(pk__in=profiles.values("user_id")))
+        n = profiles.update(status="approved", approved_by=request.user, approved_at=timezone.now())
         self.message_user(request, f"Approved {n} verifier(s).")
+        _after_approval(request, users)
 
     @admin.action(description="Reject: turn back into regular users")
     def reject(self, request, queryset):
@@ -90,7 +105,39 @@ class VerdictoUserAdmin(UserAdmin):
 
 @admin.register(VerifierProfile)
 class VerifierProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "status", "profession", "organisation", "work_email_verified", "approved_by", "approved_at")
-    list_filter = ("status", "work_email_verified")
+    list_display = ("user", "status", "is_ai_agent", "profession", "organisation", "work_email_verified",
+                    "approved_by", "approved_at")
+    list_filter = ("status", "is_ai_agent", "work_email_verified")
     search_fields = ("user__first_name", "user__phone", "profession", "organisation")
     readonly_fields = ("approved_by", "approved_at", "created_at")
+    actions = ["approve", "reject"]
+
+    def get_queryset(self, request):
+        return (super().get_queryset(request).select_related("user", "approved_by")
+                .annotate(pending_first=Case(When(status="pending", then=Value(0)),
+                                             default=Value(1), output_field=IntegerField()))
+                .order_by("pending_first", "user__first_name"))
+
+    def save_model(self, request, obj, form, change):
+        approved = "status" in form.changed_data and obj.status == VerifierProfile.Status.APPROVED
+        if approved:
+            obj.approved_by, obj.approved_at = request.user, timezone.now()
+        super().save_model(request, obj, form, change)
+        if approved:
+            _after_approval(request, [obj.user])
+
+    @admin.action(description="Approve selected verifiers")
+    def approve(self, request, queryset):
+        pending = queryset.exclude(status="approved")
+        users = list(User.objects.filter(pk__in=pending.values("user_id")))
+        n = pending.update(status="approved", approved_by=request.user, approved_at=timezone.now())
+        self.message_user(request, f"Approved {n} verifier(s).")
+        _after_approval(request, users)
+
+    @admin.action(description="Reject: turn back into regular users")
+    def reject(self, request, queryset):
+        pending = queryset.filter(status="pending")
+        users = list(pending.values_list("user_id", flat=True))
+        pending.update(status="rejected", approved_by=None, approved_at=None)
+        User.objects.filter(pk__in=users).update(role=User.Role.CITIZEN)
+        self.message_user(request, f"Turned {len(users)} pending verifier(s) into regular users.")

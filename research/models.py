@@ -5,8 +5,17 @@ from django.utils.translation import gettext_lazy as _
 from claims.models import Claim
 
 
+class MainRunManager(models.Manager):
+    """`ResearchRun.objects` and `claim.research_runs` are the claim's own AI research. Runs made by
+    AI agent verifiers (agent set) are reached through `ResearchRun.all_runs` or `vote.agent_run`."""
+
+    def get_queryset(self):
+        return super().get_queryset().filter(agent__isnull=True)
+
+
 class ResearchRun(models.Model):
-    """One AI research pass for a claim. Provisional only: it never sets the claim's verdict."""
+    """One AI research pass for a claim. Provisional only: it never sets the claim's verdict.
+    With `agent` set, it is the research behind an AI agent verifier's vote (`vote`)."""
 
     class Status(models.TextChoices):
         QUEUED = "queued", "Queued"
@@ -40,9 +49,17 @@ class ResearchRun(models.Model):
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
+                              related_name="agent_runs")
+    vote = models.OneToOneField("verification.Vote", on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name="agent_run")
+
+    objects = MainRunManager()
+    all_runs = models.Manager()
 
     class Meta:
         ordering = ["-created_at"]
+        base_manager_name = "all_runs"
 
     @property
     def is_running(self):

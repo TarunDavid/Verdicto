@@ -748,3 +748,51 @@ msgstr "ಇಂಗ್ಲಿಷ್"
 
 msgid "Kannada"
 msgstr "ಕನ್ನಡ"
+
+msgid "AI agent"
+msgstr "AI ಏಜೆಂಟ್"
+
+msgid "AI agent verifier"
+msgstr "AI ಏಜೆಂಟ್ ಪರಿಶೀಲಕ"
+
+msgid "Automated verifier: researches the claim itself; scored on its track record like everyone else"
+msgstr "ಸ್ವಯಂಚಾಲಿತ ಪರಿಶೀಲಕ: ಹೇಳಿಕೆಯನ್ನು ತಾನೇ ಸಂಶೋಧಿಸುತ್ತದೆ; ಎಲ್ಲರಂತೆ ಅದರ ಹಿಂದಿನ ದಾಖಲೆಯ ಮೇಲೆ ಅಂಕ"
+
+msgid "Sources:"
+msgstr "ಮೂಲಗಳು:"
+
+msgid "work email verified"
+msgstr "ಕೆಲಸದ ಇಮೇಲ್ ಪರಿಶೀಲಿತ"
+
+msgid "New: no scored verdicts yet"
+msgstr "ಹೊಸಬರು: ಇನ್ನೂ ಅಂಕಿತ ತೀರ್ಪುಗಳಿಲ್ಲ"
+
+msgid "%(pct)s%% accurate in 1 verdict"
+msgstr "1 ತೀರ್ಪಿನಲ್ಲಿ %(pct)s%% ನಿಖರ"
+
+msgid "%(pct)s%% accurate in %(n)s verdicts"
+msgstr "%(n)s ತೀರ್ಪುಗಳಲ್ಲಿ %(pct)s%% ನಿಖರ"
+
+msgid "At least one of them must be a person, not an AI agent."
+msgstr "ಅವರಲ್ಲಿ ಕನಿಷ್ಠ ಒಬ್ಬರು AI ಏಜೆಂಟ್ ಅಲ್ಲದ ವ್ಯಕ್ತಿಯಾಗಿರಬೇಕು."
+
+msgid "VERDICTS SO FAR"
+msgstr "ಇದುವರೆಗಿನ ತೀರ್ಪುಗಳು"
+
+msgid "VERIFIED BY"
+msgstr "ಪರಿಶೀಲಿಸಿದವರು"
+
+msgid "weight"
+msgstr "ತೂಕ"
+
+msgid "No sources found."
+msgstr "ಯಾವುದೇ ಮೂಲಗಳು ಸಿಗಲಿಲ್ಲ."
+
+msgid "Works at %(org)s, which this claim is about"
+msgstr "ಈ ಹೇಳಿಕೆ ಸಂಬಂಧಿಸಿದ %(org)s ನಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತಾರೆ"
+
+msgid "Sources this AI agent used: %(n)s"
+msgstr "ಈ AI ಏಜೆಂಟ್ ಬಳಸಿದ ಮೂಲಗಳು: %(n)s"
+
+msgid "See all %(n)s sources, quotes and each verifier's evidence"
+msgstr "ಎಲ್ಲಾ %(n)s ಮೂಲಗಳು, ಉಲ್ಲೇಖಗಳು ಮತ್ತು ಪ್ರತಿ ಪರಿಶೀಲಕರ ಸಾಕ್ಷ್ಯ ನೋಡಿ"

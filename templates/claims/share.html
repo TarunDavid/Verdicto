@@ -18,6 +18,7 @@
   <div class="text-3xl">{% include "_badge.html" %}</div>
   <p class="mt-4 text-lg">“{{ claim.text|truncatechars:280 }}”</p>
   <p class="mt-4 text-sm text-zinc-400">{{ claim.confidence_pct }}% confidence · {{ claim.votes.count }} verifier votes</p>
+  {% if verifiers %}<div class="mt-3 text-sm text-zinc-300 space-y-1">{% for v in verifiers %}<p>{% include "_name.html" with u=v.verifier nolink=1 %} — <b>{{ v.get_verdict_display }}</b> · <span class="text-xs">{% include "_record.html" with u=v.verifier %}</span></p>{% endfor %}</div>{% endif %}
   <a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="inline-block mt-6 bg-green-600 px-5 py-3 rounded-lg font-bold">{% translate "Share on WhatsApp" %}</a>
   <p class="mt-4"><a href="{% url 'claim_detail' claim.pk %}" class="underline text-sm">{% translate "See evidence and how the verdict was computed" %}</a></p>
 </div>

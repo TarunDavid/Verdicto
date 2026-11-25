@@ -42,6 +42,9 @@ class Claim(models.Model):
     normalized_text = models.TextField(blank=True)
     # The claim restated in English by the AI, so Kannada and English versions of a rumour match.
     canonical_en = models.TextField(blank=True)
+    # Organisations the claim is about, from the AI: [{"name": "...", "short": "VTU"}]. Used to route
+    # the claim to verifiers who work there.
+    entities = models.JSONField(default=list, blank=True)
     source_url = models.URLField(blank=True, validators=[validate_safe_url], max_length=500)
     screenshot = models.ImageField(upload_to=screenshot_path, blank=True)
     language = models.CharField(max_length=2, choices=LANGUAGES, default="en")

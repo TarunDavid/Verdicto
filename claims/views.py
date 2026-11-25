@@ -181,4 +181,6 @@ def og_image(request, slug):
 @login_not_required
 def share(request, slug):
     claim = _get_visible(request, share_slug=slug)
-    return render(request, "claims/share.html", {"claim": claim, **share_context(request, claim)})
+    verifiers = claim.votes.select_related("verifier__verifier_profile")
+    return render(request, "claims/share.html", {"claim": claim, "verifiers": verifiers,
+                                                 **share_context(request, claim)})

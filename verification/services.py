@@ -1,4 +1,5 @@
 """Database side of verification: casting votes, recomputing verdicts, logging, scoring."""
+from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
@@ -45,7 +46,9 @@ def recompute(claim, trigger=None):
         return claim
     votes = list(claim.votes.values_list("verdict", "weight_at_vote"))
     community = list(claim.community_votes.values_list("verdict", flat=True))
-    result = engine.compute_verdict(votes, community)
+    humans = claim.votes.exclude(verifier__verifier_profile__is_ai_agent=True).count()
+    result = engine.compute_verdict(votes, community, human_votes=humans,
+                                    min_human=settings.FINAL_MIN_HUMAN_VOTES)
     old = (claim.status, claim.verdict, claim.confidence)
 
     claim.leading = result.leading
@@ -75,9 +78,12 @@ def recompute(claim, trigger=None):
             reason += f" with {result.vote_count} votes; verdict is now FINAL {claim.verdict}"
         _log(claim, old, reason, changed_by=None)
         if claim.status == Claim.Status.FINAL:
+            agreeing = [v.verifier.display_name for v in claim.votes.select_related("verifier")
+                        if v.verdict == claim.verdict]
             notify_threads(claim, f"✅ Verified: {claim.get_verdict_display().upper()} "
                                   f"({claim.confidence:.0%} weighted agreement) by "
-                                  f"{result.vote_count} verifiers.")
+                                  f"{result.vote_count} verifiers: {', '.join(agreeing)}. "
+                                  "Their notes and sources are on the claim page.")
     score_votes(claim)
     return claim
 
@@ -180,11 +186,19 @@ def _log(claim, old, reason, changed_by):
 
 
 def breakdown(claim):
-    """Rows for the explainability table plus the arithmetic string."""
+    """Rows for the explainability table and the public verdict cards, plus the arithmetic string."""
+    from research.models import ResearchRun
+
+    from .assignment import claim_org_keys, org_match
+    keys = claim_org_keys(claim)
+    agent_runs = {r.vote_id: r for r in ResearchRun.all_runs.filter(vote__claim=claim)
+                  .prefetch_related("sources")}
     rows = []
-    for vote in claim.votes.select_related("verifier").prefetch_related("evidence"):
+    for vote in claim.votes.select_related("verifier__verifier_profile").prefetch_related("evidence"):
         stat = vote.verifier.verifier_stats.filter(domain=claim.domain, language=claim.language).first()
-        rows.append({"vote": vote, "record": f"{stat.correct}/{stat.total}" if stat else "new"})
+        rows.append({"vote": vote, "record": f"{stat.correct}/{stat.total}" if stat else "new",
+                     "insider": org_match(vote.verifier._profile(), claim, keys),
+                     "agent_run": agent_runs.get(vote.pk)})
     arithmetic = engine.explain(claim.votes.values_list("verdict", "weight_at_vote"),
                                 claim.community_votes.values_list("verdict", flat=True))
     return rows, arithmetic

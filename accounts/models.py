@@ -1,5 +1,8 @@
+from functools import cached_property
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 
 LANGUAGES = [("en", _("English")), ("kn", _("Kannada"))]
@@ -87,6 +90,27 @@ class User(AbstractUser):
     def can_vote(self):
         return self.role == self.Role.VERIFIER and self.verifier_approved
 
+    @property
+    def is_ai_agent(self):
+        profile = self._profile()
+        return bool(profile and profile.is_ai_agent)
+
+    # ---- Track record across all fields (shown as "92% accurate in 12 verdicts") ------------
+    @cached_property
+    def verdict_record(self):
+        """(correct, total) over every scored verdict, i.e. votes on claims that became final."""
+        agg = self.verifier_stats.aggregate(c=Sum("correct"), t=Sum("total"))
+        return agg["c"] or 0, agg["t"] or 0
+
+    @property
+    def verdicts_scored(self):
+        return self.verdict_record[1]
+
+    @property
+    def verdict_accuracy(self):
+        correct, total = self.verdict_record
+        return round(100 * correct / total) if total else None
+
     def badges(self):
         out = []
         if self.work_email_verified:
@@ -113,6 +137,9 @@ class VerifierProfile(models.Model):
     work_email_verified = models.BooleanField(default=False)
     org_domain = models.CharField(max_length=100, blank=True)
     linkedin_url = models.URLField(blank=True)
+    # An automated verifier (see research/agents.py): researches claims itself and votes like a
+    # verifier, scored on its track record like everyone else. Cannot log in.
+    is_ai_agent = models.BooleanField(default=False)
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name="+")
     approved_at = models.DateTimeField(null=True, blank=True)

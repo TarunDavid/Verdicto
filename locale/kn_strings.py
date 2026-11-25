@@ -287,4 +287,22 @@ KN = {
     "Other": "ಇತರೆ",
     "English": "ಇಂಗ್ಲಿಷ್",
     "Kannada": "ಕನ್ನಡ",
+    # Verifier verdicts, track records, AI agents
+    "AI agent": "AI ಏಜೆಂಟ್",
+    "AI agent verifier": "AI ಏಜೆಂಟ್ ಪರಿಶೀಲಕ",
+    "Automated verifier: researches the claim itself; scored on its track record like everyone else":
+        "ಸ್ವಯಂಚಾಲಿತ ಪರಿಶೀಲಕ: ಹೇಳಿಕೆಯನ್ನು ತಾನೇ ಸಂಶೋಧಿಸುತ್ತದೆ; ಎಲ್ಲರಂತೆ ಅದರ ಹಿಂದಿನ ದಾಖಲೆಯ ಮೇಲೆ ಅಂಕ",
+    "Sources:": "ಮೂಲಗಳು:",
+    "work email verified": "ಕೆಲಸದ ಇಮೇಲ್ ಪರಿಶೀಲಿತ",
+    "New: no scored verdicts yet": "ಹೊಸಬರು: ಇನ್ನೂ ಅಂಕಿತ ತೀರ್ಪುಗಳಿಲ್ಲ",
+    "%(pct)s%% accurate in 1 verdict": "1 ತೀರ್ಪಿನಲ್ಲಿ %(pct)s%% ನಿಖರ",
+    "%(pct)s%% accurate in %(n)s verdicts": "%(n)s ತೀರ್ಪುಗಳಲ್ಲಿ %(pct)s%% ನಿಖರ",
+    "At least one of them must be a person, not an AI agent.": "ಅವರಲ್ಲಿ ಕನಿಷ್ಠ ಒಬ್ಬರು AI ಏಜೆಂಟ್ ಅಲ್ಲದ ವ್ಯಕ್ತಿಯಾಗಿರಬೇಕು.",
+    "VERDICTS SO FAR": "ಇದುವರೆಗಿನ ತೀರ್ಪುಗಳು",
+    "VERIFIED BY": "ಪರಿಶೀಲಿಸಿದವರು",
+    "weight": "ತೂಕ",
+    "No sources found.": "ಯಾವುದೇ ಮೂಲಗಳು ಸಿಗಲಿಲ್ಲ.",
+    "Works at %(org)s, which this claim is about": "ಈ ಹೇಳಿಕೆ ಸಂಬಂಧಿಸಿದ %(org)s ನಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತಾರೆ",
+    "Sources this AI agent used: %(n)s": "ಈ AI ಏಜೆಂಟ್ ಬಳಸಿದ ಮೂಲಗಳು: %(n)s",
+    "See all %(n)s sources, quotes and each verifier's evidence": "ಎಲ್ಲಾ %(n)s ಮೂಲಗಳು, ಉಲ್ಲೇಖಗಳು ಮತ್ತು ಪ್ರತಿ ಪರಿಶೀಲಕರ ಸಾಕ್ಷ್ಯ ನೋಡಿ",
 }

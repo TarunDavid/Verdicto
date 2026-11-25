@@ -81,7 +81,7 @@ def recover_stuck(minutes=10):
 
 
 def run_research(run_id):
-    run = ResearchRun.objects.select_related("claim").get(pk=run_id)
+    run = ResearchRun.all_runs.select_related("claim").get(pk=run_id)
     claim = run.claim
     run.status, run.started_at = ResearchRun.Status.RUNNING, timezone.now()
     try:
@@ -94,7 +94,9 @@ def run_research(run_id):
         claim.urgency = info["urgency"]
         if claim.domain == "other" and info["domain"] != "other":
             claim.domain = info["domain"]
-        claim.save(update_fields=["urgency", "domain"])
+        if info.get("organisations"):
+            claim.entities = info["organisations"]
+        claim.save(update_fields=["urgency", "domain", "entities"])
 
         # Moderation: refuse to "fact-check" private people's personal lives.
         if info["targets_private_individual"]:
@@ -147,10 +149,14 @@ def run_research(run_id):
     _finish(run, claim)
 
 
-def _search_all(run, info, claim):
-    enabled = [n for n in settings.RESEARCH_CONNECTORS if n in connectors.CONNECTORS]
-    if claim.domain not in connectors.ACADEMIC_DOMAINS:
-        enabled = [n for n in enabled if n not in connectors.ACADEMIC]
+def _search_all(run, info, claim, enabled=None, query_template="{q}", limit=None):
+    """Query the connectors in parallel. `enabled`, `query_template` and `limit` let an AI agent
+    verifier use its own set of sources (research/agents.py)."""
+    if enabled is None:
+        enabled = [n for n in settings.RESEARCH_CONNECTORS if n in connectors.CONNECTORS]
+        if claim.domain not in connectors.ACADEMIC_DOMAINS:
+            enabled = [n for n in enabled if n not in connectors.ACADEMIC]
+    enabled = [n for n in enabled if n in connectors.CONNECTORS]
     queries = info["queries"][:3] or [claim.text[:120]]
     jobs = []
     for name in enabled:
@@ -160,7 +166,7 @@ def _search_all(run, info, claim):
         else:  # one call each: keeps within Groq's per-minute token limits
             qs = [info["english_query"] or queries[0]]
         for q in qs:
-            jobs.append((name, q))
+            jobs.append((name, query_template.format(q=q) if name == "groq_web" else q))
     results, seen, seen_titles = [], set(), set()
     status = {}
     with ThreadPoolExecutor(max_workers=8) as pool:
@@ -208,12 +214,13 @@ def _search_all(run, info, claim):
         if per.get(r["connector"], 0) < 4:
             capped.append(r)
             per[r["connector"]] = per.get(r["connector"], 0) + 1
-    return capped[:MAX_SOURCES + (4 if run.deep else 0)]
+    return capped[:limit or (MAX_SOURCES + (4 if run.deep else 0))]
 
 
-def _enrich(raw):
-    targets = [r for r in raw if "news.google.com" not in r["url"] and len(r["snippet"]) < 300
-               and r["connector"] in ("groq_web", "gdelt")][:4]
+def _enrich(raw, limit=4, from_connectors=("groq_web", "gdelt"), min_snippet=300):
+    """Read the full pages of the top results (safe fetcher: no private addresses, size/time caps)."""
+    targets = [r for r in raw if "news.google.com" not in r["url"] and len(r["snippet"]) < min_snippet
+               and r["connector"] in from_connectors][:limit]
     if not targets:
         return
 
@@ -266,3 +273,6 @@ def _finish(run, claim):
         log_status(claim, Claim.Status.RESEARCHING, reason)
     if claim.status in (Claim.Status.PENDING, Claim.Status.UNDER_REVIEW):
         assign_verifiers(claim)
+        if settings.AI_AGENTS_ENABLED and run.status == ResearchRun.Status.DONE:
+            from .agents import run_agents
+            run_agents(claim, run)

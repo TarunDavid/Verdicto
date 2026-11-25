@@ -19,7 +19,7 @@
     </div>
     <div class="h-1.5 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-accent to-rose-400" style="width: {{ claim.confidence_pct }}%"></div></div>
     {% if claim.locked_by_admin %}<p class="text-xs text-amber-400 mt-2">{% translate "Verdict set by an admin override (see the change log for the reason)." %}</p>{% endif %}
-    {% if claim.status != "FINAL" %}<p class="text-xs text-zinc-500 mt-2">{% translate "Becomes final with 3+ verifier votes and 70%+ weighted agreement." %}</p>{% endif %}
+    {% if claim.status != "FINAL" %}<p class="text-xs text-zinc-500 mt-2">{% translate "Becomes final with 3+ verifier votes and 70%+ weighted agreement." %}{% if min_human %} {% translate "At least one of them must be a person, not an AI agent." %}{% endif %}</p>{% endif %}
   </div>
   <div class="mt-5 flex flex-wrap gap-2 text-sm">
     <a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-xl font-medium">
@@ -29,9 +29,50 @@
   </div>
 </div>
 
+{# ---------- Each verifier's verdict, with their notes and every source (public) ---------- #}
+{% if rows %}
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% if claim.status == "FINAL" %}{% translate "VERIFIED BY" %}{% else %}{% translate "VERDICTS SO FAR" %}{% endif %}</h2>
+<div class="space-y-3" id="verifier-verdicts">
+  {% for r in rows %}{% with v=r.vote u=r.vote.verifier %}
+  <div class="glass rounded-2xl p-4 bg-[#1a1c20] text-sm">
+    <div class="flex items-start gap-3 flex-wrap">
+      <div class="min-w-0">
+        <p class="font-medium">{% include "_name.html" with u=u %}</p>
+        <p class="text-xs text-zinc-400 mt-0.5">{% if u.profession %}{{ u.profession }}{% endif %}{% if u.profession and u.organisation %} · {% endif %}{% if u.organisation %}{{ u.organisation }}{% endif %}{% if u.work_email_verified %} · <span class="text-green-400">{% translate "work email verified" %}</span>{% endif %}</p>
+        <p class="text-xs mt-0.5">{% include "_record.html" with u=u %} · <span class="text-zinc-500">{% translate "weight" %} {{ v.weight_at_vote|floatformat:2 }}</span></p>
+        {% if r.insider %}<p class="text-xs mt-1 text-sky-300">{% blocktranslate with org=r.insider %}Works at {{ org }}, which this claim is about{% endblocktranslate %}</p>{% endif %}
+      </div>
+      <div class="sm:ml-auto text-right">
+        <span class="inline-block rounded-full px-3 py-1 text-xs font-semibold {% if v.verdict == 'FALSE' %}bg-red-500/20 text-red-300{% elif v.verdict == 'TRUE' %}bg-green-500/20 text-green-300{% elif v.verdict == 'UNVERIFIED' %}bg-amber-500/20 text-amber-300{% else %}bg-orange-500/20 text-orange-300{% endif %}">{{ v.get_verdict_display }}</span>
+        <p class="text-[11px] text-zinc-500 mt-1">{{ v.created_at|date:"d M Y, H:i" }}</p>
+      </div>
+    </div>
+    {% if v.note %}<p class="mt-3 text-zinc-200 whitespace-pre-line">{{ v.note }}</p>{% endif %}
+    {% if r.agent_run %}{% with sources=r.agent_run.sources.all %}
+    <details class="mt-3" open>
+      <summary class="cursor-pointer text-xs text-zinc-400">{% blocktranslate with n=sources|length %}Sources this AI agent used: {{ n }}{% endblocktranslate %}{% if r.agent_run.models_used %} · {{ r.agent_run.models_used|join:", " }}{% endif %}</summary>
+      <ol class="mt-2 space-y-1.5">{% for s in sources %}
+        <li class="text-xs"><span class="font-mono text-zinc-500">[{{ forloop.counter }}]</span>
+          <span class="px-1.5 py-0.5 rounded {% if s.stance == 'supports' %}bg-green-900/60 text-green-300{% elif s.stance == 'refutes' %}bg-red-900/60 text-red-300{% else %}bg-white/5 text-zinc-400{% endif %}">{{ s.get_stance_display }}</span>
+          <span class="text-zinc-500">{{ s.tier }}</span>
+          <a href="{{ s.url }}" target="_blank" rel="nofollow noopener noreferrer" class="underline decoration-zinc-600 hover:decoration-white">{{ s.title|default:s.url|truncatechars:90 }}</a>
+          <span class="text-zinc-500">— {{ s.publisher }} · {{ s.connector }}{% if s.published %}, {{ s.published|date:"d M Y" }}{% endif %}</span>
+          {% if s.quote %}<p class="text-zinc-400 italic ml-6">“{{ s.quote }}”</p>{% endif %}
+        </li>{% empty %}<li class="text-xs text-zinc-500">{% translate "No sources found." %}</li>{% endfor %}
+      </ol>
+    </details>
+    {% endwith %}{% else %}{% with ev=v.evidence.all %}{% if ev %}
+    <p class="mt-3 text-xs text-zinc-400">{% translate "Sources:" %}</p>
+    <ul class="mt-1 space-y-1 text-xs">{% for e in ev %}<li><a href="{{ e.url }}" rel="nofollow noopener noreferrer" target="_blank" class="underline decoration-zinc-600 break-all">{{ e.url }}</a>{% if e.is_official %} <span class="text-green-400">{% translate "Official source" %}</span>{% endif %}</li>{% endfor %}</ul>
+    {% endif %}{% endwith %}{% endif %}
+  </div>
+  {% endwith %}{% endfor %}
+</div>
+{% endif %}
+
 {# ---------- AI research ---------- #}
 <h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "AI RESEARCH" %}</h2>
-{% include "research/_card.html" %}
+{% include "research/_card.html" with full=True %}
 
 {# ---------- Community ---------- #}
 <h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "COMMUNITY OPINION" %}</h2>
@@ -51,6 +92,7 @@
   {% for a in assignments %}
   <div class="flex items-center gap-3 px-4 py-2.5 flex-wrap">
     <span class="font-medium">{% include "_name.html" with u=a.verifier %}</span>
+    <span class="text-xs">{% include "_record.html" with u=a.verifier %}</span>
     <span class="text-[11px] px-2 py-0.5 rounded-full {% if a.status == 'done' %}bg-green-500/15 text-green-300{% elif a.status == 'expired' %}bg-white/5 text-zinc-500{% else %}bg-sky-500/15 text-sky-300{% endif %}">{{ a.get_status_display }}</span>
     <span class="text-zinc-500 text-xs sm:ml-auto">{{ a.reason }}</span>
   </div>
