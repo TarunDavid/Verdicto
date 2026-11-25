@@ -66,7 +66,7 @@ def recompute(claim, trigger=None):
             reason = (f"Community vote ({trigger.verdict}) moved {result.leading} confidence to "
                       f"{result.confidence:.0%}")
         elif trigger is not None:
-            reason = (f"Vote by {trigger.verifier.username} ({trigger.verdict}) moved "
+            reason = (f"Vote by {trigger.verifier.display_name} ({trigger.verdict}) moved "
                       f"{result.leading} confidence to {result.confidence:.0%}")
         else:
             reason = f"Recomputed: {result.leading} at {result.confidence:.0%}"
