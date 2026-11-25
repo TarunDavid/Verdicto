@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-xl font-bold mb-1">Check a claim</h1>
+<p class="text-sm text-zinc-400 mb-4">Paste the forwarded message. Verifiers will review it.</p>
+<form method="post" class="space-y-4 text-sm">{% csrf_token %}
+  {{ form.non_field_errors }}
+  <div>
+    <label class="block mb-1">Message text</label>
+    <textarea name="text" rows="5" class="{{ form.text.field.widget.attrs.class }}"
+      hx-get="{% url 'similar' %}" hx-trigger="keyup changed delay:500ms, load" hx-target="#similar"
+      hx-include="[name=source_url]">{{ form.text.value|default:"" }}</textarea>
+    {% for e in form.text.errors %}<p class="text-red-400">{{ e }}</p>{% endfor %}
+  </div>
+  <div id="similar"></div>
+  <div>
+    <label class="block mb-1">Link (optional)</label>
+    <input name="source_url" value="{{ form.source_url.value|default:"" }}" class="{{ form.text.field.widget.attrs.class }}"
+      hx-get="{% url 'similar' %}" hx-trigger="change" hx-target="#similar" hx-include="[name=text]">
+    {% for e in form.source_url.errors %}<p class="text-red-400">{{ e }}</p>{% endfor %}
+  </div>
+  <div class="grid grid-cols-3 gap-2">
+    <div><label class="block mb-1">Language</label>{{ form.language }}</div>
+    <div><label class="block mb-1">Topic</label>{{ form.domain }}</div>
+    <div><label class="block mb-1">District</label>{{ form.district }}</div>
+  </div>
+  <button class="bg-accent px-4 py-2 rounded font-medium">Submit for verification</button>
+</form>
+{% endblock %}

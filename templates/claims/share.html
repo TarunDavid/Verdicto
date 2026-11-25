@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ og_title }} — Verdicto{% endblock %}
+{% block meta %}
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ og_title }}">
+<meta property="og:description" content="Crowd-verified by {{ claim.votes.count }} verifiers · {{ claim.confidence_pct }}% confidence">
+<meta property="og:url" content="{{ share_url }}">
+<meta property="og:site_name" content="Verdicto">
+<meta name="twitter:card" content="summary">
+{% endblock %}
+{% block content %}
+<div class="bg-zinc-900 border-2 {% if claim.display_verdict == 'FALSE' %}border-red-600{% elif claim.display_verdict == 'TRUE' %}border-green-600{% elif claim.display_verdict == 'UNVERIFIED' %}border-amber-500{% else %}border-zinc-600{% endif %} rounded-lg p-6 text-center">
+  <div class="text-3xl">{% include "_badge.html" %}</div>
+  <p class="mt-4 text-lg">“{{ claim.text|truncatechars:280 }}”</p>
+  <p class="mt-4 text-sm text-zinc-400">{{ claim.confidence_pct }}% confidence · {{ claim.votes.count }} verifier votes</p>
+  <a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="inline-block mt-6 bg-green-600 px-5 py-3 rounded-lg font-bold">Share on WhatsApp</a>
+  <p class="mt-4"><a href="{% url 'claim_detail' claim.pk %}" class="underline text-sm">See evidence and how the verdict was computed</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center py-16">
+  <p class="text-5xl font-bold text-accent">{{ status }}</p>
+  <p class="mt-4 text-zinc-300">{{ message }}</p>
+  <a href="{% url 'feed' %}" class="inline-block mt-6 underline">Back to the feed</a>
+</div>
+{% endblock %}

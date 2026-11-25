@@ -1,0 +1,5 @@
+{% if claim.status == "FINAL" %}
+  {% if claim.verdict == "FALSE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-red-600">FALSE</span>
+  {% elif claim.verdict == "TRUE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-green-600">TRUE</span>
+  {% else %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-black">UNVERIFIED</span>{% endif %}
+{% else %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-zinc-600">UNDER REVIEW</span>{% endif %}

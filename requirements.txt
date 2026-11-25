@@ -1,0 +1,6 @@
+Django==5.2.19
+django-ratelimit==4.1.0
+Faker==40.63.0
+nh3==0.3.8
+python-decouple==3.8
+RapidFuzz==3.14.6

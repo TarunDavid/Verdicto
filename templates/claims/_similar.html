@@ -1,0 +1,14 @@
+{% if matches %}
+<div class="border border-amber-500/50 bg-amber-500/10 rounded p-3">
+  <p class="font-medium text-amber-300 mb-2">Similar claims already checked</p>
+  {% for score, claim in matches %}
+  <div class="flex items-center gap-2 py-1">
+    {% include "_badge.html" %}
+    <a href="{% url 'claim_detail' claim.pk %}" class="flex-1 underline truncate">{{ claim.text|truncatechars:90 }}</a>
+    <span class="text-xs text-zinc-400">{{ score|floatformat:0 }}%</span>
+    <form method="post" action="{% url 'same_claim' claim.pk %}">{% csrf_token %}
+      <button class="text-xs bg-zinc-800 px-2 py-1 rounded">This is my claim</button></form>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

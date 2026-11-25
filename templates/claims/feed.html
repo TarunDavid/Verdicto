@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<form class="flex flex-wrap gap-2 mb-5 text-sm">
+  <input name="q" value="{{ f.q }}" placeholder="Search claims" class="flex-1 min-w-[10rem] rounded bg-zinc-900 border border-zinc-700 p-2">
+  <select name="language" class="rounded bg-zinc-900 border border-zinc-700 p-2">{% for v, l in langs %}<option value="{{ v }}" {% if v == f.language %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="domain" class="rounded bg-zinc-900 border border-zinc-700 p-2">{% for v, l in domains %}<option value="{{ v }}" {% if v == f.domain %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="status" class="rounded bg-zinc-900 border border-zinc-700 p-2">
+    <option value="">All verdicts</option>
+    <option value="FALSE" {% if f.status == "FALSE" %}selected{% endif %}>False</option>
+    <option value="TRUE" {% if f.status == "TRUE" %}selected{% endif %}>True</option>
+    <option value="UNVERIFIED" {% if f.status == "UNVERIFIED" %}selected{% endif %}>Unverified</option>
+    <option value="UNDER_REVIEW" {% if f.status == "UNDER_REVIEW" %}selected{% endif %}>Under review</option>
+  </select>
+  <button class="bg-zinc-800 px-3 rounded">Filter</button>
+</form>
+
+{% if trending %}
+<h2 class="text-xs uppercase tracking-wide text-zinc-400 mb-2">Trending</h2>
+<div class="flex gap-2 overflow-x-auto mb-6 pb-1">
+  {% for claim in trending %}
+  <a href="{% url 'claim_detail' claim.pk %}" class="min-w-[14rem] bg-zinc-900 border border-zinc-800 rounded p-3 text-sm">
+    {% include "_badge.html" %} <span class="text-zinc-400 text-xs">reported {{ claim.submission_count }}×</span>
+    <p class="mt-2 line-clamp-2">{{ claim.text }}</p>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<h2 class="text-xs uppercase tracking-wide text-zinc-400 mb-2">Latest</h2>
+<div class="space-y-3">
+{% for claim in claims %}
+  <a href="{% url 'claim_detail' claim.pk %}" class="block bg-zinc-900 border border-zinc-800 hover:border-accent rounded p-4">
+    <div class="flex items-center gap-2 text-xs text-zinc-400">
+      {% include "_badge.html" %}
+      <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %}</span>
+      <span class="ml-auto">{{ claim.confidence_pct }}%</span>
+    </div>
+    <p class="mt-2">{{ claim.text|truncatechars:180 }}</p>
+  </a>
+{% empty %}
+  <p class="text-zinc-400">No claims match these filters.</p>
+{% endfor %}
+</div>
+{% endblock %}
