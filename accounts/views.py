@@ -33,8 +33,13 @@ def signup(request):
     form = SignupForm(request.POST or None, initial={"role": role})
     if request.method == "POST" and form.is_valid():
         if settings.PHONE_OTP_ENABLED:
-            phone_otp.start(request, form.pending_data())
-            return redirect("signup_verify")
+            try:
+                phone_otp.start(request, form.pending_data())
+                return redirect("signup_verify")
+            except phone_otp.SMSError as exc:
+                request.session.pop(phone_otp.SESSION_KEY, None)
+                form.add_error(None, str(exc))
+                return render(request, "registration/signup.html", {"form": form, "role": role})
         user = form.save()
         login(request, user, backend="accounts.backends.PhoneBackend")
         return redirect("chat")

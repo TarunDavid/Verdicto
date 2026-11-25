@@ -153,6 +153,10 @@ ASSIGN_TOP_N = 3
 ASSIGNMENT_TIMEOUT_HOURS = 2
 
 PHONE_OTP_ENABLED = config("PHONE_OTP_ENABLED", default=False, cast=bool)  # SMS code at sign-up
+SMS_BACKEND = config("SMS_BACKEND", default="console")   # "console" (dev) or "twilio"
+TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="")
+TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="")
+TWILIO_FROM_NUMBER = config("TWILIO_FROM_NUMBER", default="")
 
 DEMO_PASSWORD = config("DEMO_PASSWORD", default="demo-pass-2026")
 ADMIN_PASSWORD = config("ADMIN_PASSWORD", default="") or DEMO_PASSWORD  # seed_demo's admin account

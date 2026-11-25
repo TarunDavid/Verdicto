@@ -53,7 +53,7 @@ Log in with a **phone number**. `seed_demo` prints all demo phones; they share o
 | Re-check, listen, time left | "↻ Re-check with latest sources" on the research card; "🔊 Listen" reads the verdict aloud (kn-IN / en-IN); the Verify Queue shows time left before reassignment |
 | Kannada UI | EN / ಕನ್ನಡ switch in the top bar and on the login page; users' preferred language is the default. Translations live in `locale/kn_strings.py`; run `python manage.py compilemo` after editing (builds the `.po`/`.mo` without GNU gettext). |
 
-| Phone OTP (optional) | `PHONE_OTP_ENABLED=True` adds a 6-digit SMS step to sign-up (`accounts/phone_otp.py`); in development the code prints in the server log. |
+| Phone OTP (optional) | `PHONE_OTP_ENABLED=True` adds a 6-digit SMS step to sign-up (`accounts/phone_otp.py`); in development the code prints in the server log; set `SMS_BACKEND=twilio` and the `TWILIO_*` values to send real SMS. |
 
 ## Production
 See the "Production" block in `.env.example`: `DEBUG=False` (HTTPS cookies, HSTS, SSL redirect),

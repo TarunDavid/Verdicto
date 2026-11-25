@@ -3,12 +3,12 @@
 Verdicto: a chat-first fact-check assistant for Karnataka. The AI researches a claim on live sources
 and gives a provisional answer; approved verifiers give the final, weighted verdict.
 
-## Status: feature-complete against SPEC.md, PRD.md and PRD2.md (97 tests passing)
+## Status: feature-complete against SPEC.md, PRD.md and PRD2.md (100 tests passing)
 
 | Area | Status | Notes |
 |---|---|---|
 | Roles, phone login, sign-up (regular user / verifier) | ✅ | Site-wide login; claim & share pages public |
-| Optional phone OTP at sign-up | ✅ | Off by default (`PHONE_OTP_ENABLED`); dev "SMS" prints to the server log |
+| Optional phone OTP at sign-up | ✅ | Off by default (`PHONE_OTP_ENABLED`); `SMS_BACKEND=console` (dev, prints to the log) or `twilio` |
 | Chat home (design 1), threads, follow-ups, voice input | ✅ | |
 | Screenshot checks (OCR) | ✅ | Groq vision (`qwen/qwen3.8-27b`); EXIF stripped, 5 MB cap, random names |
 | AI research pipeline + truth score | ✅ | Formula-based score; AI never sets the verdict |
@@ -26,6 +26,7 @@ and gives a provisional answer; approved verifiers give the final, weighted verd
 | Listen button, re-check with latest sources | ✅ | |
 | Kannada UI (247 strings) | ✅ | `locale/kn_strings.py` → `manage.py compilemo` |
 | Moderation (private individuals) | ✅ | AI auto-hold + admin hide/unhide |
+| End-to-end journey test | ✅ | `claims/test_journey.py`: sign-up → chat → research → votes → final → notice → archive/share/Kannada |
 | Production setup | ✅ | `RESEARCH_MODE=worker` + `run_worker`, Postgres via `DATABASE_URL`, shared cache, SMTP, HTTPS settings; `check --deploy` clean except optional HSTS preload |
 
 ## Decisions and simplifications
@@ -38,6 +39,5 @@ and gives a provisional answer; approved verifiers give the final, weighted verd
 - Tailwind and HTMX load from CDNs (no Node build step, per the SPEC's stack).
 
 ## Not done / future
-- Browser end-to-end tests (needs Selenium/Playwright, not in the approved stack); server-side tests cover the flows.
-- A real SMS gateway for phone OTP (`accounts/phone_otp.send_sms`).
+- Browser-driven tests (needs Selenium/Playwright, not in the approved stack); the journey test covers the full flow through the real views.
 - Merging verifier data into a separate profile table, if the team prefers the SPEC's original model.

@@ -22,7 +22,24 @@ def _hash(code, phone):
     return hmac.new(settings.SECRET_KEY.encode(), f"sms:{phone}:{code}".encode(), hashlib.sha256).hexdigest()
 
 
+class SMSError(Exception):
+    pass
+
+
 def send_sms(phone, text):
+    """SMS_BACKEND=console (development: prints to the server log) or twilio (Twilio REST API)."""
+    if settings.SMS_BACKEND == "twilio":
+        import httpx
+        try:
+            resp = httpx.post(
+                f"https://api.twilio.com/2010-04-01/Accounts/{settings.TWILIO_ACCOUNT_SID}/Messages.json",
+                auth=(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN),
+                data={"To": phone, "From": settings.TWILIO_FROM_NUMBER, "Body": text}, timeout=10)
+            resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            logger.error("SMS to %s failed: %s", phone[:-4] + "****", exc)  # never log the code
+            raise SMSError("We couldn't send the SMS right now. Please try again in a minute.")
+        return
     logger.warning("SMS to %s: %s", phone, text)  # development "gateway"
 
 
