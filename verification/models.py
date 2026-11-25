@@ -20,10 +20,10 @@ class Vote(models.Model):
     claim = models.ForeignKey(Claim, on_delete=models.CASCADE, related_name="votes")
     verifier = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                  related_name="votes")
-    verdict = models.CharField(max_length=10, choices=Verdict.choices)
+    verdict = models.CharField(max_length=16, choices=Verdict.choices)
     note = models.CharField(max_length=500, blank=True)
     weight_at_vote = models.FloatField()
-    scored_as = models.CharField(max_length=10, choices=Verdict.choices, null=True, blank=True)
+    scored_as = models.CharField(max_length=16, choices=Verdict.choices, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -58,8 +58,8 @@ class VerdictLog(models.Model):
     claim = models.ForeignKey(Claim, on_delete=models.PROTECT, related_name="logs")
     old_status = models.CharField(max_length=12, blank=True)
     new_status = models.CharField(max_length=12)
-    old_verdict = models.CharField(max_length=10, blank=True, null=True)
-    new_verdict = models.CharField(max_length=10, blank=True, null=True)
+    old_verdict = models.CharField(max_length=16, blank=True, null=True)
+    new_verdict = models.CharField(max_length=16, blank=True, null=True)
     old_confidence = models.FloatField(default=0)
     new_confidence = models.FloatField(default=0)
     reason = models.CharField(max_length=300)
@@ -95,4 +95,28 @@ class VerifierStat(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["verifier", "domain", "language"],
                                     name="one_stat_per_verifier_domain_language"),
+        ]
+
+
+class Assignment(models.Model):
+    """A claim routed to a verifier by the assignment ranking (PRD section 9)."""
+
+    class Status(models.TextChoices):
+        ASSIGNED = "assigned", "Assigned"
+        DONE = "done", "Done"
+        EXPIRED = "expired", "Expired"
+
+    claim = models.ForeignKey(Claim, on_delete=models.CASCADE, related_name="assignments")
+    verifier = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                 related_name="assignments")
+    score = models.FloatField()
+    reason = models.CharField(max_length=200)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.ASSIGNED)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-score"]
+        constraints = [
+            models.UniqueConstraint(fields=["claim", "verifier"], name="one_assignment_per_verifier"),
         ]

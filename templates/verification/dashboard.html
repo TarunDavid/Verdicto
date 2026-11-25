@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-xl font-bold mb-1">Your verification queue</h1>
+<p class="text-sm text-zinc-400 mb-4">Claims assigned to you by domain, language, track record and workload. Most important first.</p>
+<div class="space-y-3">
+{% for a in assigned %}
+  <a href="{% url 'claim_detail' a.claim.pk %}" class="block bg-zinc-900 border border-zinc-800 hover:border-accent rounded p-4">
+    <div class="flex items-center gap-2 text-xs text-zinc-400">{% with claim=a.claim %}{% include "_badge.html" %}{% endwith %}
+      <span class="uppercase {% if a.claim.urgency == 'high' %}text-red-400{% endif %}">{{ a.claim.urgency }} urgency</span>
+      <span class="ml-auto">match {{ a.score|floatformat:2 }}</span></div>
+    <p class="mt-2">{{ a.claim.text|truncatechars:160 }}</p>
+    <p class="text-xs text-zinc-500 mt-1">Why you: {{ a.reason }}</p>
+  </a>
+{% empty %}<p class="text-zinc-400">Nothing assigned to you right now.</p>{% endfor %}
+</div>
+{% if others %}
+<h2 class="mt-8 mb-2 text-sm uppercase text-zinc-400">Other open claims in your domains</h2>
+<div class="space-y-2">{% for claim in others %}<a href="{% url 'claim_detail' claim.pk %}" class="block text-sm bg-zinc-900 rounded p-3">{% include "_badge.html" %} {{ claim.text|truncatechars:120 }}</a>{% endfor %}</div>
+{% endif %}
+{% endblock %}

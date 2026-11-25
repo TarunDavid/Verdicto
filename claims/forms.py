@@ -61,8 +61,8 @@ class VoteForm(forms.Form):
                 errors[name] = exc.messages
         for name, msgs in errors.items():
             self.add_error(name, msgs)
-        if data.get("verdict") in ("TRUE", "FALSE") and not urls and not errors:
-            self.add_error("evidence_1", "At least one evidence link is required for TRUE/FALSE.")
+        if data.get("verdict") != "UNVERIFIED" and not urls and not errors:
+            self.add_error("evidence_1", "At least one evidence link is required for this verdict.")
         data["evidence_urls"] = urls
         return data
 

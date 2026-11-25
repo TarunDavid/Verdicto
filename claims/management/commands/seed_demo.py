@@ -8,6 +8,8 @@ from accounts.models import User
 from claims.duplicates import normalize
 from claims.models import Claim
 from verification.models import VerifierStat
+from research.ai import fallback_understanding
+from verification.assignment import assign_verifiers
 from verification.services import admin_override, cast_vote, log_submission
 
 # username: (languages, domains, district, work_email_org or None, approved, {(domain, lang): (correct, total)})
@@ -15,12 +17,12 @@ VERIFIERS = {
     "dr_meera": (["en", "kn"], ["health"], "Chikkamagaluru", None, True,
                  {("health", "en"): (8, 8), ("health", "kn"): (6, 7)}),
     "nurse_asha": (["en"], ["health"], "Hassan", None, True, {("health", "en"): (2, 2)}),
-    "kiran_new": (["en", "kn"], ["health", "education", "technology"], "Mysuru", None, True, {}),
+    "kiran_new": (["en", "kn"], ["health", "education", "technology", "local-news"], "Mysuru", None, True, {}),
     "prof_ravi": (["en", "kn"], ["education"], "Mysuru", "college.example.edu.in", True,
                   {("education", "en"): (12, 14), ("education", "kn"): (5, 5)}),
     "journo_divya": (["kn", "en"], ["local-news", "government"], "Bengaluru", None, True,
                      {("local-news", "kn"): (9, 11), ("government", "kn"): (4, 5)}),
-    "tech_arjun": (["en"], ["technology"], "Bengaluru", "it-company.example.com", True, {("technology", "en"): (6, 9)}),
+    "tech_arjun": (["en"], ["technology", "science"], "Bengaluru", "it-company.example.com", True, {("technology", "en"): (6, 9)}),
     "clerk_suma": (["kn"], ["government"], "Udupi", "taluk-office.example.in", True,
                    {("government", "kn"): (3, 3)}),
     "pending_vikram": (["kn"], ["local-news"], "Shivamogga", None, False, {}),
@@ -122,6 +124,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--reset", action="store_true", help="Delete demo data and reseed.")
+        parser.add_argument("--research", action="store_true",
+                            help="Also run live AI research on open claims (needs network; slow).")
 
     def handle(self, *args, **opts):
         usernames = ["admin", *CITIZENS, *VERIFIERS]
@@ -135,7 +139,16 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("Demo data already present (use --reset to reseed)."))
         else:
             self.seed()
+            if opts["research"]:
+                self.research()
         self.print_logins()
+
+    def research(self):
+        from research.pipeline import run_research
+        from research.models import ResearchRun
+        for claim in Claim.objects.filter(duplicate_of__isnull=True, status__in=["PENDING", "UNDER_REVIEW"]):
+            self.stdout.write(f"Researching: {claim.text[:60]}…")
+            run_research(ResearchRun.objects.create(claim=claim).pk)
 
     @transaction.atomic
     def seed(self):
@@ -162,6 +175,7 @@ class Command(BaseCommand):
         for i, (key, text, lang, domain, district, count, votes) in enumerate(CLAIMS):
             claim = Claim.objects.create(text=text, normalized_text=normalize(text), language=lang,
                                          domain=domain, district=district, submission_count=count,
+                                         urgency=fallback_understanding(text)["urgency"],
                                          submitted_by=citizens[i % len(citizens)])
             log_submission(claim, claim.submitted_by)
             for username, verdict, note, urls in votes:
@@ -170,6 +184,8 @@ class Command(BaseCommand):
 
         admin_override(created["mangaluru"], admin, "TRUE",
                        "District administration published the red-alert holiday order (demo data)")
+        for claim in Claim.objects.filter(status__in=["PENDING", "UNDER_REVIEW"]):
+            assign_verifiers(claim)
         text, original = DUPLICATE
         Claim.objects.create(text=text, normalized_text=normalize(text), language="en",
                              domain="education", district="Chikkamagaluru",

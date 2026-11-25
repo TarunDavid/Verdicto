@@ -6,7 +6,7 @@ from django.utils import timezone
 from claims.models import Claim
 
 from . import engine
-from .models import Evidence, VerdictLog, VerifierStat, Vote
+from .models import Assignment, Evidence, VerdictLog, VerifierStat, Vote
 
 
 class AlreadyVoted(Exception):
@@ -29,6 +29,7 @@ def cast_vote(claim, verifier, verdict, note="", evidence_urls=()):
         raise AlreadyVoted("You have already voted on this claim.")
     for url in evidence_urls:
         Evidence.objects.create(vote=vote, url=url)
+    Assignment.objects.filter(claim=claim, verifier=verifier).update(status=Assignment.Status.DONE)
     recompute(claim, trigger=vote)
     return vote
 
@@ -43,7 +44,11 @@ def recompute(claim, trigger=None):
 
     claim.leading = result.leading
     claim.confidence = result.confidence
-    claim.status = result.status
+    if result.status == "FINAL":
+        claim.status = Claim.Status.FINAL
+    else:
+        # Human votes exist but no consensus yet: "Under investigation".
+        claim.status = Claim.Status.UNDER_REVIEW if result.vote_count else Claim.Status.PENDING
     claim.verdict = result.verdict
     if result.status == "FINAL" and old[0] != "FINAL":
         claim.finalized_at = timezone.now()
@@ -97,6 +102,14 @@ def score_votes(claim):
 def log_submission(claim, user=None):
     VerdictLog.objects.create(claim=claim, old_status="", new_status=claim.status,
                               reason="Claim submitted for verification", changed_by=user)
+
+
+def log_status(claim, old_status, reason, changed_by=None):
+    """Log a status change that is not a verdict (e.g. AI research finished, moderation)."""
+    VerdictLog.objects.create(claim=claim, old_status=old_status, new_status=claim.status,
+                              old_verdict=claim.verdict, new_verdict=claim.verdict,
+                              old_confidence=claim.confidence, new_confidence=claim.confidence,
+                              reason=reason[:300], changed_by=changed_by)
 
 
 def _log(claim, old, reason, changed_by):

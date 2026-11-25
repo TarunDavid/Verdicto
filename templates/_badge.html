@@ -1,5 +1,10 @@
 {% if claim.status == "FINAL" %}
   {% if claim.verdict == "FALSE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-red-600">FALSE</span>
-  {% elif claim.verdict == "TRUE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-green-600">TRUE</span>
-  {% else %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-black">UNVERIFIED</span>{% endif %}
-{% else %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-zinc-600">UNDER REVIEW</span>{% endif %}
+  {% elif claim.verdict == "TRUE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-green-600">VERIFIED TRUE</span>
+  {% elif claim.verdict == "PARTIALLY_TRUE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-400 text-black">PARTIALLY TRUE</span>
+  {% elif claim.verdict == "MISLEADING" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-orange-500 text-black">MISLEADING</span>
+  {% else %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-black">UNVERIFIED · INSUFFICIENT EVIDENCE</span>{% endif %}
+{% elif claim.status == "UNDER_REVIEW" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-sky-700">UNDER INVESTIGATION</span>
+{% elif claim.status == "RESEARCHING" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-zinc-600 animate-pulse">AI RESEARCHING</span>
+{% elif claim.status == "REJECTED" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-zinc-800 border border-zinc-600">HELD FOR MODERATION</span>
+{% else %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-zinc-600">PENDING VERIFICATION</span>{% endif %}

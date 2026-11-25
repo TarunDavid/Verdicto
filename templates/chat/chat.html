@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block mainclass %}max-w-5xl{% endblock %}
+{% block content %}
+<div class="flex gap-4">
+  <aside class="hidden md:block w-60 shrink-0 text-sm">
+    <a href="{% url 'chat' %}" class="block bg-zinc-800 hover:bg-zinc-700 rounded px-3 py-2 mb-3">+ New check</a>
+    <p class="text-xs uppercase text-zinc-500 mb-1">Your checks{% if not user.is_authenticated %} (this browser){% endif %}</p>
+    {% for t in threads %}
+      <a href="{% url 'chat_thread' t.pk %}" class="block truncate px-3 py-1.5 rounded {% if thread and t.pk == thread.pk %}bg-zinc-800{% else %}hover:bg-zinc-900{% endif %}">{{ t.title }}</a>
+    {% empty %}<p class="text-zinc-500 px-3">Nothing yet.</p>{% endfor %}
+    {% if not user.is_authenticated %}<p class="text-xs text-zinc-500 mt-3"><a class="underline" href="{% url 'login' %}">Log in</a> to keep your history.</p>{% endif %}
+  </aside>
+
+  <section class="flex-1 min-w-0">
+    {% if error %}<p class="mb-3 text-red-400 text-sm">{{ error }}</p>{% endif %}
+    {% if not thread %}
+      <h1 class="text-2xl font-bold">Got a forward you're not sure about?</h1>
+      <p class="text-zinc-400 mt-1 mb-4 text-sm">Paste the message or a link. I'll research it on live sources and give a provisional answer in about 30 seconds. Human fact-checkers then publish the final verdict.</p>
+      <form method="post" action="{% url 'chat_send' %}" class="space-y-2">{% csrf_token %}
+        <textarea name="text" rows="5" required placeholder="Paste the WhatsApp message, news headline or link…" class="w-full rounded bg-zinc-900 border border-zinc-700 p-3"></textarea>
+        <div class="flex items-center gap-2 text-sm">
+          <select name="language" class="rounded bg-zinc-900 border border-zinc-700 p-2"><option value="en">English</option><option value="kn">ಕನ್ನಡ Kannada</option></select>
+          <button class="ml-auto bg-accent px-4 py-2 rounded font-medium">Check it</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="space-y-4">
+        {% for m in messages_list %}
+          {% if m.sender == "user" %}
+            <div class="flex justify-end"><div class="bg-zinc-800 rounded-lg px-4 py-2 max-w-[85%] whitespace-pre-line">{{ m.content }}</div></div>
+          {% else %}
+            <div class="max-w-[95%]">
+              <p class="text-xs text-accent font-bold mb-1">Verdicto</p>
+              <p class="whitespace-pre-line">{{ m.content }}</p>
+              {% if m.card_claim %}<div class="mt-2" hx-get="{% url 'research_card' m.card_claim.pk %}" hx-trigger="load" hx-swap="outerHTML"><p class="text-sm text-zinc-500">Loading…</p></div>{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <form method="post" action="{% url 'chat_reply' thread.pk %}" class="mt-6 flex gap-2">{% csrf_token %}
+        <input name="text" required placeholder="Ask a follow-up, e.g. what do official sources say?" class="flex-1 rounded bg-zinc-900 border border-zinc-700 p-2 text-sm">
+        <button class="bg-zinc-700 px-4 rounded text-sm">Ask</button>
+      </form>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

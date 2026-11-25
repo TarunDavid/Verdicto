@@ -1,7 +1,7 @@
 """Weighted verdict engine (SPEC section 6). Pure functions, no database access."""
 from dataclasses import dataclass
 
-OPTIONS = ("FALSE", "TRUE", "UNVERIFIED")  # order also breaks ties deterministically
+OPTIONS = ("FALSE", "TRUE", "MISLEADING", "PARTIALLY_TRUE", "UNVERIFIED")  # order breaks ties
 PRIOR_A = 2
 PRIOR_B = 2
 VERIFIED_PRIOR_A = 3   # trust bonus for a verified work email

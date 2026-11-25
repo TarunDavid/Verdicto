@@ -16,4 +16,6 @@ def vote_context(request, claim, vote_form=None, override_form=None):
         "vote_form": vote_form or VoteForm(),
         "is_admin": user.is_authenticated and user.is_admin_role,
         "override_form": override_form or OverrideForm(),
+        "run": claim.research_runs.first(),
+        "assignments": claim.assignments.select_related("verifier"),
     }
