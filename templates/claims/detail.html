@@ -34,7 +34,7 @@
 
 {% if assignments %}
 <h2 class="mt-6 mb-2 font-bold">Assigned verifiers</h2>
-<ul class="text-sm space-y-1">{% for a in assignments %}<li><b>{{ a.verifier.username }}</b> <span class="text-xs px-1 rounded bg-zinc-800">{{ a.get_status_display }}</span> <span class="text-zinc-400 text-xs">{{ a.reason }}</span></li>{% endfor %}</ul>
+<ul class="text-sm space-y-1">{% for a in assignments %}<li><b>{% include "_name.html" with u=a.verifier %}</b> <span class="text-xs px-1 rounded bg-zinc-800">{{ a.get_status_display }}</span> <span class="text-zinc-400 text-xs">{{ a.reason }}</span></li>{% endfor %}</ul>
 {% endif %}
 
 <h2 class="mt-6 mb-2 font-bold">How the human verdict was computed</h2>
@@ -44,7 +44,7 @@
   <tbody>
   {% for r in rows %}
   <tr class="border-t border-zinc-800 align-top">
-    <td class="py-2">{{ r.vote.verifier.username }}{% if r.vote.verifier.work_email_verified %}<br><span class="text-xs text-green-400">✓ {{ r.vote.verifier.org_domain }}</span>{% endif %}</td>
+    <td class="py-2">{% include "_name.html" with u=r.vote.verifier %}{% if r.vote.verifier.work_email_verified %}<br><span class="text-xs text-green-400">✓ {{ r.vote.verifier.org_domain }}</span>{% endif %}</td>
     <td>{{ r.record }}</td>
     <td>{{ r.vote.weight_at_vote|floatformat:2 }}</td>
     <td><b>{{ r.vote.verdict }}</b>{% if r.vote.note %}<p class="text-xs text-zinc-400">{{ r.vote.note }}</p>{% endif %}</td>
@@ -85,7 +85,7 @@
   {% for log in logs %}
   <li><span class="text-zinc-500 text-xs">{{ log.created_at|date:"d M, H:i" }}</span>
     <span class="text-xs">{{ log.old_status|default:"NEW" }}{% if log.old_verdict %}/{{ log.old_verdict }}{% endif %} → <b>{{ log.new_status }}{% if log.new_verdict %}/{{ log.new_verdict }}{% endif %}</b></span>
-    <p>{{ log.reason }} <span class="text-zinc-500">— {% if log.changed_by %}{{ log.changed_by.username }}{% else %}system{% endif %}</span></p></li>
+    <p>{{ log.reason }} <span class="text-zinc-500">— {% if log.changed_by %}{% include "_name.html" with u=log.changed_by %}{% else %}system{% endif %}</span></p></li>
   {% empty %}<li class="text-zinc-400">No changes yet.</li>{% endfor %}
 </ol>
 {% endblock %}
