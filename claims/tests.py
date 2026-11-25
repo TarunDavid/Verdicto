@@ -119,7 +119,7 @@ class WorkEmailTests(TestCase):
         self.assertContains(resp, "not a free email provider")
         self.assertEqual(len(mail.outbox), 0)
 
-    @mock.patch("accounts.work_email.socket.getaddrinfo", return_value=[None])
+    @mock.patch("accounts.work_email.has_mail_server", return_value=True)
     def test_full_flow_gives_badge_and_trust_bonus(self, _dns):
         self.post(action="send_code", email="Dr@Hospital.Example.in")
         self.assertEqual(mail.outbox[-1].to, ["dr@hospital.example.in"])
@@ -134,7 +134,7 @@ class WorkEmailTests(TestCase):
         vote = cast_vote(claim, self.v, "UNVERIFIED")
         self.assertAlmostEqual(vote.weight_at_vote, 0.6)
 
-    @mock.patch("accounts.work_email.socket.getaddrinfo", return_value=[None])
+    @mock.patch("accounts.work_email.has_mail_server", return_value=True)
     def test_attempt_limit(self, _dns):
         work_email.send_code(self.v, "a@org.example.in")
         for _ in range(5):
@@ -231,3 +231,158 @@ class KannadaUITests(TestCase):
 
     def test_login_page_switcher_for_visitors(self):
         self.assertContains(self.client.get(reverse("login")), "ಕನ್ನಡ")
+
+
+# ---------------- Round 3: cross-language duplicates, ops, OTP, worker ----------------
+from datetime import timedelta  # noqa: E402
+
+from django.core.management import call_command  # noqa: E402
+from django.utils import timezone  # noqa: E402
+
+from accounts import phone_otp  # noqa: E402
+from claims.duplicates import find_same_claim  # noqa: E402
+from verification.models import Assignment  # noqa: E402
+
+
+@override_settings(**OFFLINE)
+class CrossLanguageDuplicateTests(TestCase):
+    def setUp(self):
+        self.kn = Claim.objects.create(text="ಮಕ್ಕಳ ಅಪಹರಣ ಗ್ಯಾಂಗ್ ಹಾಸನದಲ್ಲಿ ಓಡಾಡುತ್ತಿದೆ", language="kn",
+                                       canonical_en="A child abduction gang is operating in Hassan.")
+        Claim.objects.create(text="5G towers spread viruses in Mysuru", canonical_en="5G towers in Mysuru spread a virus.")
+
+    def test_ai_confirms_translated_duplicate(self):
+        with mock.patch.object(ai, "pick_same_claim", return_value=self.kn.pk) as pick:
+            match = find_same_claim("Child kidnapping gang roaming in Hassan!", "A child kidnapping gang is roaming in Hassan.")
+        self.assertEqual(match[1], self.kn)
+        candidates = dict(pick.call_args.args[1])
+        self.assertIn(self.kn.pk, candidates)          # the Kannada claim was offered as a candidate
+
+    def test_no_match_when_ai_says_different(self):
+        with mock.patch.object(ai, "pick_same_claim", return_value=None):
+            self.assertIsNone(find_same_claim("Kidnapping gang in Udupi", "A kidnapping gang is active in Udupi."))
+
+    def test_chat_attaches_to_kannada_original(self):
+        user = User.objects.create_user("u", password="pw-123456")
+        self.client.force_login(user)
+        with mock.patch.object(ai, "canonical_english", return_value="A child kidnapping gang is roaming in Hassan."), \
+             mock.patch.object(ai, "pick_same_claim", return_value=self.kn.pk):
+            self.client.post(reverse("chat_send"), {"text": "Child kidnapping gang roaming in Hassan, keep kids inside"})
+        self.kn.refresh_from_db()
+        self.assertEqual(self.kn.submission_count, 2)
+        self.assertEqual(Claim.objects.count(), 2)     # no new claim created
+
+
+@override_settings(RATELIMIT_ENABLE=False, ASSIGNMENT_TIMEOUT_HOURS=2)
+class OperationsTests(TestCase):
+    def test_overdue_assignments_reassigned_without_cron(self):
+        from django.core.cache import cache
+        cache.delete("reassign_stale:lock")
+        claim = Claim.objects.create(text="Dengue cure claim here", domain="health", language="en")
+        slow = verifier("slow", domains=["health"], languages=["en"])
+        verifier("next", domains=["health"], languages=["en"])
+        a = Assignment.objects.create(claim=claim, verifier=slow, score=1, reason="x")
+        Assignment.objects.filter(pk=a.pk).update(created_at=timezone.now() - timedelta(hours=3))
+        self.client.force_login(User.objects.create_user("c", password="pw-123456"))
+        self.client.get(reverse("chat"))               # any page view runs the throttled check
+        a.refresh_from_db()
+        self.assertEqual(a.status, "expired")
+        self.assertTrue(claim.assignments.filter(verifier__username="next", status="assigned").exists())
+
+    def test_admin_approval_is_recorded(self):
+        admin_user = User.objects.create_superuser("boss", password="pw-123456", role="admin")
+        pending = User.objects.create_user("p", password="pw-123456", role="verifier")
+        self.client.force_login(admin_user)
+        self.client.post("/admin/accounts/user/", {"action": "approve", "_selected_action": [pending.pk]})
+        pending.refresh_from_db()
+        self.assertTrue(pending.verifier_approved)
+        self.assertEqual(pending.approved_by, admin_user)
+        self.assertIsNotNone(pending.approved_at)
+
+    def test_domain_without_mail_server_rejected(self):
+        with mock.patch("accounts.work_email.has_mail_server", return_value=False):
+            with self.assertRaisesRegex(work_email.WorkEmailError, "can't receive email"):
+                work_email.check_domain("a@nomail.example.in")
+
+    def test_status_labels_translate_codes(self):
+        from claims.templatetags.verdicto import status_label
+        self.assertEqual(status_label("UNDER_REVIEW"), "Under investigation")
+        self.assertEqual(status_label(""), "NEW")
+
+    def test_postgres_url_parsing(self):
+        from factcheck.settings import _database
+        db = _database("postgres://ver:s%40cret@db.local:5433/verdicto")
+        self.assertEqual((db["ENGINE"], db["NAME"], db["USER"], db["PASSWORD"], db["HOST"], db["PORT"]),
+                         ("django.db.backends.postgresql", "verdicto", "ver", "s@cret", "db.local", "5433"))
+        self.assertEqual(_database("")["ENGINE"], "django.db.backends.sqlite3")
+
+    def test_pubmed_connector_parses_results(self):
+        class R:
+            def __init__(self, data): self.data = data
+            def json(self): return self.data
+        responses = [R({"esearchresult": {"idlist": ["123"]}}),
+                     R({"result": {"123": {"title": "Papaya leaf and platelets", "fulljournalname": "J Med",
+                                           "sortpubdate": "2024/05/01 00:00"}}})]
+        with mock.patch.object(connectors, "get", side_effect=responses):
+            out = connectors.pubmed("papaya dengue", "en")
+        self.assertEqual(out[0]["url"], "https://pubmed.ncbi.nlm.nih.gov/123/")
+        self.assertEqual(out[0]["force_tier"], "academic")
+
+
+SIGNUP_DATA = {"role": "citizen", "name": "Ravi K", "phone": "9845011111", "interests": ["health"],
+               "preferred_language": "en", "password": "strong-pass-2026", "consent": "on"}
+
+
+@override_settings(RATELIMIT_ENABLE=False, PHONE_OTP_ENABLED=True)
+class PhoneOTPTests(TestCase):
+    def signup(self):
+        with mock.patch.object(phone_otp, "send_sms") as sms:
+            resp = self.client.post(reverse("signup"), SIGNUP_DATA)
+        return resp, re.search(r"\b(\d{6})\b", sms.call_args.args[1]).group(1)
+
+    def test_account_created_only_after_correct_code(self):
+        resp, code = self.signup()
+        self.assertRedirects(resp, reverse("signup_verify"))
+        self.assertEqual(User.objects.count(), 0)
+        self.assertNotIn(code, str(self.client.session[phone_otp.SESSION_KEY]))   # only a hash in the session
+        self.assertContains(self.client.post(reverse("signup_verify"), {"code": "000000"}), "Wrong code")
+        resp = self.client.post(reverse("signup_verify"), {"code": code})
+        self.assertRedirects(resp, reverse("chat"))
+        user = User.objects.get(phone="+919845011111")
+        self.assertTrue(user.check_password("strong-pass-2026"))
+
+    def test_too_many_attempts(self):
+        _, code = self.signup()
+        for _ in range(5):
+            self.client.post(reverse("signup_verify"), {"code": "000000"})
+        self.client.post(reverse("signup_verify"), {"code": code})
+        self.assertEqual(User.objects.count(), 0)
+
+    @override_settings(PHONE_OTP_ENABLED=False)
+    def test_off_by_default_creates_account_directly(self):
+        self.assertRedirects(self.client.post(reverse("signup"), SIGNUP_DATA), reverse("chat"))
+        self.assertEqual(User.objects.count(), 1)
+
+
+@override_settings(RESEARCH_SYNC=False, RESEARCH_MODE="worker", RESEARCH_CONNECTORS=["fake"], GROQ_API_KEY="")
+class WorkerModeTests(TestCase):
+    def test_queue_then_worker_processes(self):
+        from research.pipeline import start_research
+        with mock.patch.dict(connectors.CONNECTORS, {"fake": lambda q, l: []}):
+            claim = Claim.objects.create(text="Some claim to research later", status="RESEARCHING")
+            run = start_research(claim)
+            self.assertEqual(run.status, "queued")
+            call_command("run_worker", "--once", stdout=io.StringIO())
+        run.refresh_from_db()
+        claim.refresh_from_db()
+        self.assertEqual((run.status, claim.status), ("done", "PENDING"))
+
+    def test_stuck_runs_recovered(self):
+        from research.pipeline import recover_stuck
+        claim = Claim.objects.create(text="Claim whose worker crashed", status="RESEARCHING")
+        run = ResearchRun.objects.create(claim=claim, status="running")
+        ResearchRun.objects.filter(pk=run.pk).update(created_at=timezone.now() - timedelta(minutes=30))
+        recover_stuck()
+        run.refresh_from_db()
+        claim.refresh_from_db()
+        self.assertEqual((run.status, claim.status), ("failed", "PENDING"))

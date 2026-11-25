@@ -98,5 +98,5 @@ class OverrideForm(forms.Form):
         return reason
 
 
-FILTER_LANG = [("", "All languages")] + LANGUAGES
-FILTER_DOMAIN = [("", "All domains")] + DOMAINS
+FILTER_LANG = [("", _("All languages"))] + LANGUAGES
+FILTER_DOMAIN = [("", _("All domains"))] + DOMAINS

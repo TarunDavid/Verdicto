@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from accounts.models import DOMAINS, LANGUAGES
 from claims.models import Claim, Verdict
@@ -102,9 +103,9 @@ class Assignment(models.Model):
     """A claim routed to a verifier by the assignment ranking (PRD section 9)."""
 
     class Status(models.TextChoices):
-        ASSIGNED = "assigned", "Assigned"
-        DONE = "done", "Done"
-        EXPIRED = "expired", "Expired"
+        ASSIGNED = "assigned", _("Assigned")
+        DONE = "done", _("Done")
+        EXPIRED = "expired", _("Expired")
 
     claim = models.ForeignKey(Claim, on_delete=models.CASCADE, related_name="assignments")
     verifier = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,

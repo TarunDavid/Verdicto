@@ -56,5 +56,11 @@ class Command(BaseCommand):
         for msgid, msgstr in kn.items():
             po += ["", f'msgid "{po_escape(msgid)}"', f'msgstr "{po_escape(msgstr)}"']
         (out_dir / "django.po").write_text("\n".join(po) + "\n", encoding="utf-8")
-        write_mo({"": HEADER, **kn}, out_dir / "django.mo")
+        catalog = {"": HEADER, **kn}
+        # Django's {% translate %} doubles "%" in literal strings before the lookup, so keys like
+        # "70%+" are looked up as "70%%+": store that form too (placeholders like %(n)s untouched).
+        for msgid, msgstr in kn.items():
+            if "%" in msgid and "%(" not in msgid:
+                catalog[msgid.replace("%", "%%")] = msgstr
+        write_mo(catalog, out_dir / "django.mo")
         self.stdout.write(self.style.SUCCESS(f"Compiled {len(kn)} Kannada strings."))

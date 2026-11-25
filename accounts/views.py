@@ -9,7 +9,9 @@ from django_ratelimit.core import is_ratelimited
 
 from verification import engine
 
-from . import work_email
+from django.conf import settings
+
+from . import phone_otp, work_email
 from .forms import LoginForm, SignupForm
 from .models import User
 
@@ -30,10 +32,39 @@ def signup(request):
         return render(request, "registration/signup_role.html")
     form = SignupForm(request.POST or None, initial={"role": role})
     if request.method == "POST" and form.is_valid():
+        if settings.PHONE_OTP_ENABLED:
+            phone_otp.start(request, form.pending_data())
+            return redirect("signup_verify")
         user = form.save()
         login(request, user, backend="accounts.backends.PhoneBackend")
         return redirect("chat")
     return render(request, "registration/signup.html", {"form": form, "role": role})
+
+
+@login_not_required
+@ratelimit(key="ip", rate="20/h", method="POST", block=True)
+def signup_verify(request):
+    """Second sign-up step when PHONE_OTP_ENABLED: enter the 6-digit SMS code."""
+    from .forms import OTPForm, create_user_from
+    pending = request.session.get(phone_otp.SESSION_KEY)
+    if not pending:
+        return redirect("signup")
+    form, error = OTPForm(request.POST or None), ""
+    if request.method == "POST" and form.is_valid():
+        data, error = phone_otp.check(request, form.cleaned_data["code"])
+        if data:
+            try:
+                user = create_user_from(data)
+            except Exception as exc:  # e.g. the number was registered meanwhile
+                error = str(getattr(exc, "message", exc))
+            else:
+                login(request, user, backend="accounts.backends.PhoneBackend")
+                return redirect("chat")
+        if not request.session.get(phone_otp.SESSION_KEY):
+            return render(request, "registration/signup_verify.html", {"form": form, "error": error,
+                                                                        "expired": True})
+    return render(request, "registration/signup_verify.html", {
+        "form": form, "error": error, "phone": pending["data"]["phone"][-4:]})
 
 
 def become_verifier(request):

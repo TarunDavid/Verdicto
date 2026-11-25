@@ -132,6 +132,80 @@ def gdelt(query, language):
              "published": _date(a.get("seendate"))} for a in resp.json().get("articles", [])]
 
 
+def pubmed(query, language):
+    """PubMed (NCBI E-utilities, free): peer-reviewed medical literature."""
+    base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
+    ids = get(base + "esearch.fcgi", params={"db": "pubmed", "term": query, "retmode": "json",
+              "retmax": 3, "sort": "relevance"}, accept="application/json").json()
+    idlist = ids.get("esearchresult", {}).get("idlist", [])
+    if not idlist:
+        return []
+    summary = get(base + "esummary.fcgi", params={"db": "pubmed", "id": ",".join(idlist),
+                  "retmode": "json"}, accept="application/json").json().get("result", {})
+    out = []
+    for pmid in idlist:
+        item = summary.get(pmid, {})
+        out.append({"url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/", "title": item.get("title", ""),
+                    "snippet": f'{item.get("title", "")} {item.get("fulljournalname", "")}'.strip(),
+                    "published": _date((item.get("sortpubdate") or "")[:10].replace("/", "-")),
+                    "force_tier": "academic"})
+    return out
+
+
+def semantic_scholar(query, language):
+    """Semantic Scholar paper search. Needs SEMANTIC_SCHOLAR_API_KEY (unauthenticated calls are
+    rate-limited to near zero)."""
+    if not settings.SEMANTIC_SCHOLAR_API_KEY:
+        return []
+    import httpx
+    from .fetch import user_agent
+    resp = httpx.get("https://api.semanticscholar.org/graph/v1/paper/search", timeout=8,
+                     params={"query": query, "limit": 3, "fields": "title,url,abstract,publicationDate"},
+                     headers={"x-api-key": settings.SEMANTIC_SCHOLAR_API_KEY, "User-Agent": user_agent()})
+    resp.raise_for_status()
+    return [{"url": p.get("url") or "", "title": p.get("title") or "", "snippet": (p.get("abstract") or "")[:1200],
+             "published": _date(p.get("publicationDate")), "force_tier": "academic"}
+            for p in resp.json().get("data", [])]
+
+
+OFFICIAL_SITES = ("pib.gov.in", "karnataka.gov.in", "nic.in", "vtu.ac.in", "mohfw.gov.in", "who.int")
+
+
+def official_news(query, language):
+    """Official announcements via Google News RSS restricted to government domains. (PIB's own RSS
+    blocks automated clients, so we don't hit it directly.)"""
+    sites = " OR ".join(f"site:{d}" for d in OFFICIAL_SITES)
+    return google_news(f"{query} ({sites})", language)
+
+
+_reddit_token = {"value": None, "expires": 0}
+
+
+def reddit(query, language):
+    """Reddit official API (app-only OAuth). Needs REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET."""
+    if not (settings.REDDIT_CLIENT_ID and settings.REDDIT_CLIENT_SECRET):
+        return []
+    import time
+
+    import httpx
+    from .fetch import user_agent
+    if not _reddit_token["value"] or _reddit_token["expires"] < time.time():
+        tok = httpx.post("https://www.reddit.com/api/v1/access_token", timeout=8,
+                         data={"grant_type": "client_credentials"},
+                         auth=(settings.REDDIT_CLIENT_ID, settings.REDDIT_CLIENT_SECRET),
+                         headers={"User-Agent": user_agent()})
+        tok.raise_for_status()
+        _reddit_token.update(value=tok.json()["access_token"], expires=time.time() + 3000)
+    resp = httpx.get("https://oauth.reddit.com/search", timeout=8,
+                     params={"q": query, "limit": 4, "sort": "relevance", "t": "month"},
+                     headers={"Authorization": f"Bearer {_reddit_token['value']}", "User-Agent": user_agent()})
+    resp.raise_for_status()
+    return [{"url": "https://www.reddit.com" + c["data"]["permalink"], "title": c["data"].get("title", ""),
+             "snippet": (c["data"].get("selftext") or c["data"].get("title", ""))[:800],
+             "published": datetime.fromtimestamp(c["data"].get("created_utc", 0), tz=dt_tz.utc),
+             "force_tier": "social"} for c in resp.json().get("data", {}).get("children", [])]
+
+
 CONNECTORS = {
     "groq_web": groq_web,
     "google_news": google_news,
@@ -140,6 +214,10 @@ CONNECTORS = {
     "openalex": openalex,
     "crossref": crossref,
     "gdelt": gdelt,
+    "pubmed": pubmed,
+    "semantic_scholar": semantic_scholar,
+    "official_news": official_news,
+    "reddit": reddit,
 }
-ACADEMIC = {"openalex", "crossref"}
+ACADEMIC = {"openalex", "crossref", "pubmed", "semantic_scholar"}
 ACADEMIC_DOMAINS = {"health", "science", "technology"}

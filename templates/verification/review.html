@@ -2,17 +2,17 @@
 {% load i18n %}
 {% block mainclass %}max-w-6xl{% endblock %}
 {% block content %}
-<a href="{% url 'verify_dashboard' %}" class="text-xs text-zinc-400 hover:text-white">← Verify Queue</a>
+<a href="{% url 'verify_dashboard' %}" class="text-xs text-zinc-400 hover:text-white">{% translate "← Verify Queue" %}</a>
 <div class="grid lg:grid-cols-2 gap-5 mt-3">
   <section class="space-y-4">
     <div class="glass rounded-2xl p-5 bg-[#1a1c20]">
       <div class="flex items-center gap-2 text-xs text-zinc-400 flex-wrap">{% include "_badge.html" %}
         {% if claim.urgency == "high" %}<b class="text-red-400">{% translate "URGENT" %}</b>{% endif %}
-        <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %} · reported {{ claim.submission_count }}×</span></div>
+        <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %} · {% blocktranslate with n=claim.submission_count %}reported {{ n }}×{% endblocktranslate %}</span></div>
       <p class="mt-3 text-lg whitespace-pre-line">{{ claim.text }}</p>
       {% if claim.screenshot %}<a href="{{ claim.screenshot.url }}" target="_blank" rel="noopener" class="block mt-3"><img src="{{ claim.screenshot.url }}" alt="Submitted screenshot" class="max-h-64 rounded-xl border border-white/10"></a>{% endif %}
       {% if claim.source_url %}<a href="{{ claim.source_url }}" target="_blank" rel="nofollow noopener noreferrer" class="text-xs underline text-zinc-400">{{ claim.source_url|truncatechars:70 }}</a>{% endif %}
-      <p class="mt-3 text-sm text-zinc-300">Community: {% if community %}<b>{{ community.top_pct }}% {{ community.top }}</b>, {{ community.total }} vote{{ community.total|pluralize }}{% else %}no votes yet{% endif %}</p>
+      <p class="mt-3 text-sm text-zinc-300">{% translate "Community:" %} {% if community %}<b>{{ community.top_pct }}% {{ community.top }}</b>, {{ community.total }}{% else %}{% translate "no votes yet" %}{% endif %}</p>
       {% if rows %}<p class="mt-1 text-xs font-mono text-zinc-500">{{ arithmetic }}</p>{% endif %}
     </div>
 
@@ -26,13 +26,13 @@
         {% endfor %}
       </div>
       {% for e in vote_form.verdict.errors %}<p class="text-red-400 text-xs">{{ e }}</p>{% endfor %}
-      <textarea name="note" rows="3" maxlength="500" placeholder="Note (required): what did you check?" class="w-full rounded-xl bg-white/5 border border-white/10 p-3 focus:outline-none">{{ vote_form.note.value|default:"" }}</textarea>
+      <textarea name="note" rows="3" maxlength="500" placeholder="{% translate "Note (required): what did you check?" %}" class="w-full rounded-xl bg-white/5 border border-white/10 p-3 focus:outline-none">{{ vote_form.note.value|default:"" }}</textarea>
       {% for e in vote_form.note.errors %}<p class="text-red-400 text-xs">{{ e }}</p>{% endfor %}
       {% for f in vote_form %}{% if "evidence" in f.name %}
-        <input name="{{ f.name }}" value="{{ f.value|default:"" }}" placeholder="Evidence link (https://…)" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none">
+        <input name="{{ f.name }}" value="{{ f.value|default:"" }}" placeholder="{% translate "Evidence link (https://…)" %}" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none">
         {% for e in f.errors %}<p class="text-red-400 text-xs">{{ e }}</p>{% endfor %}
       {% endif %}{% endfor %}
-      <p class="text-xs text-zinc-500">At least one evidence link is required unless you vote Unverified. Votes can't be changed.</p>
+      <p class="text-xs text-zinc-500">{% translate "At least one evidence link is required unless you vote Unverified. Votes can't be changed." %}</p>
       <button class="bg-white text-black rounded-xl px-5 py-2 font-semibold">{% translate "Submit verdict" %}</button>
     </form>
     {% elif has_voted %}<p class="glass rounded-2xl p-4 text-sm text-zinc-400">You have already voted on this claim.</p>{% endif %}

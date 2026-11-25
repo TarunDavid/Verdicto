@@ -16,7 +16,7 @@
 {% empty %}<p class="text-zinc-400 glass rounded-2xl p-6 text-center">{% translate "Nothing assigned to you right now." %}</p>{% endfor %}
 </div>
 {% if others %}
-<h2 class="mt-8 mb-2 text-xs tracking-[.18em] text-zinc-500">OTHER OPEN CLAIMS IN YOUR FIELDS</h2>
+<h2 class="mt-8 mb-2 text-xs tracking-[.18em] text-zinc-500">{% translate "OTHER OPEN CLAIMS IN YOUR FIELDS" %}</h2>
 <div class="space-y-2">{% for claim in others %}<a href="{% url 'verify_review' claim.pk %}" class="block text-sm glass rounded-xl p-3 hover:bg-white/5">{% include "_badge.html" %} <span class="ml-1">{{ claim.text|truncatechars:120 }}</span></a>{% endfor %}</div>
 {% endif %}
 {% endblock %}

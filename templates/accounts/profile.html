@@ -1,35 +1,36 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block content %}
 <div class="pt-2 flex items-center gap-4">
   <div class="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-teal-500 grid place-items-center text-xl font-semibold">{{ user.initials }}</div>
   <div>
     <h1 class="text-2xl font-medium">{% include "_name.html" with u=user %}</h1>
-    <p class="text-sm text-zinc-400">{{ user.get_role_display }} · {{ user.phone|default:"" }} <span class="text-xs text-zinc-600">(phone is private)</span></p>
+    <p class="text-sm text-zinc-400">{{ user.get_role_display }} · {{ user.phone|default:"" }} <span class="text-xs text-zinc-600">{% translate "(phone is private)" %}</span></p>
   </div>
-  {% if user.can_vote %}<a href="{% url 'verifier_profile' user.pk %}" class="ml-auto text-xs underline text-zinc-400">View public profile</a>{% endif %}
+  {% if user.can_vote %}<a href="{% url 'verifier_profile' user.pk %}" class="ml-auto text-xs underline text-zinc-400">{% translate "View public profile" %}</a>{% endif %}
 </div>
 <div class="mt-3">{% include "accounts/_badges.html" with u=user %}</div>
 {% if notice %}<p class="mt-4 rounded-xl border border-green-500/30 bg-green-500/10 text-green-300 text-sm px-4 py-2">{{ notice }}</p>{% endif %}
 {% if error %}<p class="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-sm px-4 py-2">{{ error }}</p>{% endif %}
 
 <div class="grid sm:grid-cols-3 gap-3 mt-6 text-sm">
-  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{{ checks }}</p><p class="text-zinc-400 text-xs">claims checked</p></div>
-  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{{ user.community_votes.count }}</p><p class="text-zinc-400 text-xs">community votes</p></div>
-  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{% if user.community_accuracy is not None %}{{ user.community_accuracy }}%{% else %}—{% endif %}</p><p class="text-zinc-400 text-xs">community accuracy ({{ user.community_correct }}/{{ user.community_total }} matched the final verdict)</p></div>
+  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{{ checks }}</p><p class="text-zinc-400 text-xs">{% translate "claims checked" %}</p></div>
+  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{{ user.community_votes.count }}</p><p class="text-zinc-400 text-xs">{% translate "community votes" %}</p></div>
+  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{% if user.community_accuracy is not None %}{{ user.community_accuracy }}%{% else %}—{% endif %}</p><p class="text-zinc-400 text-xs">{% blocktranslate with c=user.community_correct t=user.community_total %}community accuracy ({{ c }}/{{ t }} matched the final verdict){% endblocktranslate %}</p></div>
 </div>
 
 {% if user.role == "verifier" %}
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">YOUR TRACK RECORD</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "YOUR TRACK RECORD" %}</h2>
 {% include "accounts/_stats.html" %}
 
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">WORK EMAIL</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "WORK EMAIL" %}</h2>
 <div class="glass rounded-2xl p-5 bg-[#1a1c20] text-sm space-y-3">
   {% if user.work_email_verified %}
     <p class="text-green-300">✓ {{ user.work_email }} is verified. Your starting vote weight is 0.60 instead of 0.50.</p>
   {% else %}
-    <p class="text-zinc-300">Verify your work or institution email to get a "Work email verified" badge and a higher starting weight (0.60). Free providers like Gmail aren't accepted.</p>
+    <p class="text-zinc-300">{% blocktranslate %}Verify your work or institution email to get a "Work email verified" badge and a higher starting weight (0.60). Free providers like Gmail aren't accepted.{% endblocktranslate %}</p>
     <form method="post" class="flex flex-wrap gap-2">{% csrf_token %}<input type="hidden" name="action" value="send_code">
-      <div class="flex-1 min-w-[14rem]">{{ email_form.email }}</div><button class="rounded-xl bg-white/10 hover:bg-white/20 px-4">Send code</button>
+      <div class="flex-1 min-w-[14rem]">{{ email_form.email }}</div><button class="rounded-xl bg-white/10 hover:bg-white/20 px-4">{% translate "Send code" %}</button>
       {% for e in email_form.email.errors %}<p class="w-full text-red-400 text-xs">{{ e }}</p>{% endfor %}
     </form>
     {% if pending_otp %}
@@ -42,14 +43,14 @@
   {% endif %}
 </div>
 {% elif user.role == "citizen" %}
-<p class="mt-6 text-sm text-zinc-400">Have expertise? <a href="{% url 'become_verifier' %}" class="underline text-white">Apply to become a verifier</a>.</p>
+<p class="mt-6 text-sm text-zinc-400">{% translate "Have expertise?" %} <a href="{% url 'become_verifier' %}" class="underline text-white">{% translate "Apply to become a verifier" %}</a>.</p>
 {% endif %}
 
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">YOUR DETAILS</h2>
+<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "YOUR DETAILS" %}</h2>
 <form method="post" class="glass rounded-2xl p-5 bg-[#1a1c20] space-y-4 text-sm">{% csrf_token %}<input type="hidden" name="action" value="profile">
   <div class="grid sm:grid-cols-2 gap-3">{% include "registration/_field.html" with f=form.name %}{% include "registration/_field.html" with f=form.district %}</div>
   {% include "registration/_field.html" with f=form.interests %}
   <div class="sm:w-1/2">{% include "registration/_field.html" with f=form.preferred_language %}</div>
-  <button class="bg-white text-black rounded-xl px-5 py-2 font-semibold">Save</button>
+  <button class="bg-white text-black rounded-xl px-5 py-2 font-semibold">{% translate "Save" %}</button>
 </form>
 {% endblock %}

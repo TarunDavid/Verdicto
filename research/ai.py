@@ -145,6 +145,49 @@ def understand(text, language):
     return data, model
 
 
+# ---------- 1a. English restatement for cross-language duplicate matching ----------
+
+def canonical_english(text):
+    """One short neutral English sentence stating the claim (Kannada or English input).
+
+    Used only to match the same rumour across languages. Falls back to the text itself when it is
+    already English, or "" when the AI is unavailable.
+    """
+    fallback = text[:300] if text.isascii() else ""
+    if not available():
+        return fallback
+    prompt = (f"{_tag('claim', text, 2000)}\nRestate the core factual claim of this forwarded message "
+              "as ONE short, neutral English sentence (max 25 words). Keep names, places, numbers and "
+              "dates; drop greetings, emojis and 'forward this' requests. "
+              'Return JSON: {"claim_en": "..."}')
+    try:
+        out, _model = chat_json(prompt, model=settings.GROQ_FAST_MODEL, max_tokens=200)
+        return str(out.get("claim_en", "")).strip()[:300] or fallback
+    except Exception as exc:
+        logger.warning("canonical_english() fell back: %s", exc)
+        return fallback
+
+
+def pick_same_claim(claim_en, candidates):
+    """candidates: [(id, english_restatement)]. Returns the id of the candidate that makes the SAME
+    factual claim (same event, place and subject), or None. Different place/date = different claim."""
+    if not available() or not candidates:
+        return None
+    listing = "\n".join(f'<candidate id="{cid}">{_tag("t", text, 300)}</candidate>' for cid, text in candidates)
+    prompt = (f"New claim: {_tag('claim', claim_en, 400)}\nExisting claims:\n{listing}\n"
+              "Is the new claim the SAME factual claim as one of the existing ones (same subject, place "
+              "and event, even if worded differently or translated)? A different place, date, number or "
+              'subject means it is NOT the same. Return JSON: {"match_id": <id or null>}')
+    try:
+        out, _model = chat_json(prompt, model=settings.GROQ_FAST_MODEL, max_tokens=120)
+        match = out.get("match_id")
+        ids = {cid for cid, _ in candidates}
+        return int(match) if match is not None and int(match) in ids else None
+    except Exception as exc:
+        logger.warning("pick_same_claim() fell back: %s", exc)
+        return None
+
+
 # ---------- 1b. Screenshot OCR ----------
 
 def extract_text_from_image(jpeg_bytes):

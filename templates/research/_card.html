@@ -25,9 +25,9 @@
       <div class="flex items-center gap-3 mt-2 flex-wrap">
         <span class="text-lg font-semibold {% if run.label == 'LIKELY_FALSE' %}text-red-300{% elif run.label == 'LIKELY_TRUE' %}text-green-300{% elif run.label == 'MIXED' %}text-orange-300{% else %}text-zinc-300{% endif %}">{{ run.get_label_display }}</span>
         {% if run.truth_score is not None %}
-        <div class="flex items-center gap-2 text-xs text-zinc-400"><div class="w-28 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full bg-gradient-to-r from-red-500 via-amber-400 to-green-500" style="width: {{ run.truth_score|floatformat:0 }}%"></div></div>truth score {{ run.truth_score|floatformat:0 }}/100</div>
+        <div class="flex items-center gap-2 text-xs text-zinc-400"><div class="w-28 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full bg-gradient-to-r from-red-500 via-amber-400 to-green-500" style="width: {{ run.truth_score|floatformat:0 }}%"></div></div>{% translate "truth score" %} {{ run.truth_score|floatformat:0 }}/100</div>
         {% endif %}
-        <span class="text-xs text-zinc-500">confidence: {{ run.confidence|default:"low" }}</span>
+        <span class="text-xs text-zinc-500">{% translate "confidence:" %} {{ run.confidence|default:"low" }}</span>
       </div>
       {% endif %}
       {% if run.summary %}<p class="mt-2 whitespace-pre-line text-zinc-200">{{ run.summary }}</p>{% endif %}
@@ -65,7 +65,7 @@
       onclick="(function(b){if(!window.speechSynthesis){return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(b.dataset.text);u.lang=b.dataset.lang;const v=speechSynthesis.getVoices().find(x=>x.lang===b.dataset.lang)||speechSynthesis.getVoices().find(x=>x.lang==='en-IN');if(v)u.voice=v;speechSynthesis.speak(u)})(this)">{% translate "🔊 Listen" %}</button>
     {% if user.is_authenticated and claim.status != "FINAL" %}
     <form method="post" action="{% url 'recheck' claim.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.META.HTTP_REFERER|default:request.path }}">
-      <button class="rounded-lg glass px-3 py-1.5 text-zinc-300 hover:text-white" title="Run the AI research again with today's sources">{% translate "↻ Re-check with latest sources" %}</button></form>
+      <button class="rounded-lg glass px-3 py-1.5 text-zinc-300 hover:text-white" title="{% translate "Run the AI research again with today's sources" %}">{% translate "↻ Re-check with latest sources" %}</button></form>
     {% endif %}
   </div>
   {% endif %}

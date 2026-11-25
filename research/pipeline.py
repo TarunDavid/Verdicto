@@ -24,10 +24,10 @@ CONNECTOR_TIMEOUT = 12
 
 SOURCE_FILTERS = {
     "all": None,
-    "news": {"groq_web", "google_news"},
-    "official": {"groq_web", "google_news"},   # then keep only official-tier sources
+    "news": {"groq_web", "google_news", "official_news"},
+    "official": {"official_news", "groq_web", "google_news"},   # then keep only official-tier sources
     "factcheck": {"factcheck", "groq_web", "google_news"},
-    "research": {"openalex", "crossref", "wikipedia"},
+    "research": {"openalex", "crossref", "pubmed", "semantic_scholar", "wikipedia"},
 }
 FILTER_TIERS = {"official": {"official"}, "factcheck": {"fact-checker"}}
 
@@ -37,6 +37,8 @@ def start_research(claim, source_filter="all", deep=False):
                                      source_filter=source_filter if source_filter in SOURCE_FILTERS else "all")
     if settings.RESEARCH_SYNC:
         run_research(run.pk)
+    elif settings.RESEARCH_MODE == "worker":
+        pass  # stays QUEUED; `manage.py run_worker` picks it up
     else:
         transaction.on_commit(lambda: threading.Thread(target=_thread_main, args=(run.pk,),
                                                        daemon=True).start())
@@ -54,6 +56,28 @@ def _thread_main(run_id):
 def _step(run, text):
     run.step = text
     run.save(update_fields=["step", "status"])
+
+
+def claim_next_queued():
+    """Atomically take the oldest queued run (safe with several workers). Returns its id or None."""
+    for run_id in ResearchRun.objects.filter(status=ResearchRun.Status.QUEUED).order_by(
+            "created_at").values_list("pk", flat=True)[:5]:
+        if ResearchRun.objects.filter(pk=run_id, status=ResearchRun.Status.QUEUED).update(
+                status=ResearchRun.Status.RUNNING, step="Starting"):
+            return run_id
+    return None
+
+
+def recover_stuck(minutes=10):
+    """Runs left RUNNING by a crashed process: mark failed so the claim still reaches verifiers."""
+    from datetime import timedelta
+    cutoff = timezone.now() - timedelta(minutes=minutes)
+    for run in ResearchRun.objects.filter(status=ResearchRun.Status.RUNNING, created_at__lt=cutoff):
+        run.status, run.step = ResearchRun.Status.FAILED, "Research failed"
+        run.errors.append("Interrupted (worker restarted)")
+        run.finished_at = timezone.now()
+        run.save()
+        _finish(run, run.claim)
 
 
 def run_research(run_id):
@@ -131,7 +155,7 @@ def _search_all(run, info, claim):
     jobs = []
     for name in enabled:
         # Academic / encyclopedic / fact-check APIs work best with one English query.
-        if name == "google_news":
+        if name in ("google_news", "official_news"):
             qs = queries[:2]
         else:  # one call each: keeps within Groq's per-minute token limits
             qs = [info["english_query"] or queries[0]]

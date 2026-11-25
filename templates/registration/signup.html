@@ -1,6 +1,6 @@
 {% extends "auth_base.html" %}
 {% load i18n %}
-{% block title %}Sign up · Verdicto{% endblock %}
+{% block title %}{% translate "Sign up · Verdicto" %}{% endblock %}
 {% block heading %}{% if role == "verifier" %}{% translate "Join as a verifier" %}{% else %}{% translate "Create your account" %}{% endif %}{% endblock %}
 {% block sub %}<a href="{% url 'signup' %}" class="underline">{% translate "Change role" %}</a>{% endblock %}
 {% block content %}
@@ -27,7 +27,7 @@
       <div>{% include "registration/_field.html" with f=form.district %}</div>
     </div>
     {% include "registration/_field.html" with f=form.linkedin_url %}
-    <p class="text-xs text-zinc-500">We never scrape LinkedIn: an admin checks the profile manually.</p>
+    <p class="text-xs text-zinc-500">{% translate "We never scrape LinkedIn: an admin checks the profile manually." %}</p>
   </div>
   {% endif %}
   <label class="flex items-start gap-2 text-xs text-zinc-400">{{ form.consent }} <span>{{ form.consent.label }}</span></label>

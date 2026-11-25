@@ -39,6 +39,7 @@ urlpatterns = [
     path("accounts/login/", account_views.PhoneLoginView.as_view(), name="login"),
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("accounts/signup/", account_views.signup, name="signup"),
+    path("accounts/signup/verify/", account_views.signup_verify, name="signup_verify"),
     path("accounts/become-verifier/", account_views.become_verifier, name="become_verifier"),
     path("profile/", account_views.profile, name="profile"),
     path("my-votes/", account_views.my_votes, name="my_votes"),

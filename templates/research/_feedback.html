@@ -1,6 +1,6 @@
-<span id="fb-{{ s.pk }}" class="inline-flex items-center gap-1 ml-6 mt-1">
+{% load i18n %}<span id="fb-{{ s.pk }}" class="inline-flex items-center gap-1 ml-6 mt-1">
   {% with c=s.feedback_counts %}
-  <button hx-post="{% url 'source_feedback' s.pk %}" hx-vals='{"useful": "1"}' hx-target="#fb-{{ s.pk }}" hx-swap="outerHTML" class="px-2 py-0.5 rounded-full border {% if mine == True %}border-green-400/60 text-green-300{% else %}border-white/10 text-zinc-400 hover:text-white{% endif %}">👍 useful{% if c.useful %} · {{ c.useful }}{% endif %}</button>
-  <button hx-post="{% url 'source_feedback' s.pk %}" hx-vals='{"useful": "0"}' hx-target="#fb-{{ s.pk }}" hx-swap="outerHTML" class="px-2 py-0.5 rounded-full border {% if mine == False %}border-red-400/60 text-red-300{% else %}border-white/10 text-zinc-400 hover:text-white{% endif %}">👎 wrong{% if c.wrong %} · {{ c.wrong }}{% endif %}</button>
+  <button hx-post="{% url 'source_feedback' s.pk %}" hx-vals='{"useful": "1"}' hx-target="#fb-{{ s.pk }}" hx-swap="outerHTML" class="px-2 py-0.5 rounded-full border {% if mine == True %}border-green-400/60 text-green-300{% else %}border-white/10 text-zinc-400 hover:text-white{% endif %}">{% translate "👍 useful" %}{% if c.useful %} · {{ c.useful }}{% endif %}</button>
+  <button hx-post="{% url 'source_feedback' s.pk %}" hx-vals='{"useful": "0"}' hx-target="#fb-{{ s.pk }}" hx-swap="outerHTML" class="px-2 py-0.5 rounded-full border {% if mine == False %}border-red-400/60 text-red-300{% else %}border-white/10 text-zinc-400 hover:text-white{% endif %}">{% translate "👎 wrong" %}{% if c.wrong %} · {{ c.wrong }}{% endif %}</button>
   {% endwith %}
 </span>

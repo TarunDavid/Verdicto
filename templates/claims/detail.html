@@ -1,24 +1,25 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load i18n verdicto %}
 {% block content %}
 {# ---------- Claim + human verdict ---------- #}
 <div class="glass rounded-2xl p-5 bg-[#1a1c20] mt-2">
   <div class="flex items-center gap-2 text-xs text-zinc-400 flex-wrap">
     {% include "_badge.html" %}
     {% if claim.urgency == "high" %}<b class="text-red-400">{% translate "URGENT" %}</b> ·{% endif %}
-    <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %} · reported {{ claim.submission_count }}×</span>
+    <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %} · {% blocktranslate with n=claim.submission_count %}reported {{ n }}×{% endblocktranslate %}</span>
   </div>
   <p class="mt-3 text-lg sm:text-xl whitespace-pre-line">{{ claim.text }}</p>
   {% if claim.screenshot %}<a href="{{ claim.screenshot.url }}" target="_blank" rel="noopener" class="block mt-3"><img src="{{ claim.screenshot.url }}" alt="Submitted screenshot" class="max-h-64 rounded-xl border border-white/10"></a>{% endif %}
   {% if claim.source_url %}<p class="mt-2 text-sm"><a href="{{ claim.source_url }}" rel="nofollow noopener noreferrer" target="_blank" class="underline decoration-zinc-600 text-zinc-400 hover:text-white">{{ claim.source_url|truncatechars:60 }}</a></p>{% endif %}
   <div class="mt-5">
     <div class="flex justify-between text-sm gap-3">
-      <span>{% if claim.status == "FINAL" %}Human verdict: <b>{{ claim.get_verdict_display }}</b>{% elif claim.leading %}Verifiers leaning: <b>{{ claim.get_leading_display }}</b> <span class="text-zinc-500">(not final)</span>{% else %}No verifier votes yet{% endif %}</span>
-      <span class="text-zinc-400 shrink-0">{{ claim.confidence_pct }}% weighted agreement</span>
+      <span>{% if claim.status == "FINAL" %}{% translate "Human verdict:" %} <b>{{ claim.get_verdict_display }}</b>{% elif claim.leading %}{% translate "Verifiers leaning:" %} <b>{{ claim.get_leading_display }}</b> <span class="text-zinc-500">{% translate "(not final)" %}</span>{% else %}{% translate "No verifier votes yet" %}{% endif %}</span>
+      <span class="text-zinc-400 shrink-0">{{ claim.confidence_pct }}% {% translate "weighted agreement" %}</span>
     </div>
     <div class="h-1.5 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-accent to-rose-400" style="width: {{ claim.confidence_pct }}%"></div></div>
-    {% if claim.locked_by_admin %}<p class="text-xs text-amber-400 mt-2">Verdict set by an admin override (see the change log for the reason).</p>{% endif %}
-    {% if claim.status != "FINAL" %}<p class="text-xs text-zinc-500 mt-2">Becomes final with 3+ verifier votes and 70%+ weighted agreement.</p>{% endif %}
+    {% if claim.locked_by_admin %}<p class="text-xs text-amber-400 mt-2">{% translate "Verdict set by an admin override (see the change log for the reason)." %}</p>{% endif %}
+    {% if claim.status != "FINAL" %}<p class="text-xs text-zinc-500 mt-2">{% translate "Becomes final with 3+ verifier votes and 70%+ weighted agreement." %}</p>{% endif %}
   </div>
   <div class="mt-5 flex flex-wrap gap-2 text-sm">
     <a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-xl font-medium">
@@ -61,7 +62,7 @@
 {% if rows %}
 <div class="glass rounded-2xl bg-[#1a1c20] overflow-x-auto">
   <table class="w-full text-sm">
-    <thead class="text-left text-xs text-zinc-500"><tr><th class="px-4 py-2.5 font-medium">Verifier</th><th class="py-2.5 pr-4 font-medium">Record</th><th class="py-2.5 pr-4 font-medium">Weight</th><th class="py-2.5 font-medium">Vote</th><th class="py-2.5 pr-4 font-medium">Evidence</th></tr></thead>
+    <thead class="text-left text-xs text-zinc-500"><tr><th class="px-4 py-2.5 font-medium">{% translate "Verifier" %}</th><th class="py-2.5 pr-4 font-medium">{% translate "Record" %}</th><th class="py-2.5 pr-4 font-medium">{% translate "Weight" %}</th><th class="py-2.5 font-medium">{% translate "Vote" %}</th><th class="py-2.5 pr-4 font-medium">{% translate "Evidence" %}</th></tr></thead>
     <tbody>
     {% for r in rows %}
     <tr class="border-t border-white/5 align-top">
@@ -69,14 +70,14 @@
       <td class="py-3 pr-4 text-zinc-300">{{ r.record }}</td>
       <td class="py-3 pr-4 font-mono">{{ r.vote.weight_at_vote|floatformat:2 }}</td>
       <td class="py-3 pr-3"><b>{{ r.vote.get_verdict_display }}</b>{% if r.vote.note %}<p class="text-xs text-zinc-400 mt-0.5">{{ r.vote.note }}</p>{% endif %}</td>
-      <td class="py-3 pr-4 text-xs">{% for e in r.vote.evidence.all %}<a href="{{ e.url }}" rel="nofollow noopener noreferrer" target="_blank" class="underline decoration-zinc-600 block truncate max-w-[12rem]">{{ e.url }}</a>{% if e.is_official %}<span class="text-green-400">Official source</span>{% endif %}{% endfor %}</td>
+      <td class="py-3 pr-4 text-xs">{% for e in r.vote.evidence.all %}<a href="{{ e.url }}" rel="nofollow noopener noreferrer" target="_blank" class="underline decoration-zinc-600 block truncate max-w-[12rem]">{{ e.url }}</a>{% if e.is_official %}<span class="text-green-400">{% translate "Official source" %}</span>{% endif %}{% endfor %}</td>
     </tr>
     {% endfor %}
     </tbody>
   </table>
   <p class="mx-4 mb-4 mt-1 font-mono text-xs sm:text-sm bg-black/30 rounded-lg px-3 py-2">{{ arithmetic }}</p>
 </div>
-<p class="text-xs text-zinc-500 mt-2">Weight = (correct + 2) / (total + 4); a verified work email adds +1 to the prior. Weights are frozen when the vote is cast.</p>
+<p class="text-xs text-zinc-500 mt-2">{% translate "Weight = (correct + 2) / (total + 4); a verified work email adds +1 to the prior. Weights are frozen when the vote is cast." %}</p>
 {% else %}<p class="text-sm text-zinc-400 glass rounded-2xl p-4 bg-[#1a1c20]">{% translate "No verifier has voted yet." %}</p>{% endif %}
 
 {# ---------- Verifier vote (also on the two-pane review screen) ---------- #}
@@ -89,15 +90,15 @@
     <label class="inline-flex items-center rounded-full glass px-3 py-1.5 cursor-pointer has-[:checked]:border-teal-400/70 has-[:checked]:bg-teal-400/10"><input type="radio" name="verdict" value="{{ v }}" class="sr-only" required {% if vote_form.verdict.value == v %}checked{% endif %}>{{ l }}</label>
     {% endfor %}
   </div>
-  <textarea name="note" rows="3" maxlength="500" placeholder="Note (required): what did you check?" class="w-full rounded-xl bg-white/5 border border-white/10 p-3 focus:outline-none">{{ vote_form.note.value|default:"" }}</textarea>
+  <textarea name="note" rows="3" maxlength="500" placeholder="{% translate "Note (required): what did you check?" %}" class="w-full rounded-xl bg-white/5 border border-white/10 p-3 focus:outline-none">{{ vote_form.note.value|default:"" }}</textarea>
   {% for e in vote_form.note.errors %}<p class="text-red-400 text-xs">{{ e }}</p>{% endfor %}
   {% for f in vote_form %}{% if "evidence" in f.name %}
-    <input name="{{ f.name }}" value="{{ f.value|default:"" }}" placeholder="Evidence link (https://…)" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none">
+    <input name="{{ f.name }}" value="{{ f.value|default:"" }}" placeholder="{% translate "Evidence link (https://…)" %}" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none">
     {% for e in f.errors %}<p class="text-red-400 text-xs">{{ e }}</p>{% endfor %}
   {% endif %}{% endfor %}
   <div class="flex items-center gap-3 flex-wrap">
     <button class="bg-white text-black rounded-xl px-5 py-2 font-semibold">{% translate "Submit verdict" %}</button>
-    <a class="text-xs underline text-zinc-400" href="{% url 'verify_review' claim.pk %}">Use the two-pane review screen instead</a>
+    <a class="text-xs underline text-zinc-400" href="{% url 'verify_review' claim.pk %}">{% translate "Use the two-pane review screen instead" %}</a>
   </div>
 </form>
 {% elif has_voted %}<p class="mt-8 text-sm text-zinc-400 glass rounded-2xl p-4 bg-[#1a1c20]">You have voted on this claim. Votes cannot be changed.</p>
@@ -120,8 +121,8 @@
   <li class="relative">
     <span class="absolute -left-[25px] top-1.5 w-2 h-2 rounded-full {% if log.new_status == 'FINAL' %}bg-accent{% else %}bg-zinc-600{% endif %}"></span>
     <span class="text-zinc-500 text-xs">{{ log.created_at|date:"d M, H:i" }}</span>
-    <span class="text-xs text-zinc-400 ml-1">{{ log.old_status|default:"NEW" }}{% if log.old_verdict %}/{{ log.old_verdict }}{% endif %} → <b class="text-zinc-200">{{ log.new_status }}{% if log.new_verdict %}/{{ log.new_verdict }}{% endif %}</b></span>
-    <p class="mt-0.5">{{ log.reason }} <span class="text-zinc-500">— {% if log.changed_by %}{% include "_name.html" with u=log.changed_by %}{% else %}system{% endif %}</span></p>
+    <span class="text-xs text-zinc-400 ml-1">{{ log.old_status|status_label }}{% if log.old_verdict %}/{{ log.old_verdict|status_label }}{% endif %} → <b class="text-zinc-200">{{ log.new_status|status_label }}{% if log.new_verdict %}/{{ log.new_verdict|status_label }}{% endif %}</b></span>
+    <p class="mt-0.5">{{ log.reason }} <span class="text-zinc-500">— {% if log.changed_by %}{% include "_name.html" with u=log.changed_by %}{% else %}{% translate "system" %}{% endif %}</span></p>
   </li>
   {% empty %}<li class="text-zinc-400">No changes yet.</li>{% endfor %}
 </ol>

@@ -36,10 +36,11 @@ Log in with a **phone number**. `seed_demo` prints all demo phones; they share o
 | Community votes | `verification/engine.py` (`community_vote_weight`: 0.05 each, max 20% combined), `CommunityVote` model |
 | Chat + history | `chat/` (threads per user; system messages when a claim is finalised) |
 | AI research pipeline | `research/pipeline.py`, `research/ai.py` (Groq), `research/connectors.py` |
-| Live sources | Groq web search (gpt-oss `browser_search`), Google News RSS, Google Fact Check API (optional key), Wikipedia, OpenAlex. Crossref and GDELT are implemented but off by default (irrelevant results / timeouts). |
+| Live sources | Groq web search (gpt-oss `browser_search`), Google News RSS, official-sites news (Google News limited to gov domains), Wikipedia, OpenAlex, PubMed; optional with keys: Google Fact Check, Semantic Scholar, Reddit (official API). Crossref and GDELT are implemented but off by default. |
+| Cross-language duplicates | `claims/duplicates.py:find_same_claim`: fuzzy match, plus the AI's English restatement (`Claim.canonical_en`) and an AI "same claim?" check, so Kannada and English versions of a rumour merge. `manage.py backfill_canonical` fills old claims. |
 | Source credibility + truth score | `research/credibility.py`, `research/scoring.py` (a formula; the LLM never sets the score) |
 | Safe fetching | `research/fetch.py` (http/https only, blocks private/internal IPs on every redirect, size + time limits) |
-| Verifier assignment | `verification/assignment.py` (domain × language × reliability × workload × locality); `manage.py reassign_stale` for timeouts (run from cron) |
+| Verifier assignment | `verification/assignment.py` (domain × language × reliability × workload × locality). Overdue assignments are reassigned automatically (checked at most every 10 minutes during normal traffic); `manage.py reassign_stale` also works from cron. Admin approvals record `approved_by` / `approved_at`. |
 | Human verdict engine | `verification/engine.py` (weighted Beta-prior votes, unchanged from SPEC §6) |
 | Feed ranking | `claims/ranking.py` (urgency × reach × domain risk × 24 h decay) |
 | Moderation | AI holds claims about private individuals' personal lives; admins can hide/unhide in `/admin/` |
@@ -52,9 +53,16 @@ Log in with a **phone number**. `seed_demo` prints all demo phones; they share o
 | Re-check, listen, time left | "↻ Re-check with latest sources" on the research card; "🔊 Listen" reads the verdict aloud (kn-IN / en-IN); the Verify Queue shows time left before reassignment |
 | Kannada UI | EN / ಕನ್ನಡ switch in the top bar and on the login page; users' preferred language is the default. Translations live in `locale/kn_strings.py`; run `python manage.py compilemo` after editing (builds the `.po`/`.mo` without GNU gettext). |
 
+| Phone OTP (optional) | `PHONE_OTP_ENABLED=True` adds a 6-digit SMS step to sign-up (`accounts/phone_otp.py`); in development the code prints in the server log. |
+
+## Production
+See the "Production" block in `.env.example`: `DEBUG=False` (HTTPS cookies, HSTS, SSL redirect),
+`DATABASE_URL` for Postgres, `CACHE_BACKEND=db` or `redis://…` for shared rate limits,
+`RESEARCH_MODE=worker` plus `python manage.py run_worker --pause 30` as a separate process, SMTP
+settings for work-email codes, and `collectstatic`. `python manage.py check --deploy` passes apart from
+the optional HSTS preload. Progress and decisions are tracked in [PROGRESS.md](PROGRESS.md).
+
 ## Deliberate limits
-- **Phone OTP** at sign-up is not built (PRD2 marks it optional/roadmap); login is phone + password.
-- Work-email check confirms the domain resolves; a proper MX lookup needs `dnspython` (not installed).
 - **Google Scholar and Web of Science are not used.** Scholar has no API and forbids scraping; Web of
   Science needs an institutional key. OpenAlex and Crossref cover scholarly literature legally.
 - **Social media:** we don't scrape it (against platform terms). Social posts come in only when web

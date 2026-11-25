@@ -35,11 +35,25 @@ def check_domain(email):
     domain = email.rsplit("@", 1)[-1].lower()
     if domain in FREE_PROVIDERS:
         raise WorkEmailError("Use your work or institution email, not a free email provider.")
-    try:
-        socket.getaddrinfo(domain, None)  # the domain must exist (dnspython MX check: roadmap)
-    except socket.gaierror:
-        raise WorkEmailError("That email domain doesn't seem to exist.")
+    if not has_mail_server(domain):
+        raise WorkEmailError("That domain can't receive email (no mail server found).")
     return domain
+
+
+def has_mail_server(domain):
+    """True if the domain has MX records (or, per RFC 5321, an address record as fallback)."""
+    import dns.exception
+    import dns.resolver
+    try:
+        return bool(dns.resolver.resolve(domain, "MX", lifetime=4))
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers):
+        return False
+    except (dns.resolver.NoAnswer, dns.exception.Timeout):
+        try:
+            socket.getaddrinfo(domain, None)
+            return True
+        except socket.gaierror:
+            return False
 
 
 def send_code(user, email):

@@ -5,8 +5,19 @@ def shell(request):
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
         return {}
+    from django.core.cache import cache
+
     from chat.models import ChatThread
+    from verification.assignment import reassign_stale
     from verification.models import Assignment
+
+    # Hand overdue assignments to the next verifier at most every 10 minutes (cron-free).
+    if cache.add("reassign_stale:lock", 1, 600):
+        try:
+            reassign_stale()
+        except Exception:  # never break a page over housekeeping
+            import logging
+            logging.getLogger("verdicto").exception("reassign_stale failed")
 
     threads = ChatThread.objects.filter(owner=user).select_related("claim")
     q = request.GET.get("chats", "").strip()

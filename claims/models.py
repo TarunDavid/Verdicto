@@ -32,14 +32,16 @@ URGENCY = [("low", "Low"), ("medium", "Medium"), ("high", "High")]
 
 class Claim(models.Model):
     class Status(models.TextChoices):
-        RESEARCHING = "RESEARCHING", "AI researching"
-        PENDING = "PENDING", "Pending verification"
-        UNDER_REVIEW = "UNDER_REVIEW", "Under investigation"
-        FINAL = "FINAL", "Verified"
-        REJECTED = "REJECTED", "Rejected"
+        RESEARCHING = "RESEARCHING", _("AI researching")
+        PENDING = "PENDING", _("Pending verification")
+        UNDER_REVIEW = "UNDER_REVIEW", _("Under investigation")
+        FINAL = "FINAL", _("Verified")
+        REJECTED = "REJECTED", _("Rejected")
 
     text = models.TextField(max_length=2000)
     normalized_text = models.TextField(blank=True)
+    # The claim restated in English by the AI, so Kannada and English versions of a rumour match.
+    canonical_en = models.TextField(blank=True)
     source_url = models.URLField(blank=True, validators=[validate_safe_url], max_length=500)
     screenshot = models.ImageField(upload_to=screenshot_path, blank=True)
     language = models.CharField(max_length=2, choices=LANGUAGES, default="en")

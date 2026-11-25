@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm
+from django.utils.translation import gettext_lazy as _
 
 from claims.validators import sanitize_text, validate_safe_url
 
@@ -14,11 +15,11 @@ FIELD = ("w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-z
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(label="Phone number", max_length=20,
+    username = forms.CharField(label=_("Phone number"), max_length=20,
                                widget=forms.TextInput(attrs={"autofocus": True, "class": FIELD,
                                                              "placeholder": "98450 12345",
                                                              "inputmode": "tel"}))
-    password = forms.CharField(label="Password", strip=False,
+    password = forms.CharField(label=_("Password"), strip=False,
                                widget=forms.PasswordInput(attrs={"class": FIELD}))
     error_messages = {**AuthenticationForm.error_messages,
                       "invalid_login": "Wrong phone number or password."}
@@ -27,23 +28,23 @@ class LoginForm(AuthenticationForm):
 class SignupForm(forms.Form):
     role = forms.ChoiceField(choices=[("citizen", "Regular user"), ("verifier", "Verifier")],
                              widget=forms.HiddenInput)
-    name = forms.CharField(max_length=80)
-    phone = forms.CharField(max_length=20, help_text="Indian mobile number. Never shown publicly.")
+    name = forms.CharField(max_length=80, label=_("Name"))
+    phone = forms.CharField(max_length=20, label=_("Phone"), help_text=_("Indian mobile number. Never shown publicly."))
     interests = forms.MultipleChoiceField(choices=DOMAINS, widget=forms.CheckboxSelectMultiple,
-                                          label="Fields of interest")
-    preferred_language = forms.ChoiceField(choices=LANGUAGES, initial="en")
-    password = forms.CharField(widget=forms.PasswordInput, strip=False)
+                                          label=_("Fields of interest"))
+    preferred_language = forms.ChoiceField(choices=LANGUAGES, initial="en", label=_("Preferred language"))
+    password = forms.CharField(widget=forms.PasswordInput, strip=False, label=_("Password"))
     # Verifier-only details
-    profession = forms.CharField(max_length=80, required=False)
-    organisation = forms.CharField(max_length=120, required=False)
-    work_email = forms.EmailField(required=False)
-    linkedin_url = forms.CharField(max_length=300, required=False, label="LinkedIn profile URL")
+    profession = forms.CharField(max_length=80, required=False, label=_("Profession"))
+    organisation = forms.CharField(max_length=120, required=False, label=_("Organisation"))
+    work_email = forms.EmailField(required=False, label=_("Work email"))
+    linkedin_url = forms.CharField(max_length=300, required=False, label=_("LinkedIn profile URL"))
     languages = forms.MultipleChoiceField(choices=LANGUAGES, required=False,
                                           widget=forms.CheckboxSelectMultiple,
-                                          label="Languages you can verify in")
-    district = forms.CharField(max_length=60, required=False)
-    consent = forms.BooleanField(label="I understand my name and verifier stats are public; "
-                                       "my phone number is never shown.")
+                                          label=_("Languages you can verify in"))
+    district = forms.CharField(max_length=60, required=False, label=_("District"))
+    consent = forms.BooleanField(label=_("I understand my name and verifier stats are public; "
+                                         "my phone number is never shown."))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,12 +97,25 @@ class SignupForm(forms.Form):
                 self.add_error("password", exc)
         return data
 
+    def pending_data(self):
+        """What we keep in the session while the phone OTP is pending (password already hashed)."""
+        from django.contrib.auth.hashers import make_password
+        d = {k: v for k, v in self.cleaned_data.items() if k not in ("password", "consent")}
+        d["password_hash"] = make_password(self.cleaned_data["password"])
+        return d
+
     def save(self):
-        d = self.cleaned_data
-        verifier = d["role"] == "verifier"
-        return User.objects.create_user(
+        return create_user_from(self.cleaned_data)
+
+
+def create_user_from(d):
+    """Create the account from sign-up data (plain `password` or pre-hashed `password_hash`)."""
+    if User.objects.filter(phone=d["phone"]).exists():
+        raise forms.ValidationError("An account with this phone number already exists.")
+    verifier = d["role"] == "verifier"
+    user = User.objects.create_user(
             username="u" + d["phone"].lstrip("+"),
-            password=d["password"],
+            password=d.get("password"),
             first_name=d["name"],
             phone=d["phone"],
             role=User.Role.VERIFIER if verifier else User.Role.CITIZEN,
@@ -115,19 +129,23 @@ class SignupForm(forms.Form):
             district=d["district"] if verifier else "",
             verifier_approved=False,  # admins approve verifiers
         )
+    if d.get("password_hash"):
+        user.password = d["password_hash"]
+        user.save(update_fields=["password"])
+    return user
 
 
 class VerifierApplicationForm(forms.Form):
     """A regular user applying to become a verifier (reviewed by an admin)."""
-    profession = forms.CharField(max_length=80)
-    organisation = forms.CharField(max_length=120, required=False)
+    profession = forms.CharField(max_length=80, label=_("Profession"))
+    organisation = forms.CharField(max_length=120, required=False, label=_("Organisation"))
     interests = forms.MultipleChoiceField(choices=DOMAINS, widget=forms.CheckboxSelectMultiple,
-                                          label="Fields you can verify")
+                                          label=_("Fields you can verify"))
     languages = forms.MultipleChoiceField(choices=LANGUAGES, widget=forms.CheckboxSelectMultiple,
-                                          label="Languages you can verify in")
-    work_email = forms.EmailField(required=False)
-    linkedin_url = forms.CharField(max_length=300, required=False, label="LinkedIn profile URL")
-    district = forms.CharField(max_length=60, required=False)
+                                          label=_("Languages you can verify in"))
+    work_email = forms.EmailField(required=False, label=_("Work email"))
+    linkedin_url = forms.CharField(max_length=300, required=False, label=_("LinkedIn profile URL"))
+    district = forms.CharField(max_length=60, required=False, label=_("District"))
 
     clean_linkedin_url = SignupForm.clean_linkedin_url
 
@@ -152,11 +170,11 @@ class VerifierApplicationForm(forms.Form):
 
 
 class ProfileForm(forms.Form):
-    name = forms.CharField(max_length=80)
+    name = forms.CharField(max_length=80, label=_("Name"))
     interests = forms.MultipleChoiceField(choices=DOMAINS, widget=forms.CheckboxSelectMultiple,
-                                          label="Fields of interest")
-    preferred_language = forms.ChoiceField(choices=LANGUAGES)
-    district = forms.CharField(max_length=60, required=False)
+                                          label=_("Fields of interest"))
+    preferred_language = forms.ChoiceField(choices=LANGUAGES, label=_("Preferred language"))
+    district = forms.CharField(max_length=60, required=False, label=_("District"))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -174,7 +192,7 @@ class ProfileForm(forms.Form):
 
 
 class WorkEmailForm(forms.Form):
-    email = forms.EmailField(label="Work email")
+    email = forms.EmailField(label=_("Work email"))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -182,7 +200,7 @@ class WorkEmailForm(forms.Form):
 
 
 class OTPForm(forms.Form):
-    code = forms.RegexField(regex=r"^\d{6}$", max_length=6, label="6-digit code",
+    code = forms.RegexField(regex=r"^\d{6}$", max_length=6, label=_("6-digit code"),
                             error_messages={"invalid": "Enter the 6-digit code."})
 
     def __init__(self, *args, **kwargs):

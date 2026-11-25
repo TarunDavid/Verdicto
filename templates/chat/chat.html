@@ -7,7 +7,7 @@
 {% if not thread %}
   <div class="flex flex-col items-center text-center pt-10 md:pt-16">
     {% include "_emblem.html" with size="w-20 h-20" %}
-    <p class="mt-7 text-sm sm:text-base tracking-[.35em] text-zinc-300">{% translate "WELCOME BACK" %}, {{ user.display_name|upper }}{% if user.can_vote %} <svg class="inline w-5 h-5 -mt-1 text-sky-400" viewBox="0 0 24 24" aria-label="Verified verifier"><path fill="currentColor" d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3 1 3-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3-1-3 2.6-1.9 1-3 3.2.1z"/><path d="M8 12.3l2.6 2.6L16.2 9.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}</p>
+    <p class="mt-7 text-sm sm:text-base tracking-[.35em] text-zinc-300">{% translate "WELCOME BACK" %}, {{ user.display_name|upper }}{% if user.can_vote %} <svg class="inline w-5 h-5 -mt-1 text-sky-400" viewBox="0 0 24 24" aria-label="{% translate "Verified verifier" %}"><path fill="currentColor" d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3 1 3-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3-1-3 2.6-1.9 1-3 3.2.1z"/><path d="M8 12.3l2.6 2.6L16.2 9.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}</p>
     <h1 class="mt-3 text-2xl sm:text-4xl font-medium">{% translate "What do you want to check today?" %}</h1>
   </div>
 
@@ -23,7 +23,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></label>
       <label class="rounded-full glass px-3 py-1.5 flex items-center gap-1.5 text-zinc-300">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5h12M9 3v2m1.5 9A15 15 0 0 1 6 7.5m7.5 0C12 13 8 17 3 19m9-1 4-9 4 9m-7-2h6"/></svg>
-        <select name="language" id="langsel" class="bg-transparent focus:outline-none"><option value="en" class="bg-zinc-900">English</option><option value="kn" class="bg-zinc-900">ಕನ್ನಡ</option></select>
+        <select name="language" id="langsel" class="bg-transparent focus:outline-none"><option value="en" class="bg-zinc-900">{% translate "English" %}</option><option value="kn" class="bg-zinc-900">ಕನ್ನಡ</option></select>
       </label>
       <label class="rounded-full glass px-3 py-1.5 flex items-center gap-1.5 text-zinc-300">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
@@ -38,7 +38,7 @@
       </label>
       <button type="button" id="voicebtn" class="hidden ml-auto rounded-full glass px-3 py-1.5 items-center gap-1.5 text-zinc-300">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>{% translate "Voice" %}</span></button>
-      <button class="ml-auto sm:ml-0 w-10 h-10 rounded-full bg-white text-black grid place-items-center" aria-label="Check it">
+      <button class="ml-auto sm:ml-0 w-10 h-10 rounded-full bg-white text-black grid place-items-center" aria-label="{% translate "Check it" %}">
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></svg></button>
     </div>
   </form>
@@ -105,7 +105,7 @@
   </div>
   <form method="post" action="{% url 'chat_reply' thread.pk %}" class="mt-8 glass rounded-2xl p-2 pl-4 flex items-center gap-2 bg-[#1a1d22]/80">{% csrf_token %}
     <input name="text" required placeholder="{% translate "Ask a follow-up, e.g. what do official sources say?" %}" class="flex-1 bg-transparent focus:outline-none text-sm py-2">
-    <button class="w-9 h-9 rounded-full bg-white text-black grid place-items-center" aria-label="Ask"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></svg></button>
+    <button class="w-9 h-9 rounded-full bg-white text-black grid place-items-center" aria-label="{% translate "Ask" %}"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></svg></button>
   </form>
 {% endif %}
 {% endblock %}

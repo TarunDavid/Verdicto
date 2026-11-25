@@ -13,8 +13,8 @@
     </div>
     <div class="flex gap-2">
       <input name="reason" maxlength="200" value="{{ my_opinion.reason|default:'' }}" placeholder="{% translate "Why? (optional, one line)" %}" class="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 focus:outline-none">
-      <button class="rounded-lg bg-white text-black px-3 font-medium">{% if my_opinion %}Update{% else %}Submit{% endif %}</button>
+      <button class="rounded-lg bg-white text-black px-3 font-medium">{% if my_opinion %}{% translate "Update" %}{% else %}{% translate "Submit" %}{% endif %}</button>
     </div>
-    <p class="text-xs text-zinc-500">Each community vote counts 0.05; together they can't exceed 20% of the total. Experts decide the final verdict. You can change your vote until then.</p>
+    <p class="text-xs text-zinc-500">{% translate "Each community vote counts 0.05; together they can't exceed 20% of the total. Experts decide the final verdict. You can change your vote until then." %}</p>
   </form>
 </details>

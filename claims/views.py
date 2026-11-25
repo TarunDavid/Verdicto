@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db.models import F, Prefetch, Q
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.translation import gettext_lazy as _
 from django.core.cache import cache
 from django.http import Http404, HttpResponse
 from django.utils import timezone
@@ -20,14 +21,15 @@ from research.pipeline import start_research
 from verification.services import log_submission
 
 from .duplicates import find_similar, normalize
+from research import ai
 from research.models import ResearchRun
 from verification.services import ClaimClosed, cast_community_vote
 
 from .forms import FILTER_DOMAIN, FILTER_LANG, ClaimForm, CommunityVoteForm
 
-STATUS_OPTIONS = [("FALSE", "False"), ("TRUE", "True"), ("PARTIALLY_TRUE", "Partially true"),
-                  ("MISLEADING", "Misleading"), ("UNVERIFIED", "Unverified"),
-                  ("PENDING", "Pending verification"), ("UNDER_REVIEW", "Under investigation")]
+STATUS_OPTIONS = [("FALSE", _("False")), ("TRUE", _("True")), ("PARTIALLY_TRUE", _("Partially true")),
+                  ("MISLEADING", _("Misleading")), ("UNVERIFIED", _("Unverified")),
+                  ("PENDING", _("Pending verification")), ("UNDER_REVIEW", _("Under investigation"))]
 LATEST_RUN = Prefetch("research_runs", queryset=ResearchRun.objects.order_by("-created_at"),
                       to_attr="runs")
 from .models import Claim
@@ -102,6 +104,7 @@ def submit(request):
     if request.method == "POST" and form.is_valid():
         claim = form.save(commit=False)
         claim.normalized_text = normalize(claim.text)
+        claim.canonical_en = ai.canonical_english(claim.text)
         claim.submitted_by = request.user
         claim.status = Claim.Status.RESEARCHING
         claim.save()

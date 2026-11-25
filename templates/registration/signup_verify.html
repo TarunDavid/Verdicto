@@ -1,0 +1,17 @@
+{% extends "auth_base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Verify your phone · Verdicto" %}{% endblock %}
+{% block heading %}{% translate "Verify your phone" %}{% endblock %}
+{% block sub %}{% if expired %}Your sign-up has expired.{% else %}We sent a 6-digit code to the number ending in {{ phone }}.{% endif %}{% endblock %}
+{% block content %}
+{% if expired %}
+  <p class="glass rounded-2xl p-6 text-sm text-center">{{ error }} <a href="{% url 'signup' %}" class="underline">Start again</a></p>
+{% else %}
+<form method="post" class="glass rounded-2xl p-6 space-y-4 text-sm">{% csrf_token %}
+  {% if error %}<p class="text-red-400">{{ error }}</p>{% endif %}
+  <div><label class="block mb-1 text-zinc-300">{% translate "6-digit code" %}</label>{{ form.code }}{% for e in form.code.errors %}<p class="text-red-400 text-xs mt-1">{{ e }}</p>{% endfor %}</div>
+  <button class="w-full bg-white text-black rounded-xl py-2.5 font-semibold">{% translate "Verify and create account" %}</button>
+  <p class="text-xs text-zinc-500 text-center">{% translate "Development: the code is printed in the server terminal." %}</p>
+</form>
+{% endif %}
+{% endblock %}

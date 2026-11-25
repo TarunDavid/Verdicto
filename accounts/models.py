@@ -2,17 +2,17 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-LANGUAGES = [("en", "English"), ("kn", "Kannada")]
+LANGUAGES = [("en", _("English")), ("kn", _("Kannada"))]
 DOMAINS = [
-    ("health", "Health"),
-    ("education", "Education"),
-    ("government", "Government"),
-    ("local-news", "Local news"),
-    ("technology", "Technology"),
-    ("science", "Science"),
-    ("politics", "Politics"),
-    ("finance", "Finance"),
-    ("other", "Other"),
+    ("health", _("Health")),
+    ("education", _("Education")),
+    ("government", _("Government")),
+    ("local-news", _("Local news")),
+    ("technology", _("Technology")),
+    ("science", _("Science")),
+    ("politics", _("Politics")),
+    ("finance", _("Finance")),
+    ("other", _("Other")),
 ]
 
 
@@ -32,6 +32,9 @@ class User(AbstractUser):
     domains = models.JSONField(default=list, blank=True)
     district = models.CharField(max_length=60, blank=True)
     verifier_approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name="approved_verifiers")
+    approved_at = models.DateTimeField(null=True, blank=True)
     work_email_verified = models.BooleanField(default=False)
     org_domain = models.CharField(max_length=100, blank=True)
     profession = models.CharField(max_length=80, blank=True)

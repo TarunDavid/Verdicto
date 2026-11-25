@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 
-from claims.duplicates import find_similar, normalize
+from claims.duplicates import find_same_claim, normalize
 from claims.models import Claim
 from claims.uploads import clean_screenshot
 from claims.validators import sanitize_text, validate_safe_url
@@ -19,7 +19,6 @@ from verification.services import log_submission
 
 from .models import ChatMessage, ChatThread
 
-DUPLICATE_SCORE = 90
 
 
 def _threads_for(request):
@@ -98,8 +97,8 @@ def _new_claim(request, text):
     ChatMessage.objects.create(thread=thread, sender="user",
                                content=text or _("📷 Screenshot: “%(text)s”") % {"text": claim_text[:500]})
 
-    matches = find_similar(claim_text, source_url)
-    best = next(((s, c) for s, c in matches if s >= DUPLICATE_SCORE and not c.is_hidden), None)
+    canonical = ai.canonical_english(claim_text)
+    best = find_same_claim(claim_text, canonical, source_url)
     if best:
         claim = best[1]
         Claim.objects.filter(pk=claim.pk).update(submission_count=F("submission_count") + 1)
@@ -107,7 +106,8 @@ def _new_claim(request, text):
                   "Your report has been added to it. You can ask me to re-check it with the latest sources.")
     else:
         claim = Claim(text=claim_text, normalized_text=normalize(claim_text), source_url=source_url,
-                      language=language, status=Claim.Status.RESEARCHING, submitted_by=owner)
+                      canonical_en=canonical, language=language, status=Claim.Status.RESEARCHING,
+                      submitted_by=owner)
         if screenshot:
             claim.screenshot.save("upload.jpg", screenshot, save=False)
         claim.save()

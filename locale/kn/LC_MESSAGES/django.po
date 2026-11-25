@@ -394,3 +394,357 @@ msgstr "ಆ ಚಿತ್ರದಲ್ಲಿನ ಪಠ್ಯವನ್ನು ಓದ
 
 msgid "📷 Screenshot: “%(text)s”"
 msgstr "📷 ಸ್ಕ್ರೀನ್‌ಶಾಟ್: “%(text)s”"
+
+msgid "(phone is private)"
+msgstr "(ಫೋನ್ ಸಂಖ್ಯೆ ಖಾಸಗಿ)"
+
+msgid "ACCURACY BY FIELD AND LANGUAGE"
+msgstr "ಕ್ಷೇತ್ರ ಮತ್ತು ಭಾಷೆವಾರು ನಿಖರತೆ"
+
+msgid "Accuracy"
+msgstr "ನಿಖರತೆ"
+
+msgid "All domains"
+msgstr "ಎಲ್ಲಾ ಕ್ಷೇತ್ರಗಳು"
+
+msgid "All languages"
+msgstr "ಎಲ್ಲಾ ಭಾಷೆಗಳು"
+
+msgid "An admin reviews every application. Once approved, you get a Verify Queue and your verdicts are weighted by your accuracy."
+msgstr "ಪ್ರತಿ ಅರ್ಜಿಯನ್ನು ನಿರ್ವಾಹಕರು ಪರಿಶೀಲಿಸುತ್ತಾರೆ. ಅನುಮೋದನೆಯ ನಂತರ ನಿಮಗೆ ಪರಿಶೀಲನಾ ಸರತಿ ಸಿಗುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ತೀರ್ಪುಗಳಿಗೆ ನಿಖರತೆಗೆ ಅನುಗುಣವಾದ ತೂಕ ಸಿಗುತ್ತದೆ."
+
+msgid "Apply to become a verifier"
+msgstr "ಪರಿಶೀಲಕರಾಗಲು ಅರ್ಜಿ ಸಲ್ಲಿಸಿ"
+
+msgid "Assigned"
+msgstr "ನಿಯೋಜಿಸಲಾಗಿದೆ"
+
+msgid "Done"
+msgstr "ಮುಗಿದಿದೆ"
+
+msgid "Expired"
+msgstr "ಅವಧಿ ಮುಗಿದಿದೆ"
+
+msgid "At least one evidence link is required unless you vote Unverified. Votes can't be changed."
+msgstr "ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ ಎಂದು ಮತ ಹಾಕದಿದ್ದರೆ ಕನಿಷ್ಠ ಒಂದು ಪುರಾವೆ ಲಿಂಕ್ ಅಗತ್ಯ. ಮತಗಳನ್ನು ಬದಲಾಯಿಸಲಾಗುವುದಿಲ್ಲ."
+
+msgid "Becomes final with 3+ verifier votes and 70%+ weighted agreement."
+msgstr "3+ ಪರಿಶೀಲಕರ ಮತಗಳು ಮತ್ತು 70%+ ತೂಕದ ಒಮ್ಮತದೊಂದಿಗೆ ಅಂತಿಮವಾಗುತ್ತದೆ."
+
+msgid "COMMUNITY VOTES"
+msgstr "ಸಮುದಾಯ ಮತಗಳು"
+
+msgid "Check it"
+msgstr "ಪರಿಶೀಲಿಸಿ"
+
+msgid "Ask"
+msgstr "ಕೇಳಿ"
+
+msgid "Menu"
+msgstr "ಮೆನು"
+
+msgid "Verified"
+msgstr "ಪರಿಶೀಲಿತ"
+
+msgid "District"
+msgstr "ಜಿಲ್ಲೆ"
+
+msgid "EXPERT VERDICTS"
+msgstr "ತಜ್ಞ ತೀರ್ಪುಗಳು"
+
+msgid "Each community vote counts 0.05; together they can't exceed 20% of the total. Experts decide the final verdict. You can change your vote until then."
+msgstr "ಪ್ರತಿ ಸಮುದಾಯ ಮತಕ್ಕೆ 0.05 ತೂಕ; ಒಟ್ಟಾಗಿ ಅವು ಒಟ್ಟು ತೂಕದ 20% ಮೀರುವುದಿಲ್ಲ. ಅಂತಿಮ ತೀರ್ಪನ್ನು ತಜ್ಞರು ನಿರ್ಧರಿಸುತ್ತಾರೆ. ಅಲ್ಲಿಯವರೆಗೆ ನಿಮ್ಮ ಮತವನ್ನು ಬದಲಾಯಿಸಬಹುದು."
+
+msgid "Evidence"
+msgstr "ಪುರಾವೆ"
+
+msgid "Evidence link (https://…)"
+msgstr "ಪುರಾವೆ ಲಿಂಕ್ (https://…)"
+
+msgid "Field"
+msgstr "ಕ್ಷೇತ್ರ"
+
+msgid "Fields of interest"
+msgstr "ಆಸಕ್ತಿಯ ಕ್ಷೇತ್ರಗಳು"
+
+msgid "Fields you can verify"
+msgstr "ನೀವು ಪರಿಶೀಲಿಸಬಲ್ಲ ಕ್ಷೇತ್ರಗಳು"
+
+msgid "Have expertise?"
+msgstr "ಪರಿಣತಿ ಇದೆಯೇ?"
+
+msgid "Human verdict:"
+msgstr "ಮಾನವ ತೀರ್ಪು:"
+
+msgid "Verifiers leaning:"
+msgstr "ಪರಿಶೀಲಕರ ಒಲವು:"
+
+msgid "(not final)"
+msgstr "(ಅಂತಿಮವಲ್ಲ)"
+
+msgid "weighted agreement"
+msgstr "ತೂಕದ ಒಮ್ಮತ"
+
+msgid "I understand my name and verifier stats are public; my phone number is never shown."
+msgstr "ನನ್ನ ಹೆಸರು ಮತ್ತು ಪರಿಶೀಲಕ ಅಂಕಿಅಂಶಗಳು ಸಾರ್ವಜನಿಕ; ನನ್ನ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಎಂದಿಗೂ ತೋರಿಸಲಾಗುವುದಿಲ್ಲ ಎಂದು ನನಗೆ ಅರ್ಥವಾಗಿದೆ."
+
+msgid "Indian mobile number. Never shown publicly."
+msgstr "ಭಾರತೀಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ. ಸಾರ್ವಜನಿಕವಾಗಿ ಎಂದಿಗೂ ತೋರಿಸುವುದಿಲ್ಲ."
+
+msgid "Interests:"
+msgstr "ಆಸಕ್ತಿಗಳು:"
+
+msgid "Language"
+msgstr "ಭಾಷೆ"
+
+msgid "Languages you can verify in"
+msgstr "ನೀವು ಪರಿಶೀಲಿಸಬಲ್ಲ ಭಾಷೆಗಳು"
+
+msgid "LinkedIn profile URL"
+msgstr "ಲಿಂಕ್ಡ್‌ಇನ್ ಪ್ರೊಫೈಲ್ ಲಿಂಕ್"
+
+msgid "Name"
+msgstr "ಹೆಸರು"
+
+msgid "Phone"
+msgstr "ಫೋನ್"
+
+msgid "No verifier votes yet"
+msgstr "ಇನ್ನೂ ಪರಿಶೀಲಕರ ಮತಗಳಿಲ್ಲ"
+
+msgid "Note (required): what did you check?"
+msgstr "ಟಿಪ್ಪಣಿ (ಅಗತ್ಯ): ನೀವು ಏನನ್ನು ಪರಿಶೀಲಿಸಿದಿರಿ?"
+
+msgid "OTHER OPEN CLAIMS IN YOUR FIELDS"
+msgstr "ನಿಮ್ಮ ಕ್ಷೇತ್ರಗಳಲ್ಲಿನ ಇತರ ತೆರೆದ ಹೇಳಿಕೆಗಳು"
+
+msgid "Official source"
+msgstr "ಅಧಿಕೃತ ಮೂಲ"
+
+msgid "Organisation"
+msgstr "ಸಂಸ್ಥೆ"
+
+msgid "Preferred language"
+msgstr "ಆದ್ಯತೆಯ ಭಾಷೆ"
+
+msgid "Profession"
+msgstr "ವೃತ್ತಿ"
+
+msgid "RECENT VERDICTS"
+msgstr "ಇತ್ತೀಚಿನ ತೀರ್ಪುಗಳು"
+
+msgid "Record"
+msgstr "ದಾಖಲೆ"
+
+msgid "Run the AI research again with today's sources"
+msgstr "ಇಂದಿನ ಮೂಲಗಳೊಂದಿಗೆ AI ಸಂಶೋಧನೆಯನ್ನು ಮತ್ತೆ ನಡೆಸಿ"
+
+msgid "Save"
+msgstr "ಉಳಿಸಿ"
+
+msgid "Send code"
+msgstr "ಕೋಡ್ ಕಳುಹಿಸಿ"
+
+msgid "Submit"
+msgstr "ಸಲ್ಲಿಸಿ"
+
+msgid "Update"
+msgstr "ನವೀಕರಿಸಿ"
+
+msgid "Submit application"
+msgstr "ಅರ್ಜಿ ಸಲ್ಲಿಸಿ"
+
+msgid "Use the two-pane review screen instead"
+msgstr "ಬದಲಿಗೆ ಎರಡು-ಭಾಗದ ಪರಿಶೀಲನಾ ಪರದೆ ಬಳಸಿ"
+
+msgid "Verdict set by an admin override (see the change log for the reason)."
+msgstr "ನಿರ್ವಾಹಕರು ತೀರ್ಪನ್ನು ಬದಲಿಸಿದ್ದಾರೆ (ಕಾರಣಕ್ಕಾಗಿ ಬದಲಾವಣೆ ದಾಖಲೆ ನೋಡಿ)."
+
+msgid "Verified verifier"
+msgstr "ಪರಿಶೀಲಿತ ಪರಿಶೀಲಕ"
+
+msgid "✓ Verified verifier"
+msgstr "✓ ಪರಿಶೀಲಿತ ಪರಿಶೀಲಕ"
+
+msgid "View public profile"
+msgstr "ಸಾರ್ವಜನಿಕ ಪ್ರೊಫೈಲ್ ನೋಡಿ"
+
+msgid "Vote"
+msgstr "ಮತ"
+
+msgid "Vote weight"
+msgstr "ಮತದ ತೂಕ"
+
+msgid "WORK EMAIL"
+msgstr "ಕೆಲಸದ ಇಮೇಲ್"
+
+msgid "Work email"
+msgstr "ಕೆಲಸದ ಇಮೇಲ್"
+
+msgid "We never scrape LinkedIn: an admin checks the profile manually."
+msgstr "ನಾವು ಲಿಂಕ್ಡ್‌ಇನ್‌ನಿಂದ ಮಾಹಿತಿ ಕದಿಯುವುದಿಲ್ಲ: ನಿರ್ವಾಹಕರು ಪ್ರೊಫೈಲ್ ಅನ್ನು ಕೈಯಾರೆ ಪರಿಶೀಲಿಸುತ್ತಾರೆ."
+
+msgid "Weight"
+msgstr "ತೂಕ"
+
+msgid "Weight = (correct + 2) / (total + 4); a verified work email adds +1 to the prior. Weights are frozen when the vote is cast."
+msgstr "ತೂಕ = (ಸರಿ + 2) / (ಒಟ್ಟು + 4); ಪರಿಶೀಲಿತ ಕೆಲಸದ ಇಮೇಲ್ +1 ಸೇರಿಸುತ್ತದೆ. ಮತ ಹಾಕಿದಾಗಲೇ ತೂಕ ಸ್ಥಿರವಾಗುತ್ತದೆ."
+
+msgid "Weight = (correct + 2) ÷ (total + 4), or +3 with a verified work email. New verifiers start at 0.50 (0.60 verified)."
+msgstr "ತೂಕ = (ಸರಿ + 2) ÷ (ಒಟ್ಟು + 4), ಪರಿಶೀಲಿತ ಕೆಲಸದ ಇಮೇಲ್ ಇದ್ದರೆ +3. ಹೊಸ ಪರಿಶೀಲಕರು 0.50 ರಿಂದ (ಪರಿಶೀಲಿತರು 0.60) ಆರಂಭಿಸುತ್ತಾರೆ."
+
+msgid "Verify your work or institution email to get a \"Work email verified\" badge and a higher starting weight (0.60). Free providers like Gmail aren't accepted."
+msgstr "\"ಕೆಲಸದ ಇಮೇಲ್ ಪರಿಶೀಲಿತ\" ಬ್ಯಾಡ್ಜ್ ಮತ್ತು ಹೆಚ್ಚಿನ ಆರಂಭಿಕ ತೂಕ (0.60) ಪಡೆಯಲು ನಿಮ್ಮ ಕೆಲಸ ಅಥವಾ ಸಂಸ್ಥೆಯ ಇಮೇಲ್ ಪರಿಶೀಲಿಸಿ. Gmail ನಂತಹ ಉಚಿತ ಸೇವೆಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ."
+
+msgid "YOUR DETAILS"
+msgstr "ನಿಮ್ಮ ವಿವರಗಳು"
+
+msgid "YOUR TRACK RECORD"
+msgstr "ನಿಮ್ಮ ಸಾಧನೆಯ ದಾಖಲೆ"
+
+msgid "You haven't voted yet. Open a claim and use “Give your verdict”."
+msgstr "ನೀವು ಇನ್ನೂ ಮತ ಹಾಕಿಲ್ಲ. ಒಂದು ಹೇಳಿಕೆಯನ್ನು ತೆರೆದು “ನಿಮ್ಮ ತೀರ್ಪು ನೀಡಿ” ಬಳಸಿ."
+
+msgid "Your opinions and verdicts, and how they compare with the final verdict."
+msgstr "ನಿಮ್ಮ ಅಭಿಪ್ರಾಯಗಳು ಮತ್ತು ತೀರ್ಪುಗಳು, ಹಾಗೂ ಅವು ಅಂತಿಮ ತೀರ್ಪಿನೊಂದಿಗೆ ಹೇಗೆ ಹೋಲುತ್ತವೆ."
+
+msgid "claims checked"
+msgstr "ಪರಿಶೀಲಿಸಿದ ಹೇಳಿಕೆಗಳು"
+
+msgid "community votes"
+msgstr "ಸಮುದಾಯ ಮತಗಳು"
+
+msgid "verdicts given"
+msgstr "ನೀಡಿದ ತೀರ್ಪುಗಳು"
+
+msgid "matched final"
+msgstr "ಅಂತಿಮಕ್ಕೆ ಹೊಂದಿದೆ"
+
+msgid "open"
+msgstr "ತೆರೆದಿದೆ"
+
+msgid "✓ matched"
+msgstr "✓ ಹೊಂದಿದೆ"
+
+msgid "👍 useful"
+msgstr "👍 ಉಪಯುಕ್ತ"
+
+msgid "👎 wrong"
+msgstr "👎 ತಪ್ಪು"
+
+msgid "← Verify Queue"
+msgstr "← ಪರಿಶೀಲನಾ ಸರತಿ"
+
+msgid "Community:"
+msgstr "ಸಮುದಾಯ:"
+
+msgid "no votes yet"
+msgstr "ಇನ್ನೂ ಮತಗಳಿಲ್ಲ"
+
+msgid "truth score"
+msgstr "ಸತ್ಯ ಅಂಕ"
+
+msgid "confidence:"
+msgstr "ವಿಶ್ವಾಸ:"
+
+msgid "reported %(n)s×"
+msgstr "%(n)s ಬಾರಿ ವರದಿಯಾಗಿದೆ"
+
+msgid "%(t)s ago"
+msgstr "%(t)s ಹಿಂದೆ"
+
+msgid "system"
+msgstr "ವ್ಯವಸ್ಥೆ"
+
+msgid "community accuracy (%(c)s/%(t)s matched the final verdict)"
+msgstr "ಸಮುದಾಯ ನಿಖರತೆ (%(c)s/%(t)s ಅಂತಿಮ ತೀರ್ಪಿಗೆ ಹೊಂದಿದೆ)"
+
+msgid "matched the final verdict (%(c)s/%(t)s on this platform)"
+msgstr "ಅಂತಿಮ ತೀರ್ಪಿಗೆ ಹೊಂದಿದೆ (ಈ ವೇದಿಕೆಯಲ್ಲಿ %(c)s/%(t)s)"
+
+msgid "fields:"
+msgstr "ಕ್ಷೇತ್ರಗಳು:"
+
+msgid "languages:"
+msgstr "ಭಾಷೆಗಳು:"
+
+msgid "Log in · Verdicto"
+msgstr "ಲಾಗ್ ಇನ್ · Verdicto"
+
+msgid "Sign up · Verdicto"
+msgstr "ಸೈನ್ ಅಪ್ · Verdicto"
+
+msgid "Verdicto — check before you forward"
+msgstr "Verdicto — ಫಾರ್ವರ್ಡ್ ಮಾಡುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ"
+
+msgid "Verify your phone · Verdicto"
+msgstr "ನಿಮ್ಮ ಫೋನ್ ಪರಿಶೀಲಿಸಿ · Verdicto"
+
+msgid "Verify your phone"
+msgstr "ನಿಮ್ಮ ಫೋನ್ ಪರಿಶೀಲಿಸಿ"
+
+msgid "6-digit code"
+msgstr "6-ಅಂಕಿಯ ಕೋಡ್"
+
+msgid "Verify and create account"
+msgstr "ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಖಾತೆ ತೆರೆಯಿರಿ"
+
+msgid "Development: the code is printed in the server terminal."
+msgstr "ಅಭಿವೃದ್ಧಿ ಹಂತ: ಕೋಡ್ ಸರ್ವರ್ ಟರ್ಮಿನಲ್‌ನಲ್ಲಿ ಮುದ್ರಿತವಾಗುತ್ತದೆ."
+
+msgid "Verify"
+msgstr "ಪರಿಶೀಲಿಸಿ"
+
+msgid "Researching"
+msgstr "ಸಂಶೋಧನೆ"
+
+msgid "Under investigation"
+msgstr "ತನಿಖೆಯಲ್ಲಿದೆ"
+
+msgid "Pending verification"
+msgstr "ಪರಿಶೀಲನೆ ಬಾಕಿ"
+
+msgid "Rejected"
+msgstr "ತಿರಸ್ಕರಿಸಲಾಗಿದೆ"
+
+msgid "AI researching"
+msgstr "AI ಸಂಶೋಧಿಸುತ್ತಿದೆ"
+
+msgid "Unverified"
+msgstr "ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ"
+
+msgid "NEW"
+msgstr "ಹೊಸದು"
+
+msgid "Health"
+msgstr "ಆರೋಗ್ಯ"
+
+msgid "Education"
+msgstr "ಶಿಕ್ಷಣ"
+
+msgid "Government"
+msgstr "ಸರ್ಕಾರ"
+
+msgid "Local news"
+msgstr "ಸ್ಥಳೀಯ ಸುದ್ದಿ"
+
+msgid "Technology"
+msgstr "ತಂತ್ರಜ್ಞಾನ"
+
+msgid "Science"
+msgstr "ವಿಜ್ಞಾನ"
+
+msgid "Politics"
+msgstr "ರಾಜಕೀಯ"
+
+msgid "Finance"
+msgstr "ಹಣಕಾಸು"
+
+msgid "Other"
+msgstr "ಇತರೆ"
+
+msgid "English"
+msgstr "ಇಂಗ್ಲಿಷ್"
+
+msgid "Kannada"
+msgstr "ಕನ್ನಡ"

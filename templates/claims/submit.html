@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block content %}
 <h1 class="text-xl font-bold mb-1">Check a claim</h1>
 <p class="text-sm text-zinc-400 mb-4">Paste the forwarded message. Verifiers will review it.</p>
@@ -21,7 +22,7 @@
   <div class="grid grid-cols-3 gap-2">
     <div><label class="block mb-1">Language</label>{{ form.language }}</div>
     <div><label class="block mb-1">Topic</label>{{ form.domain }}</div>
-    <div><label class="block mb-1">District</label>{{ form.district }}</div>
+    <div><label class="block mb-1">{% translate "District" %}</label>{{ form.district }}</div>
   </div>
   <button class="bg-accent px-4 py-2 rounded font-medium">Submit for verification</button>
 </form>
