@@ -139,7 +139,7 @@ def profile(request):
 def verifier_profile(request, pk):
     """Public verifier profile: badges, accuracy per field/language, recent verdicts."""
     from django.shortcuts import get_object_or_404
-    verifier = get_object_or_404(User, pk=pk, role=User.Role.VERIFIER, verifier_approved=True,
+    verifier = get_object_or_404(User, pk=pk, role=User.Role.VERIFIER, verifier_profile__status="approved",
                                  is_active=True)
     votes = (verifier.votes.select_related("claim").filter(claim__is_hidden=False)
              .order_by("-created_at")[:20])

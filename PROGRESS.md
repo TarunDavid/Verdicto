@@ -3,7 +3,7 @@
 Verdicto: a chat-first fact-check assistant for Karnataka. The AI researches a claim on live sources
 and gives a provisional answer; approved verifiers give the final, weighted verdict.
 
-## Status: feature-complete against SPEC.md, PRD.md and PRD2.md (100 tests passing)
+## Status: feature-complete against SPEC.md, PRD.md and PRD2.md (102 tests passing, incl. 2 Playwright browser tests)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -26,18 +26,22 @@ and gives a provisional answer; approved verifiers give the final, weighted verd
 | Listen button, re-check with latest sources | ✅ | |
 | Kannada UI (247 strings) | ✅ | `locale/kn_strings.py` → `manage.py compilemo` |
 | Moderation (private individuals) | ✅ | AI auto-hold + admin hide/unhide |
+| Browser tests (Playwright) | ✅ | `claims/test_browser.py`: sign-up, chat check, community vote, Kannada switch, verifier review in real Chromium; CSS checked |
+| Local front-end assets | ✅ | Tailwind built locally (`buildcss`, standalone CLI), HTMX vendored; `USE_CDN_ASSETS` to switch back |
+| VerifierProfile table | ✅ | Verifier details moved off `User` with a data migration (0005–0007) |
+| API key checker | ✅ | `manage.py checkkeys` |
 | End-to-end journey test | ✅ | `claims/test_journey.py`: sign-up → chat → research → votes → final → notice → archive/share/Kannada |
-| Production setup | ✅ | `RESEARCH_MODE=worker` + `run_worker`, Postgres via `DATABASE_URL`, shared cache, SMTP, HTTPS settings; `check --deploy` clean except optional HSTS preload |
+| Production setup | ✅ | `RESEARCH_MODE=worker` + `run_worker`, `Procfile`, `gunicorn.conf.py`, `.env.production.example`, `DEPLOY.md` (nginx + checklist), Postgres via `DATABASE_URL`, shared cache, SMTP, HTTPS settings; `check --deploy` clean except optional HSTS preload |
 
 ## Decisions and simplifications
-- Verifier profile fields live on `User` (one table) instead of a separate `VerifierProfile`; same data, simpler queries.
+- `User.domains` holds fields of interest for everyone (and expertise for verifiers); verifier-only details are in `VerifierProfile`.
 - Google Scholar / Web of Science aren't used (no API / institutional key); OpenAlex, PubMed and Crossref instead.
 - PIB blocks automated clients, so official sources come from a Google News search restricted to government domains.
 - Social media isn't scraped; posts appear only via search (or Reddit's official API with keys).
 - No Groq embedding model is available on this account, so cross-language matching uses an English restatement plus an AI "same claim?" check.
 - Kannada text on the OG image is replaced by an English caption (Pillow lacks Kannada shaping without libraqm).
-- Tailwind and HTMX load from CDNs (no Node build step, per the SPEC's stack).
+- Tailwind is built with the standalone CLI (no Node), keeping the SPEC's no-build-step spirit for running the app.
+- Fonts (Inter, Noto Sans Kannada) still load from Google Fonts; the app falls back to system fonts offline.
 
-## Not done / future
-- Browser-driven tests (needs Selenium/Playwright, not in the approved stack); the journey test covers the full flow through the real views.
-- Merging verifier data into a separate profile table, if the team prefers the SPEC's original model.
+## Waiting on you
+- Paste the optional keys (Google Fact Check, Semantic Scholar, Reddit, Twilio) into `.env`, then run `python manage.py checkkeys`.

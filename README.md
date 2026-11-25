@@ -15,6 +15,26 @@ cp .env.example .env            # set SECRET_KEY, GROQ_API_KEY, RESEARCH_CONTACT
 Without `GROQ_API_KEY` everything still runs: sources are collected, but the AI can't judge their
 stances, so the provisional label shows "Unclear".
 
+Browser tests (real Chromium): `pip install -r requirements-dev.txt && playwright install chromium`,
+then `python manage.py test claims.test_browser` (add `HEADED=1` to watch). Deploying: see [DEPLOY.md](DEPLOY.md).
+
+## API keys
+Paste each key into `.env`, restart the server, then run `python manage.py checkkeys` to confirm it works.
+Every key is optional except Groq; a source without a key is skipped.
+
+| Key(s) | Where to get it |
+|---|---|
+| `GROQ_API_KEY` | console.groq.com → API Keys |
+| `GOOGLE_FACTCHECK_API_KEY` | console.cloud.google.com → create a project → enable "Fact Check Tools API" → Credentials → API key |
+| `SEMANTIC_SCHOLAR_API_KEY` | semanticscholar.org/product/api → "Request an API key" (free, approved by email) |
+| `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET` | reddit.com/prefs/apps → "create another app" → type **script** → the ID is under the app name, the secret is labelled "secret" |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | twilio.com/console (Account Info) + a Twilio phone number; set `SMS_BACKEND=twilio` and `PHONE_OTP_ENABLED=True` |
+
+## Front-end assets
+Tailwind CSS and HTMX are served from `static/` (no CDN). `static/css/app.css` is committed; after
+changing Tailwind classes in templates, rebuild it with `python manage.py buildcss` (uses the Tailwind
+standalone CLI in `tools/`, no Node needed). `USE_CDN_ASSETS=True` switches back to the CDNs while editing.
+
 ## Demo flow
 1. Open the site: logged-out visitors only see **Log in / Sign up**. Sign up as **"I want to check
    claims"** (name, phone, fields of interest). You land on **Check a Claim**, the chat home.
@@ -33,6 +53,7 @@ Log in with a **phone number**. `seed_demo` prints all demo phones; they share o
 | Area | Files |
 |---|---|
 | Sign-up / login | `accounts/forms.py` (role, name, phone, interests, verifier details), `accounts/backends.py` (phone login); site-wide `LoginRequiredMiddleware` (claim and share pages stay public) |
+| Verifier profiles | `accounts.models.VerifierProfile` (status, languages, profession, organisation, work email, LinkedIn, approved by/at), one per verifier. `user.languages`, `user.verifier_approved` etc. are shortcuts to it. |
 | Community votes | `verification/engine.py` (`community_vote_weight`: 0.05 each, max 20% combined), `CommunityVote` model |
 | Chat + history | `chat/` (threads per user; system messages when a claim is finalised) |
 | AI research pipeline | `research/pipeline.py`, `research/ai.py` (Groq), `research/connectors.py` |

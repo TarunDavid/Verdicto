@@ -29,3 +29,8 @@ def shell(request):
         queue = (Assignment.objects.filter(verifier=user, status=Assignment.Status.ASSIGNED,
                                            claim__is_hidden=False).exclude(claim_id__in=voted).count())
     return {"sidebar_threads": threads[:25], "chat_search": q, "queue_count": queue}
+
+
+def assets(request):
+    from django.conf import settings
+    return {"USE_CDN_ASSETS": settings.USE_CDN_ASSETS}

@@ -3,6 +3,7 @@ django-ratelimit==4.1.0
 dnspython==2.9.2
 Faker==40.63.0
 groq==1.7.0
+gunicorn==27.0.1
 httpx==0.28.1
 nh3==0.3.8
 pillow==13.0.0

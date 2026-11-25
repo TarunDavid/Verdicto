@@ -87,7 +87,7 @@ CLAIMS = [
          ("journo_divya", "FALSE", "", [FC]),
          ("prof_ravi", "FALSE", "", [OFFICIAL]),
      ]),
-    ("vtu_postponed", "URGENT: VTU has postponed all 5th semester exams to January. Official circular attached.",
+    ("vtu_postponed", "URGENT: VTU has cancelled all 5th semester exams this year and will promote every student automatically. Official circular attached.",
      "en", "education", "Belagavi", 7, [
          ("prof_ravi", "FALSE", "No such circular on the VTU notices page.", [VTU]),
          ("kiran_new", "FALSE", "", [VTU]),

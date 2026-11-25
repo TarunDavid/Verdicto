@@ -82,8 +82,9 @@ def verify_code(user, code):
         raise WorkEmailError(f"Wrong code. {left} attempt{'s' if left != 1 else ''} left.")
     otp.used = True
     otp.save(update_fields=["used"])
-    user.work_email = otp.email
-    user.work_email_verified = True
-    user.org_domain = otp.email.rsplit("@", 1)[-1]
-    user.save(update_fields=["work_email", "work_email_verified", "org_domain"])
+    profile = user.verifier_profile
+    profile.work_email = otp.email
+    profile.work_email_verified = True
+    profile.org_domain = otp.email.rsplit("@", 1)[-1]
+    profile.save(update_fields=["work_email", "work_email_verified", "org_domain"])
     return user

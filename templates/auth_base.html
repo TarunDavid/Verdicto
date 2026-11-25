@@ -1,12 +1,15 @@
-{% load i18n %}{% get_current_language as LANG %}<!doctype html>
+{% load i18n static %}{% get_current_language as LANG %}<!doctype html>
 <html lang="{{ LANG }}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Verdicto{% endblock %}</title>
+{% if USE_CDN_ASSETS %}
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={theme:{extend:{colors:{accent:'#E0383E'}}}}</script>
+  <link rel="stylesheet" href="{% static 'css/input.css' %}">
+  {% else %}<link rel="stylesheet" href="{% static 'css/app.css' %}">{% endif %}
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
-  <style>html[lang=kn] [class*="tracking-"]{letter-spacing:0!important}input[type=checkbox]{accent-color:#2dd4bf}body{font-family:Inter,'Noto Sans Kannada',ui-sans-serif,system-ui}.glass{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}</style>
+  
 </head>
 <body class="min-h-screen text-zinc-100" style="background:radial-gradient(90% 55% at 50% 0%,rgba(45,212,191,.16),rgba(56,189,248,.06) 40%,transparent 70%),#0d0f13">
   <div class="max-w-xl mx-auto px-4 pt-4 flex justify-end">{% include "_langswitch.html" %}</div>

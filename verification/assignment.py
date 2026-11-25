@@ -25,7 +25,8 @@ RELATED = {
 
 
 def rank_verifiers(claim, exclude_ids=()):
-    verifiers = (User.objects.filter(role=User.Role.VERIFIER, verifier_approved=True, is_active=True)
+    verifiers = (User.objects.filter(role=User.Role.VERIFIER, verifier_profile__status="approved",
+                                     is_active=True).select_related("verifier_profile")
                  .exclude(pk__in=exclude_ids)
                  .annotate(open_tasks=Count("assignments",
                                             filter=Q(assignments__status=Assignment.Status.ASSIGNED)))

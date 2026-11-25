@@ -51,6 +51,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "factcheck.context.shell",
+                "factcheck.context.assets",
             ],
         },
     },
@@ -97,6 +98,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"   # `collectstatic` target for production
+STATICFILES_DIRS = [BASE_DIR / "static"]
+# Local Tailwind build + HTMX by default; True loads them from public CDNs (handy while editing classes).
+USE_CDN_ASSETS = config("USE_CDN_ASSETS", default=False, cast=bool)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
