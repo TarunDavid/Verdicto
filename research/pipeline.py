@@ -1,5 +1,6 @@
 """AI research pipeline (PRD section 7). Runs in a background thread; never sets a final verdict."""
 import logging
+import re
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -149,14 +150,21 @@ def run_research(run_id):
     _finish(run, claim)
 
 
-def _search_all(run, info, claim, enabled=None, query_template="{q}", limit=None):
-    """Query the connectors in parallel. `enabled`, `query_template` and `limit` let an AI agent
-    verifier use its own set of sources (research/agents.py)."""
+def _search_all(run, info, claim, enabled=None, templates=None, limit=None, language=None, cache=None,
+                per_connector=4):
+    """Query the connectors in parallel.
+
+    AI agent verifiers (research/agents.py) pass their own `enabled` connectors, query `templates`
+    per connector (e.g. {"google_news": "{q} site:altnews.in OR site:boomlive.in"}), a `language`
+    and a shared `cache` so agents running on the same claim don't repeat the same request.
+    """
     if enabled is None:
         enabled = [n for n in settings.RESEARCH_CONNECTORS if n in connectors.CONNECTORS]
         if claim.domain not in connectors.ACADEMIC_DOMAINS:
             enabled = [n for n in enabled if n not in connectors.ACADEMIC]
     enabled = [n for n in enabled if n in connectors.CONNECTORS]
+    templates = templates or {}
+    lang = language or claim.language
     queries = info["queries"][:3] or [claim.text[:120]]
     jobs = []
     for name in enabled:
@@ -166,40 +174,52 @@ def _search_all(run, info, claim, enabled=None, query_template="{q}", limit=None
         else:  # one call each: keeps within Groq's per-minute token limits
             qs = [info["english_query"] or queries[0]]
         for q in qs:
-            jobs.append((name, query_template.format(q=q) if name == "groq_web" else q))
+            jobs.append((name, templates.get(name, "{q}").format(q=q)))
     results, seen, seen_titles = [], set(), set()
     status = {}
+
+    def keep(name, found):
+        kept = 0
+        for r in found:
+            url = (r.get("url") or "").strip()
+            try:
+                validate_safe_url(url)
+            except Exception:
+                continue
+            title_key = (r.get("title") or "").strip().lower()[:80]
+            if url in seen or (title_key and title_key in seen_titles):
+                continue
+            seen.add(url)
+            if title_key:
+                seen_titles.add(title_key)
+            results.append({**r, "url": url, "connector": name,
+                            "title": r.get("title") or "", "snippet": r.get("snippet") or ""})
+            kept += 1
+        prev = status.get(name, "")
+        count = kept + (int(prev.split("(")[1].rstrip(")")) if prev.startswith("ok") else 0)
+        status[name] = f"ok ({count})"
+
+    todo = []
+    for name, q in jobs:
+        if cache is not None and (name, q, lang) in cache:
+            keep(name, cache[(name, q, lang)])
+        else:
+            todo.append((name, q))
     with ThreadPoolExecutor(max_workers=8) as pool:
-        futures = {pool.submit(connectors.CONNECTORS[n], q, claim.language): n for n, q in jobs}
+        futures = {pool.submit(connectors.CONNECTORS[n], q, lang): (n, q) for n, q in todo}
         try:
             for fut in as_completed(futures, timeout=CONNECTOR_TIMEOUT * 2):
-                name = futures[fut]
+                name, q = futures[fut]
                 try:
                     found = fut.result()
                 except Exception as exc:
                     status[name] = f"error: {type(exc).__name__}"
                     continue
-                kept = 0
-                for r in found:
-                    url = (r.get("url") or "").strip()
-                    try:
-                        validate_safe_url(url)
-                    except Exception:
-                        continue
-                    title_key = (r.get("title") or "").strip().lower()[:80]
-                    if url in seen or (title_key and title_key in seen_titles):
-                        continue
-                    seen.add(url)
-                    if title_key:
-                        seen_titles.add(title_key)
-                    results.append({**r, "url": url, "connector": name,
-                                    "title": r.get("title") or "", "snippet": r.get("snippet") or ""})
-                    kept += 1
-                prev = status.get(name, "")
-                count = kept + (int(prev.split("(")[1].rstrip(")")) if prev.startswith("ok") else 0)
-                status[name] = f"ok ({count})"
+                if cache is not None:
+                    cache[(name, q, lang)] = [dict(r) for r in found]
+                keep(name, found)
         except TimeoutError:
-            for fut, name in futures.items():
+            for fut, (name, _q) in futures.items():
                 if not fut.done():
                     status.setdefault(name, "error: timeout")
     run.connectors = status
@@ -207,18 +227,60 @@ def _search_all(run, info, claim, enabled=None, query_template="{q}", limit=None
     if tiers:
         results = [r for r in results if (r.get("force_tier") or
                    classify(r.get("publisher_url") or r["url"])[0]) in tiers]
-    # Prefer credible, diverse sources: sort by tier weight, cap per connector.
-    results.sort(key=lambda r: -(TIERS.get(r.get("force_tier"), 0) or classify(r.get("publisher_url") or r["url"])[1]))
+    # Prefer on-topic, credible, diverse sources: sources that mention the claim's key words first
+    # (so an off-topic government PDF doesn't push out a relevant fact-check), then by credibility;
+    # cap per connector.
+    terms = _key_terms([claim.text, claim.canonical_en or "", info.get("checkable_claim") or ""],
+                       claim.entities)
+
+    def credibility(r):
+        return TIERS.get(r.get("force_tier"), 0) or classify(r.get("publisher_url") or r["url"])[1]
+
+    for r in results:
+        r["_relevance"] = _relevance(r, terms)
+    if sum(1 for r in results if r["_relevance"]) >= 3:     # enough on-topic results: drop the rest
+        results = [r for r in results if r["_relevance"]]
+    results.sort(key=lambda r: (-min(r["_relevance"], 6), -credibility(r)))
     capped, per = [], {}
     for r in results:
-        if per.get(r["connector"], 0) < 4:
+        if per.get(r["connector"], 0) < per_connector:
             capped.append(r)
             per[r["connector"]] = per.get(r["connector"], 0) + 1
     return capped[:limit or (MAX_SOURCES + (4 if run.deep else 0))]
 
 
-def _enrich(raw, limit=4, from_connectors=("groq_web", "gdelt"), min_snippet=300):
-    """Read the full pages of the top results (safe fetcher: no private addresses, size/time caps)."""
+def _key_terms(texts, entities=()):
+    """Words from the claim itself, weighted: names and numbers ("WhatsApp", "VTU", "499") count 3,
+    other content words 1. Search-query words like "fact check" are deliberately not used."""
+    terms = {}
+    for t in texts:
+        for i, w in enumerate(re.findall(WORD, t or "")):
+            low = w.lower()
+            if low in ai.STOPWORDS or low in GENERIC_TERMS or (len(low) < 4 and not low.isdigit()) or len(low) < 3:
+                continue
+            name = (any(c.isdigit() for c in w) or any(c.isupper() for c in w[1:])   # 499, WhatsApp, VTU
+                    or (i > 0 and w[0].isupper()))                                     # Mysuru mid-sentence
+            terms[low] = max(terms.get(low, 0), 3 if name else 1)
+    for e in entities or ():
+        for w in re.findall(WORD, f"{e.get('name', '')} {e.get('short', '')}"):
+            if len(w) >= 3 and w.lower() not in ai.STOPWORDS:
+                terms[w.lower()] = 3
+    return terms
+
+
+WORD = re.compile(r"[\w\u0C80-\u0CFF']+")   # \w alone splits Kannada words at vowel signs
+GENERIC_TERMS = {"fact", "check", "rumor", "rumour", "viral", "claim", "claims", "true", "false", "fake",
+                 "people", "news", "report", "reports", "says", "said"}
+
+
+def _relevance(r, terms):
+    text = f"{r.get('title', '')} {r.get('snippet', '')[:800]}".lower()
+    return sum(weight for term, weight in terms.items() if term in text)
+
+
+def _enrich(raw, limit=4, from_connectors=("groq_web", "gdelt"), min_snippet=300, cache=None):
+    """Read the full pages of the top results (safe fetcher: no private addresses, size/time caps).
+    `cache` (url -> (title, text)) lets AI agents on the same claim share pages already read."""
     targets = [r for r in raw if "news.google.com" not in r["url"] and len(r["snippet"]) < min_snippet
                and r["connector"] in from_connectors][:limit]
     if not targets:
@@ -226,7 +288,12 @@ def _enrich(raw, limit=4, from_connectors=("groq_web", "gdelt"), min_snippet=300
 
     def work(r):
         try:
-            title, text = fetch_article(r["url"])
+            if cache is not None and r["url"] in cache:
+                title, text = cache[r["url"]]
+            else:
+                title, text = fetch_article(r["url"])
+                if cache is not None:
+                    cache[r["url"]] = (title, text)
             if text:
                 r["snippet"] = text
             if title and not r["title"]:

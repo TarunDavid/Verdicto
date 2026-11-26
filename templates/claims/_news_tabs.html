@@ -1,5 +1,5 @@
-{% load i18n %}<div class="flex items-center gap-6 text-sm border-b border-white/5 mb-5">
-  <a href="{% url 'feed' %}" class="pb-2 {% if subtab == 'important' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">{% translate "Most important" %}</a>
-  <a href="{% url 'feed' %}?sort=latest" class="pb-2 {% if subtab == 'latest' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">{% translate "Latest" %}</a>
-  <a href="{% url 'archive' %}" class="pb-2 {% if subtab == 'past' %}text-white font-semibold border-b-2 border-accent{% else %}text-zinc-400 hover:text-white{% endif %}">{% translate "Past verdicts" %}</a>
-</div>
+{% load i18n %}<nav class="flex items-center gap-6 text-sm border-b border-rule mb-6">
+  <a href="{% url 'feed' %}" class="tab -mb-px {% if subtab == 'important' %}is-active{% endif %}">{% translate "Most important" %}</a>
+  <a href="{% url 'feed' %}?sort=latest" class="tab -mb-px {% if subtab == 'latest' %}is-active{% endif %}">{% translate "Latest" %}</a>
+  <a href="{% url 'archive' %}" class="tab -mb-px {% if subtab == 'past' %}is-active{% endif %}">{% translate "Past verdicts" %}</a>
+</nav>

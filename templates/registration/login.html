@@ -1,15 +1,15 @@
 {% extends "auth_base.html" %}
 {% load i18n %}
 {% block title %}{% translate "Log in · Verdicto" %}{% endblock %}
-{% block heading %}{% translate "Check before you forward" %}{% endblock %}
+{% block heading %}{% translate "Log in" %}{% endblock %}
 {% block sub %}{% translate "Log in with your phone number to check claims." %}{% endblock %}
 {% block content %}
-<form method="post" class="glass rounded-2xl p-6 space-y-4 text-sm">{% csrf_token %}
+<form method="post" class="space-y-5 text-sm">{% csrf_token %}
   {% if form.non_field_errors %}<p class="text-red-400">{{ form.non_field_errors.0 }}</p>{% endif %}
-  <div><label class="block mb-1 text-zinc-300">{% translate "Phone number" %}</label>{{ form.username }}</div>
-  <div><label class="block mb-1 text-zinc-300">{% translate "Password" %}</label>{{ form.password }}</div>
+  <div><label class="block mb-1.5 eyebrow">{% translate "Phone number" %}</label>{{ form.username }}</div>
+  <div><label class="block mb-1.5 eyebrow">{% translate "Password" %}</label>{{ form.password }}</div>
   <input type="hidden" name="next" value="{{ next }}">
-  <button class="w-full bg-white text-black rounded-xl py-2.5 font-semibold">{% translate "Log in" %}</button>
+  <button class="btn btn-signal w-full !py-3">{% translate "Log in" %}</button>
 </form>
 <p class="text-center text-sm text-zinc-400 mt-6">{% translate "New to Verdicto?" %} <a href="{% url 'signup' %}" class="text-white underline">{% translate "Create an account" %}</a></p>
 {% endblock %}

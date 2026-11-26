@@ -1,9 +1,9 @@
 {% load i18n %}{% if stats %}
-<div class="glass rounded-2xl bg-[#1a1c20] overflow-x-auto">
+<div class="glass rounded-2xl bg-ink-2 overflow-x-auto">
   <table class="w-full text-sm">
     <thead class="text-left text-xs text-zinc-500"><tr><th class="px-4 py-2.5 font-medium">{% translate "Field" %}</th><th class="py-2.5 pr-4 font-medium">{% translate "Language" %}</th><th class="py-2.5 pr-4 font-medium">{% translate "Record" %}</th><th class="py-2.5 pr-4 font-medium">{% translate "Accuracy" %}</th><th class="py-2.5 pr-4 font-medium">{% translate "Vote weight" %}</th></tr></thead>
     <tbody>{% for r in stats %}<tr class="border-t border-white/5"><td class="px-4 py-2.5">{{ r.domain }}</td><td class="pr-4">{{ r.language }}</td><td class="pr-4">{{ r.correct }}/{{ r.total }}</td><td class="pr-4">{% if r.accuracy is not None %}{{ r.accuracy }}%{% else %}—{% endif %}</td><td class="pr-4 font-mono">{{ r.weight|floatformat:2 }}</td></tr>{% endfor %}</tbody>
   </table>
 </div>
 <p class="text-xs text-zinc-500 mt-2">{% translate "Weight = (correct + 2) ÷ (total + 4), or +3 with a verified work email. New verifiers start at 0.50 (0.60 verified)." %}</p>
-{% else %}<p class="text-sm text-zinc-400 glass rounded-2xl p-4 bg-[#1a1c20]">No scored verdicts yet: new verifiers start at weight 0.50{% if verifier.work_email_verified or user.work_email_verified %} (0.60 with the verified work email){% endif %}.</p>{% endif %}
+{% else %}<p class="text-sm text-zinc-400 glass rounded-2xl p-4 bg-ink-2">No scored verdicts yet: new verifiers start at weight 0.50{% if verifier.work_email_verified or user.work_email_verified %} (0.60 with the verified work email){% endif %}.</p>{% endif %}

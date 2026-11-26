@@ -1,8 +1,8 @@
 <div>
-  <label class="block mb-1 text-zinc-300">{{ f.label }}{% if f.field.required %} <span class="text-accent">*</span>{% endif %}</label>
+  <label class="block mb-1.5 eyebrow">{{ f.label }}{% if f.field.required %} <span class="text-accent">*</span>{% endif %}</label>
   {% if f.field.widget.input_type == "checkbox" %}
-    <div class="flex flex-wrap gap-2">{% for opt in f %}<label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs cursor-pointer has-[:checked]:border-teal-400/70 has-[:checked]:bg-teal-400/10">{{ opt.tag }} {{ opt.choice_label }}</label>{% endfor %}</div>
+    <div class="flex flex-wrap gap-2">{% for opt in f %}<label class="chip cursor-pointer has-[:checked]:border-teal-400 has-[:checked]:text-teal-300 has-[:checked]:bg-teal-400/10">{{ opt.tag }} {{ opt.choice_label }}</label>{% endfor %}</div>
   {% else %}{{ f }}{% endif %}
-  {% if f.help_text %}<p class="text-xs text-zinc-500 mt-1">{{ f.help_text }}</p>{% endif %}
-  {% for e in f.errors %}<p class="text-red-400 text-xs mt-1">{{ e }}</p>{% endfor %}
+  {% if f.help_text %}<p class="text-xs text-zinc-500 mt-1.5">{{ f.help_text }}</p>{% endif %}
+  {% for e in f.errors %}<p class="text-[#ff8a8d] text-xs mt-1">{{ e }}</p>{% endfor %}
 </div>

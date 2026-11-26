@@ -40,15 +40,23 @@ def cast_vote(claim, verifier, verdict, note="", evidence_urls=()):
     return vote
 
 
+def split_votes(claim):
+    """(human votes, AI agent votes), each a list of (verdict, weight_at_vote)."""
+    humans, agents = [], []
+    for verdict, weight, is_agent in claim.votes.values_list("verdict", "weight_at_vote",
+                                                             "verifier__verifier_profile__is_ai_agent"):
+        (agents if is_agent else humans).append((verdict, weight))
+    return humans, agents
+
+
 def recompute(claim, trigger=None):
     """Recompute after every vote. Log any status/verdict change. Re-score track records."""
     if claim.locked_by_admin:
         return claim
-    votes = list(claim.votes.values_list("verdict", "weight_at_vote"))
+    votes, agent_votes = split_votes(claim)
     community = list(claim.community_votes.values_list("verdict", flat=True))
-    humans = claim.votes.exclude(verifier__verifier_profile__is_ai_agent=True).count()
-    result = engine.compute_verdict(votes, community, human_votes=humans,
-                                    min_human=settings.FINAL_MIN_HUMAN_VOTES)
+    result = engine.compute_verdict(votes, community, min_human=settings.FINAL_MIN_HUMAN_VOTES,
+                                    agent_votes=agent_votes, agent_cap=settings.AI_AGENT_WEIGHT_CAP)
     old = (claim.status, claim.verdict, claim.confidence)
 
     claim.leading = result.leading
@@ -199,6 +207,7 @@ def breakdown(claim):
         rows.append({"vote": vote, "record": f"{stat.correct}/{stat.total}" if stat else "new",
                      "insider": org_match(vote.verifier._profile(), claim, keys),
                      "agent_run": agent_runs.get(vote.pk)})
-    arithmetic = engine.explain(claim.votes.values_list("verdict", "weight_at_vote"),
-                                claim.community_votes.values_list("verdict", flat=True))
+    humans, agents = split_votes(claim)
+    arithmetic = engine.explain(humans, claim.community_votes.values_list("verdict", flat=True),
+                                agent_votes=agents, agent_cap=settings.AI_AGENT_WEIGHT_CAP)
     return rows, arithmetic

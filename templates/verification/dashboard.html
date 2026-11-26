@@ -1,22 +1,38 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block mainclass %}max-w-4xl{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-medium pt-2">{% translate "Verify Queue" %}</h1>
-<p class="text-sm text-zinc-400 mb-5">{% translate "Claims routed to you by field, language, accuracy and workload. Most important first." %}</p>
-<div class="space-y-3">
+<header class="pt-10 pb-6 flex items-end gap-6 flex-wrap">
+  <div>
+    <p class="eyebrow">{% include "_name.html" with u=user nolink=True %}</p>
+    <h1 class="display text-[40px] sm:text-[52px] font-medium mt-2">{% translate "Verify Queue" %}</h1>
+    <p class="text-sm text-zinc-400 mt-2 max-w-xl">{% translate "Claims routed to you by field, language, accuracy and workload. Most important first." %}</p>
+  </div>
+  <div class="ml-auto text-right">
+    <p class="display text-[44px] leading-none">{{ assigned|length }}</p>
+    <p class="eyebrow mt-1">{% translate "Assigned" %}</p>
+  </div>
+</header>
+<div class="ledger border-y border-rule">
 {% for a in assigned %}
-  <a href="{% url 'verify_review' a.claim.pk %}" class="block glass rounded-2xl p-4 bg-[#1a1c20] hover:border-accent/60">
-    <div class="flex items-center gap-2 text-xs text-zinc-400 flex-wrap">{% with claim=a.claim %}{% include "_badge.html" %}{% endwith %}
-      {% if a.claim.urgency == "high" %}<b class="text-red-400">{% translate "URGENT" %}</b>{% endif %}
-      <span>{{ a.claim.get_domain_display }} · {{ a.claim.get_language_display }}</span>
-      <span class="ml-auto">match {{ a.score|floatformat:2 }} · {% if a.overdue %}<span class="text-red-400">overdue, may be reassigned</span>{% else %}<span class="text-amber-300">{{ a.due|timeuntil }} left</span>{% endif %}</span></div>
-    <p class="mt-2">{{ a.claim.text|truncatechars:160 }}</p>
-    <p class="text-xs text-zinc-500 mt-1">Why you: {{ a.reason }}</p>
+  <a href="{% url 'verify_review' a.claim.pk %}" class="ledger-row group block">
+    <div class="flex items-start gap-5">
+      <span class="case-no pt-1 hidden sm:block w-[4.5rem] shrink-0">№{{ a.claim.pk|stringformat:"04d" }}</span>
+      <div class="min-w-0 flex-1">
+        <p class="serif text-[17px] leading-snug text-zinc-100 group-hover:text-white">{{ a.claim.text|truncatechars:160 }}</p>
+        <p class="mt-2 eyebrow !tracking-[.08em]">{% if a.claim.urgency == "high" %}<span class="text-accent">{% translate "URGENT" %}</span> · {% endif %}{{ a.claim.get_domain_display }} · {{ a.claim.get_language_display }} · match <span class="text-zinc-300">{{ a.score|floatformat:2 }}</span></p>
+        <p class="text-xs text-zinc-500 mt-1.5">Why you: {{ a.reason }}</p>
+      </div>
+      <div class="text-right shrink-0 space-y-2">
+        {% with claim=a.claim %}{% include "_badge.html" %}{% endwith %}
+        <p class="mono text-[11px] {% if a.overdue %}text-accent{% else %}text-teal-300{% endif %}">{% if a.overdue %}overdue, may be reassigned{% else %}{{ a.due|timeuntil }} left{% endif %}</p>
+      </div>
+    </div>
   </a>
-{% empty %}<p class="text-zinc-400 glass rounded-2xl p-6 text-center">{% translate "Nothing assigned to you right now." %}</p>{% endfor %}
+{% empty %}<p class="py-12 text-center text-zinc-400">{% translate "Nothing assigned to you right now." %}</p>{% endfor %}
 </div>
 {% if others %}
-<h2 class="mt-8 mb-2 text-xs tracking-[.18em] text-zinc-500">{% translate "OTHER OPEN CLAIMS IN YOUR FIELDS" %}</h2>
-<div class="space-y-2">{% for claim in others %}<a href="{% url 'verify_review' claim.pk %}" class="block text-sm glass rounded-xl p-3 hover:bg-white/5">{% include "_badge.html" %} <span class="ml-1">{{ claim.text|truncatechars:120 }}</span></a>{% endfor %}</div>
+<h2 class="section-head">{% translate "OTHER OPEN CLAIMS IN YOUR FIELDS" %}</h2>
+<div class="ledger border-y border-rule">{% for claim in others %}{% url 'verify_review' claim.pk as review_url %}{% include "claims/_row.html" with href=review_url %}{% endfor %}</div>
 {% endif %}
 {% endblock %}

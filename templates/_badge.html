@@ -1,10 +1,10 @@
-{% load i18n %}{% if claim.status == "FINAL" %}
-  {% if claim.verdict == "FALSE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-red-600">{% translate "FALSE" %}</span>
-  {% elif claim.verdict == "TRUE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-green-600">{% translate "VERIFIED TRUE" %}</span>
-  {% elif claim.verdict == "PARTIALLY_TRUE" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-400 text-black">{% translate "PARTIALLY TRUE" %}</span>
-  {% elif claim.verdict == "MISLEADING" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-orange-500 text-black">{% translate "MISLEADING" %}</span>
-  {% else %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-black">{% translate "UNVERIFIED · INSUFFICIENT EVIDENCE" %}</span>{% endif %}
-{% elif claim.status == "UNDER_REVIEW" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-sky-700">{% translate "UNDER INVESTIGATION" %}</span>
-{% elif claim.status == "RESEARCHING" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-zinc-600 animate-pulse">{% translate "AI RESEARCHING" %}</span>
-{% elif claim.status == "REJECTED" %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-zinc-800 border border-zinc-600">{% translate "HELD FOR MODERATION" %}</span>
-{% else %}<span class="px-2 py-0.5 rounded text-xs font-bold bg-zinc-600">{% translate "PENDING VERIFICATION" %}</span>{% endif %}
+{% load i18n %}{# Verdict / status as a rubber stamp. Optional: size="lg" or "xl". #}{% with s=size|default:"" %}{% if claim.status == "FINAL" %}
+  {% if claim.verdict == "FALSE" %}<span class="stamp stamp-false{% if s %} stamp-{{ s }}{% endif %}">{% translate "FALSE" %}</span>
+  {% elif claim.verdict == "TRUE" %}<span class="stamp stamp-true{% if s %} stamp-{{ s }}{% endif %}">{% translate "VERIFIED TRUE" %}</span>
+  {% elif claim.verdict == "PARTIALLY_TRUE" %}<span class="stamp stamp-partial{% if s %} stamp-{{ s }}{% endif %}">{% translate "PARTIALLY TRUE" %}</span>
+  {% elif claim.verdict == "MISLEADING" %}<span class="stamp stamp-misleading{% if s %} stamp-{{ s }}{% endif %}">{% translate "MISLEADING" %}</span>
+  {% else %}<span class="stamp stamp-unverified{% if s %} stamp-{{ s }}{% endif %}">{% translate "UNVERIFIED · INSUFFICIENT EVIDENCE" %}</span>{% endif %}
+{% elif claim.status == "UNDER_REVIEW" %}<span class="stamp stamp-review{% if s %} stamp-{{ s }}{% endif %}">{% translate "UNDER INVESTIGATION" %}</span>
+{% elif claim.status == "RESEARCHING" %}<span class="stamp stamp-researching{% if s %} stamp-{{ s }}{% endif %}">{% translate "AI RESEARCHING" %}</span>
+{% elif claim.status == "REJECTED" %}<span class="stamp stamp-held{% if s %} stamp-{{ s }}{% endif %}">{% translate "HELD FOR MODERATION" %}</span>
+{% else %}<span class="stamp stamp-pending{% if s %} stamp-{{ s }}{% endif %}">{% translate "PENDING VERIFICATION" %}</span>{% endif %}{% endwith %}

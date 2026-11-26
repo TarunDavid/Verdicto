@@ -2,25 +2,61 @@
 <html lang="{{ LANG }}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0e0d0b">
   <title>{% block title %}Verdicto{% endblock %}</title>
 {% if USE_CDN_ASSETS %}
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{accent:'#E0383E'}}}}</script>
+  <script>tailwind.config={theme:{extend:{colors:{accent:'#E0383E',ink:{DEFAULT:'#0e0d0b',2:'#151411',3:'#1c1a16',4:'#24211c'},paper:{DEFAULT:'#efe9dd'},rule:{DEFAULT:'#2b2823',strong:'#3d3931'}}}}}</script>
   <link rel="stylesheet" href="{% static 'css/input.css' %}">
-  {% else %}<link rel="stylesheet" href="{% static 'css/app.css' %}">{% endif %}
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
-  
+  {% else %}<link rel="stylesheet" href="{% static 'css/app.css' %}?v={{ ASSET_VERSION }}">{% endif %}
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,30;1,9..144,400..700,30&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Serif+Kannada:wght@500;700&display=swap" rel="stylesheet">
 </head>
-<body class="min-h-screen text-zinc-100" style="background:radial-gradient(90% 55% at 50% 0%,rgba(45,212,191,.16),rgba(56,189,248,.06) 40%,transparent 70%),#0d0f13">
-  <div class="max-w-xl mx-auto px-4 pt-4 flex justify-end">{% include "_langswitch.html" %}</div>
-  <div class="max-w-xl mx-auto px-4 py-6">
-    <div class="flex flex-col items-center text-center mb-8">
-      {% include "_emblem.html" with size="w-16 h-16" %}
-      <p class="mt-5 text-xs tracking-[.3em] text-zinc-400">VERDICTO</p>
-      <h1 class="text-2xl sm:text-3xl font-medium mt-2">{% block heading %}{% endblock %}</h1>
-      <p class="text-sm text-zinc-400 mt-2">{% block sub %}{% endblock %}</p>
+<body class="min-h-screen">
+<div class="min-h-screen grid lg:grid-cols-[1.05fr_1fr]">
+  {# ---------- Left: the front page ---------- #}
+  <aside class="hidden lg:flex flex-col border-r border-rule bg-ink-2 px-12 py-10 relative overflow-hidden">
+    <div class="flex items-center gap-3">
+      {% include "_emblem.html" with size="w-9 h-9" %}
+      <span class="display text-3xl italic font-semibold">Verdicto</span>
+      <span class="eyebrow ml-auto">{% now "j M Y" %}</span>
     </div>
-    {% block content %}{% endblock %}
-  </div>
+    <div class="border-y-2 border-paper/80 mt-6 py-1.5 flex justify-between eyebrow !text-zinc-300">
+      <span>{% translate "The Karnataka fact desk" %}</span><span>EN · ಕನ್ನಡ</span>
+    </div>
+    <div class="flex-1 flex flex-col justify-center py-10">
+      <h2 class="display text-[64px] xl:text-[76px] font-medium leading-[.98]">{% translate "Check before you forward" %}<span class="text-accent">.</span></h2>
+      {# a sample forward, stamped #}
+      <div class="mt-10 relative max-w-md">
+        <div class="rounded-lg bg-[#1f2c24] border border-[#2e4a38] p-4 pr-6 shadow-2xl rotate-[-1.5deg]">
+          <p class="mono text-[10px] text-[#8fd8b0]/70 uppercase tracking-wider">↪ {% translate "Forwarded many times" %}</p>
+          <p class="mt-1.5 text-[15px] text-zinc-100 leading-snug">URGENT: Schools in all districts closed tomorrow by government order. Share with every parent!!</p>
+          <p class="mt-2 text-right mono text-[10px] text-zinc-500">09:41 ✓✓</p>
+        </div>
+        <span class="stamp stamp-false stamp-xl absolute -right-8 top-[4.5rem]">{% translate "FALSE" %}</span>
+      </div>
+    </div>
+    <ol class="grid grid-cols-3 gap-6 border-t border-rule pt-6 text-xs text-zinc-400">
+      <li><p class="idx">01</p><p class="serif text-paper text-base mt-1">{% translate "AI research" %}</p></li>
+      <li><p class="idx">02</p><p class="serif text-paper text-base mt-1">{% translate "26 AI verifiers" %}</p></li>
+      <li><p class="idx">03</p><p class="serif text-paper text-base mt-1">{% translate "Human experts decide" %}</p></li>
+    </ol>
+  </aside>
+
+  {# ---------- Right: the form ---------- #}
+  <main class="flex flex-col px-5 sm:px-10 py-6">
+    <div class="flex items-center gap-3">
+      <span class="lg:hidden flex items-center gap-2">{% include "_emblem.html" with size="w-7 h-7" %}<span class="display text-2xl italic font-semibold">Verdicto</span></span>
+      <span class="ml-auto">{% include "_langswitch.html" %}</span>
+    </div>
+    <div class="flex-1 flex items-center">
+      <div class="w-full max-w-md mx-auto py-10 fade-up">
+        <h1 class="display text-[34px] sm:text-[40px] font-medium">{% block heading %}{% endblock %}</h1>
+        <p class="text-sm text-zinc-400 mt-3 leading-relaxed">{% block sub %}{% endblock %}</p>
+        <div class="mt-8">{% block content %}{% endblock %}</div>
+      </div>
+    </div>
+  </main>
+</div>
 </body>
 </html>

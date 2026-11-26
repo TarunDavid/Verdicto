@@ -5,7 +5,7 @@
 <div class="pt-2 flex items-center gap-4">
   <div class="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-teal-500 grid place-items-center text-xl font-semibold">{{ verifier.initials }}</div>
   <div>
-    <h1 class="text-2xl font-medium">{% include "_name.html" with u=verifier %}</h1>
+    <h1 class="display text-[34px] sm:text-[42px] font-medium">{% include "_name.html" with u=verifier %}</h1>
     {% if verifier.profession or verifier.organisation %}<p class="text-sm text-zinc-300">{{ verifier.profession }}{% if verifier.profession and verifier.organisation %} · {% endif %}{{ verifier.organisation }}</p>{% endif %}
     <p class="text-sm mt-0.5">{% include "_record.html" with u=verifier %}</p>
     <p class="text-sm text-zinc-400">{% if verifier.is_ai_agent %}{% translate "AI agent verifier" %}{% else %}{% translate "Verifier" %}{% endif %}{% if verifier.district %} · {{ verifier.district }}{% endif %} · {% translate "fields:" %} {{ verifier.domains|join:", " }} · {% translate "languages:" %} {{ verifier.languages|join:", " }}</p>
@@ -13,13 +13,13 @@
 </div>
 <div class="mt-3">{% include "accounts/_badges.html" with u=verifier %}</div>
 <div class="grid grid-cols-2 gap-3 mt-6 text-sm">
-  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{{ verifier.votes.count }}</p><p class="text-zinc-400 text-xs">{% translate "verdicts given" %}</p></div>
-  <div class="glass rounded-2xl p-4 bg-[#1a1c20]"><p class="text-2xl font-semibold">{% if scored %}{% widthratio correct scored 100 %}%{% else %}—{% endif %}</p><p class="text-zinc-400 text-xs">{% blocktranslate with c=correct t=scored %}matched the final verdict ({{ c }}/{{ t }} on this platform){% endblocktranslate %}</p></div>
+  <div class="glass rounded-2xl p-4 bg-ink-2"><p class="text-2xl font-semibold">{{ verifier.votes.count }}</p><p class="text-zinc-400 text-xs">{% translate "verdicts given" %}</p></div>
+  <div class="glass rounded-2xl p-4 bg-ink-2"><p class="text-2xl font-semibold">{% if scored %}{% widthratio correct scored 100 %}%{% else %}—{% endif %}</p><p class="text-zinc-400 text-xs">{% blocktranslate with c=correct t=scored %}matched the final verdict ({{ c }}/{{ t }} on this platform){% endblocktranslate %}</p></div>
 </div>
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "ACCURACY BY FIELD AND LANGUAGE" %}</h2>
+<h2 class="section-head">{% translate "ACCURACY BY FIELD AND LANGUAGE" %}</h2>
 {% include "accounts/_stats.html" %}
-<h2 class="mt-8 mb-3 text-[11px] tracking-[.18em] text-zinc-500">{% translate "RECENT VERDICTS" %}</h2>
-<div class="glass rounded-2xl bg-[#1a1c20] divide-y divide-white/5 text-sm">
+<h2 class="section-head">{% translate "RECENT VERDICTS" %}</h2>
+<div class="glass rounded-2xl bg-ink-2 divide-y divide-white/5 text-sm">
   {% for v in votes %}
   <a href="{% url 'claim_detail' v.claim.pk %}" class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5">
     <b class="w-28 shrink-0">{{ v.get_verdict_display }}</b>

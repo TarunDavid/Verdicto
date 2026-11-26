@@ -2,15 +2,15 @@
 {% load i18n %}
 {% block content %}
 <div class="max-w-xl mx-auto pt-6">
-  <h1 class="text-2xl font-medium">{% translate "Apply to become a verifier" %}</h1>
+  <h1 class="display text-[34px] sm:text-[42px] font-medium">{% translate "Apply to become a verifier" %}</h1>
   <p class="text-sm text-zinc-400 mt-1 mb-5">{% translate "An admin reviews every application. Once approved, you get a Verify Queue and your verdicts are weighted by your accuracy." %}</p>
-  <form method="post" class="glass rounded-2xl p-6 space-y-4 text-sm">{% csrf_token %}
+  <form method="post" class="space-y-5 text-sm">{% csrf_token %}
     <div class="grid grid-cols-2 gap-3">{% include "registration/_field.html" with f=form.profession %}{% include "registration/_field.html" with f=form.organisation %}</div>
     {% include "registration/_field.html" with f=form.interests %}
     {% include "registration/_field.html" with f=form.languages %}
     <div class="grid grid-cols-2 gap-3">{% include "registration/_field.html" with f=form.work_email %}{% include "registration/_field.html" with f=form.district %}</div>
     {% include "registration/_field.html" with f=form.linkedin_url %}
-    <button class="bg-white text-black rounded-xl px-5 py-2.5 font-semibold">{% translate "Submit application" %}</button>
+    <button class="btn btn-signal">{% translate "Submit application" %}</button>
   </form>
 </div>
 {% endblock %}

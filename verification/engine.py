@@ -52,6 +52,16 @@ def community_vote_weight(n_community, verifier_total):
     return min(raw, cap) / n_community
 
 
+def agent_vote_scale(agent_total, human_total, cap):
+    """Factor applied to every AI agent's weight so that all agents together are at most `cap` of
+    the verifier weight: a / (h + a) <= cap  <=>  a <= h * cap / (1 - cap). With no human votes yet
+    there is nothing to compare with, so agents count in full (a claim can't be final without a
+    person anyway unless FINAL_MIN_HUMAN_VOTES is 0)."""
+    if agent_total <= 0 or human_total <= 0 or cap >= 1:
+        return 1.0
+    return min(1.0, human_total * cap / (1 - cap) / agent_total)
+
+
 @dataclass
 class VerdictResult:
     totals: dict
@@ -62,45 +72,57 @@ class VerdictResult:
     vote_count: int      # verifier votes
     community_count: int = 0
     community_vote_weight: float = 0.0
+    agent_count: int = 0
+    agent_scale: float = 1.0
 
 
-def compute_verdict(votes, community=(), human_votes=None, min_human=0):
-    """votes: iterable of (verdict, weight) from verifiers. community: iterable of verdicts from
-    regular users. Final needs >= 3 verifier votes and >= 70% of the total weighted votes, and, when
-    AI agents vote, at least `min_human` of those votes from people (`human_votes`)."""
+def compute_verdict(votes, community=(), human_votes=None, min_human=0, agent_votes=(), agent_cap=1.0):
+    """votes: iterable of (verdict, weight) from human verifiers. agent_votes: the same from AI agent
+    verifiers, scaled so that together they are at most `agent_cap` of the verifier weight.
+    community: iterable of verdicts from regular users. Final needs >= 3 verifier votes (people and
+    agents) and >= 70% of the total weighted votes, with at least `min_human` votes from people."""
     votes = list(votes)
+    agent_votes = list(agent_votes)
     community = list(community)
     totals = {opt: 0.0 for opt in OPTIONS}
     for verdict, weight in votes:
         totals[verdict] += weight
+    scale = agent_vote_scale(sum(w for _, w in agent_votes), sum(totals.values()), agent_cap)
+    for verdict, weight in agent_votes:
+        totals[verdict] += weight * scale
     cw = community_vote_weight(len(community), sum(totals.values()))
     for verdict in community:
         totals[verdict] += cw
     total_weight = sum(totals.values())
     if total_weight == 0:
         return VerdictResult(totals, None, 0.0, "UNDER_REVIEW", None, 0)
+    n_votes = len(votes) + len(agent_votes)
 
     leading = max(OPTIONS, key=lambda o: (totals[o], -OPTIONS.index(o)))
     confidence = totals[leading] / total_weight
     humans = len(votes) if human_votes is None else human_votes
-    is_final = len(votes) >= MIN_VOTES and confidence >= FINAL_CONFIDENCE and humans >= min_human
+    is_final = n_votes >= MIN_VOTES and confidence >= FINAL_CONFIDENCE and humans >= min_human
     return VerdictResult(
         totals=totals,
         leading=leading,
         confidence=confidence,
         status="FINAL" if is_final else "UNDER_REVIEW",
         verdict=leading if is_final else None,
-        vote_count=len(votes),
+        vote_count=n_votes,
         community_count=len(community),
         community_vote_weight=cw,
+        agent_count=len(agent_votes),
+        agent_scale=scale,
     )
 
 
-def explain(votes, community=()):
-    """Human-readable arithmetic, e.g. 'FALSE = 0.83 + 0.67 = 1.50; TRUE = 0.50; confidence = 75%'."""
-    votes = list(votes)
+def explain(votes, community=(), agent_votes=(), agent_cap=1.0):
+    """Human-readable arithmetic, e.g. 'FALSE = 0.83 + 0.67 = 1.50; TRUE = 0.50; confidence = 75%'.
+    AI agents' weights are shown after scaling."""
     community = list(community)
-    result = compute_verdict(votes, community)
+    agent_votes = list(agent_votes)
+    result = compute_verdict(list(votes), community, agent_votes=agent_votes, agent_cap=agent_cap)
+    votes = list(votes) + [(v, w * result.agent_scale) for v, w in agent_votes]
     parts = []
     for opt in OPTIONS:
         weights = [w for v, w in votes if v == opt]
@@ -115,6 +137,10 @@ def explain(votes, community=()):
         tallies = ", ".join(f"{opt} {community.count(opt)}" for opt in OPTIONS if opt in community)
         parts.append(f"community = {len(community)} votes × {cw:.3f} = {cw * len(community):.2f}"
                      f" ({tallies})")
+    if agent_votes:
+        parts.append(f"AI agents: {len(agent_votes)} votes" + (
+            f", weights × {result.agent_scale:.2f} (all agents together ≤ {agent_cap:.0%})"
+            if result.agent_scale < 1 else ""))
     parts.append(f"confidence = {result.confidence:.0%}")
     return "; ".join(parts)
 

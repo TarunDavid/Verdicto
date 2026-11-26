@@ -33,4 +33,15 @@ def shell(request):
 
 def assets(request):
     from django.conf import settings
-    return {"USE_CDN_ASSETS": settings.USE_CDN_ASSETS}
+    return {"USE_CDN_ASSETS": settings.USE_CDN_ASSETS, "ASSET_VERSION": _asset_version()}
+
+
+def _asset_version():
+    """Changes whenever app.css is rebuilt, so browsers fetch the new stylesheet instead of a cached one."""
+    from pathlib import Path
+
+    from django.conf import settings
+    try:
+        return int((Path(settings.BASE_DIR) / "static" / "css" / "app.css").stat().st_mtime)
+    except OSError:
+        return 0

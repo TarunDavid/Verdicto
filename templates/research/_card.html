@@ -1,73 +1,91 @@
-{% load i18n %}{# flags: full = verifier/admin view (quotes, reasoning, connectors); live = poll for updates (chat) #}
-<div id="card-{{ claim.pk }}" class="glass rounded-2xl p-4 text-sm bg-[#16191e]/80"
+{% load i18n verdicto %}{# flags: full = verifier/admin view (quotes, reasoning, connectors); live = poll for updates (chat) #}
+{% agent_tally claim as tally %}<article id="card-{{ claim.pk }}" class="panel-raised text-sm overflow-hidden"
   {% if live and run and run.is_running %}hx-get="{% url 'research_card' claim.pk %}" hx-trigger="every 2s" hx-swap="outerHTML"
+  {% elif live and tally.working %}hx-get="{% url 'research_card' claim.pk %}" hx-trigger="every 4s" hx-swap="outerHTML"
   {% elif live and claim.status != "FINAL" %}hx-get="{% url 'research_card' claim.pk %}" hx-trigger="every 20s" hx-swap="outerHTML"{% endif %}>
-  <div class="flex items-center gap-2 flex-wrap">
+  {# --- file header --- #}
+  <header class="flex items-center gap-3 flex-wrap px-5 py-3 border-b border-rule bg-ink-2">
+    <span class="case-no">{% translate "CASE" %} №{{ claim.pk|stringformat:"04d" }}</span>
     {% include "_badge.html" %}
-    <a href="{% url 'claim_detail' claim.pk %}" class="text-xs text-zinc-400 hover:text-white ml-auto">{% translate "View claim page ↗" %}</a>
-  </div>
+    <a href="{% url 'claim_detail' claim.pk %}" class="eyebrow hover:!text-white ml-auto">{% translate "View claim page ↗" %}</a>
+  </header>
 
-  {% if claim.screenshot %}<a href="{{ claim.screenshot.url }}" target="_blank" rel="noopener"><img src="{{ claim.screenshot.url }}" alt="Submitted screenshot" class="mt-3 max-h-40 rounded-lg border border-white/10"></a>{% endif %}
+  <div class="px-5 py-4">
+  {% if claim.screenshot %}<a href="{{ claim.screenshot.url }}" target="_blank" rel="noopener"><img src="{{ claim.screenshot.url }}" alt="Submitted screenshot" class="mb-4 max-h-40 rounded border border-rule-strong"></a>{% endif %}
   {% if claim.status == "FINAL" %}
-    <p class="mt-3 font-medium">Final verdict by human verifiers: {{ claim.get_verdict_display }} ({{ claim.confidence_pct }}% weighted agreement){% if claim.finalized_at %}, {{ claim.finalized_at|date:"d M Y, H:i" }}{% endif %}.</p>
+    <div class="mb-4 flex items-center gap-4 rounded-md border border-rule p-3 bg-ink">
+      {% include "_badge.html" with size="lg" %}
+      <p class="text-zinc-300">{% translate "Final verdict by human verifiers" %} · <span class="mono text-xs text-zinc-400">{{ claim.confidence_pct }}% {% translate "weighted agreement" %}{% if claim.finalized_at %} · {{ claim.finalized_at|date:"d M Y, H:i" }}{% endif %}</span></p>
+    </div>
   {% endif %}
 
   {% if not run %}
-    <p class="mt-3 text-zinc-500">{% translate "No AI research for this claim." %}</p>
+    <p class="text-zinc-500">{% translate "No AI research for this claim." %}</p>
   {% elif run.is_running %}
-    <ol class="mt-3 space-y-1.5 text-zinc-400">
-      <li class="flex items-center gap-2 text-zinc-200"><span class="w-2 h-2 rounded-full bg-teal-400 animate-ping"></span>{{ run.step }}…</li>
-    </ol>
+    <div class="flex items-center gap-3 py-2">
+      <span class="relative flex w-2.5 h-2.5"><span class="absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60 animate-ping"></span><span class="relative inline-flex w-2.5 h-2.5 rounded-full bg-teal-400"></span></span>
+      <span class="mono text-[13px] text-zinc-200">{{ run.step }}…</span>
+    </div>
+    <div class="mt-2 h-px bg-rule overflow-hidden"><div class="h-px w-1/3 bg-teal-400 animate-[pulse_1.2s_ease-in-out_infinite]"></div></div>
   {% else %}
-    <div class="mt-3 border-t border-white/5 pt-3">
-      <p class="text-[11px] tracking-[.15em] text-amber-300/90">{% translate "AI-PROVISIONAL · THE FINAL VERDICT COMES FROM VERIFIED EXPERTS" %}</p>
+      <p class="eyebrow !text-teal-400">{% translate "AI-PROVISIONAL · THE FINAL VERDICT COMES FROM VERIFIED EXPERTS" %}</p>
       {% if run.label %}
-      <div class="flex items-center gap-3 mt-2 flex-wrap">
-        <span class="text-lg font-semibold {% if run.label == 'LIKELY_FALSE' %}text-red-300{% elif run.label == 'LIKELY_TRUE' %}text-green-300{% elif run.label == 'MIXED' %}text-orange-300{% else %}text-zinc-300{% endif %}">{{ run.get_label_display }}</span>
-        {% if run.truth_score is not None %}
-        <div class="flex items-center gap-2 text-xs text-zinc-400"><div class="w-28 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full bg-gradient-to-r from-red-500 via-amber-400 to-green-500" style="width: {{ run.truth_score|floatformat:0 }}%"></div></div>{% translate "truth score" %} {{ run.truth_score|floatformat:0 }}/100</div>
-        {% endif %}
-        <span class="text-xs text-zinc-500">{% translate "confidence:" %} {{ run.confidence|default:"low" }}</span>
+      <div class="mt-3 flex items-end gap-x-6 gap-y-3 flex-wrap">
+        <p class="display text-[30px] font-medium leading-none {% if run.label == 'LIKELY_FALSE' %}text-[#ff6b6f]{% elif run.label == 'LIKELY_TRUE' %}text-[#5bbf8c]{% elif run.label == 'MIXED' %}text-[#ee8a4c]{% else %}text-zinc-300{% endif %}">{{ run.get_label_display }}</p>
+        <p class="mono text-[11px] text-zinc-500 pb-1">{% translate "confidence:" %} {{ run.confidence|default:"low" }}</p>
+      </div>
+      {% if run.truth_score is not None %}
+      <div class="mt-4 max-w-md">
+        <div class="ruler"><div class="ruler-track"></div><div class="ruler-ticks"></div><div class="ruler-mark" style="left: {{ run.truth_score|floatformat:0 }}%"></div></div>
+        <div class="flex justify-between mono text-[10px] text-zinc-500 mt-1"><span>{% translate "FALSE" %} 0</span><span class="text-zinc-300">{% translate "truth score" %} {{ run.truth_score|floatformat:0 }}/100</span><span>100 {% translate "TRUE" %}</span></div>
       </div>
       {% endif %}
-      {% if run.summary %}<p class="mt-2 whitespace-pre-line text-zinc-200">{{ run.summary }}</p>{% endif %}
+      {% endif %}
+      {% if run.summary %}<p class="mt-4 whitespace-pre-line text-zinc-200 leading-relaxed text-[15px]">{{ run.summary }}</p>{% endif %}
       {% if full %}
-        {% if run.facts %}<p class="mt-3 text-xs text-green-400 font-medium">{% translate "Established" %}</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.facts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
-        {% if run.assumptions %}<p class="mt-2 text-xs text-amber-400 font-medium">{% translate "Unconfirmed / assumed" %}</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.assumptions %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
-        {% if run.conflicts %}<p class="mt-2 text-xs text-orange-400 font-medium">{% translate "Conflicting" %}</p><ul class="list-disc ml-5 text-xs text-zinc-300">{% for f in run.conflicts %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+        <div class="mt-4 grid gap-3 text-xs">
+        {% if run.facts %}<div class="border-l-2 border-[#5bbf8c] pl-3"><p class="eyebrow !text-[#5bbf8c]">{% translate "Established" %}</p><ul class="mt-1 space-y-1 text-zinc-300">{% for f in run.facts %}<li>{{ f }}</li>{% endfor %}</ul></div>{% endif %}
+        {% if run.assumptions %}<div class="border-l-2 border-[#e7a93b] pl-3"><p class="eyebrow !text-[#e7a93b]">{% translate "Unconfirmed / assumed" %}</p><ul class="mt-1 space-y-1 text-zinc-300">{% for f in run.assumptions %}<li>{{ f }}</li>{% endfor %}</ul></div>{% endif %}
+        {% if run.conflicts %}<div class="border-l-2 border-[#ee8a4c] pl-3"><p class="eyebrow !text-[#ee8a4c]">{% translate "Conflicting" %}</p><ul class="mt-1 space-y-1 text-zinc-300">{% for f in run.conflicts %}<li>{{ f }}</li>{% endfor %}</ul></div>{% endif %}
+        </div>
       {% endif %}
       {% with sources=run.sources.all %}{% if sources %}
-      <details class="mt-3" {% if full %}open{% endif %}>
-        <summary class="cursor-pointer text-xs text-zinc-400">{{ sources|length }} sources</summary>
-        <ol class="mt-2 space-y-2">
+      <details class="mt-5 group" {% if full %}open{% endif %}>
+        <summary class="cursor-pointer list-none flex items-center gap-2 eyebrow hover:!text-zinc-300"><span class="inline-block transition group-open:rotate-90">▸</span> {{ sources|length }} sources</summary>
+        <ol class="mt-3 ledger border-y border-rule">
           {% for s in sources %}{% if full or forloop.counter <= 6 %}
-          <li class="text-xs">
-            <span class="font-mono text-zinc-500">[{{ forloop.counter }}]</span>
-            <span class="px-1.5 py-0.5 rounded {% if s.stance == 'supports' %}bg-green-900/60 text-green-300{% elif s.stance == 'refutes' %}bg-red-900/60 text-red-300{% else %}bg-white/5 text-zinc-400{% endif %}">{{ s.get_stance_display }}</span>
-            {% if full %}<span class="text-zinc-500">{{ s.tier }}</span>{% endif %}
-            <a href="{{ s.url }}" target="_blank" rel="nofollow noopener noreferrer" class="underline decoration-zinc-600 hover:decoration-white">{{ s.title|default:s.url|truncatechars:90 }}</a>
-            <span class="text-zinc-500">— {{ s.publisher }}{% if s.published %}, {{ s.published|date:"d M Y" }}{% endif %}</span>
-            {% if full and s.quote %}<p class="text-zinc-400 italic ml-6">“{{ s.quote }}”</p>{% endif %}
-            {% if full and user.can_vote %}{% include "research/_feedback.html" %}{% elif full %}{% with c=s.feedback_counts %}{% if c.useful or c.wrong %}<span class="ml-6 text-zinc-500">verifiers: {{ c.useful }} useful · {{ c.wrong }} wrong</span>{% endif %}{% endwith %}{% endif %}
+          <li class="py-2.5 text-xs flex gap-3">
+            <span class="idx pt-0.5 w-6 shrink-0">{{ forloop.counter|stringformat:"02d" }}</span>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm {% if s.stance == 'supports' %}bg-[#5bbf8c]/15 text-[#8fd8b0]{% elif s.stance == 'refutes' %}bg-accent/15 text-[#ff8a8d]{% else %}bg-white/5 text-zinc-500{% endif %}">{{ s.get_stance_display }}</span>
+                {% if full %}<span class="mono text-[10px] text-zinc-500 uppercase">{{ s.tier }}</span>{% endif %}
+                <span class="text-zinc-500">{{ s.publisher }}{% if s.published %} · {{ s.published|date:"d M Y" }}{% endif %}</span>
+              </div>
+              <a href="{{ s.url }}" target="_blank" rel="nofollow noopener noreferrer" class="mt-1 block text-[13px] text-zinc-200 hover:text-white underline decoration-zinc-700 underline-offset-2 hover:decoration-zinc-300">{{ s.title|default:s.url|truncatechars:110 }}</a>
+              {% if full and s.quote %}<p class="mt-1 serif italic text-zinc-400">“{{ s.quote }}”</p>{% endif %}
+              {% if full and user.can_vote %}{% include "research/_feedback.html" %}{% elif full %}{% with c=s.feedback_counts %}{% if c.useful or c.wrong %}<span class="text-zinc-500">verifiers: {{ c.useful }} useful · {{ c.wrong }} wrong</span>{% endif %}{% endwith %}{% endif %}
+            </div>
           </li>
           {% endif %}{% endfor %}
         </ol>
         {% if not full and sources|length > 6 %}<a href="{% url 'claim_detail' claim.pk %}" class="mt-2 inline-block text-xs underline text-zinc-400 hover:text-white">{% blocktranslate with n=sources|length %}See all {{ n }} sources, quotes and each verifier's evidence{% endblocktranslate %}</a>{% endif %}
       </details>
       {% endif %}{% endwith %}
-      {% if full %}<p class="mt-3 text-xs text-zinc-500">Researched in {{ run.duration|default:"?" }}s{% if run.models_used %} with {{ run.models_used|join:", " }}{% endif %}. Truth score = credibility-weighted support ÷ (support + refute). {% if run.connectors %}Sources checked: {% for k, v in run.connectors.items %}{{ k }} {{ v }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p>{% endif %}
-    </div>
+      {% if full %}<p class="mt-4 mono text-[10.5px] leading-relaxed text-zinc-500">Researched in {{ run.duration|default:"?" }}s{% if run.models_used %} with {{ run.models_used|join:", " }}{% endif %}. Truth score = credibility-weighted support ÷ (support + refute). {% if run.connectors %}Sources checked: {% for k, v in run.connectors.items %}{{ k }} {{ v }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p>{% endif %}
   {% endif %}
+  {% if live and run and not run.is_running and tally.answered or live and tally.working %}<div class="mt-5">{% include "claims/_agent_tally.html" %}</div>{% endif %}
+  </div>
   {% if run and not run.is_running %}
-  <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
-    {% if live and user.can_vote and claim.status != "FINAL" %}<a href="{% url 'verify_review' claim.pk %}" class="rounded-lg bg-white text-black px-3 py-1.5 font-medium">{% translate "Review as verifier" %}</a>{% endif %}
-    <button type="button" class="listen rounded-lg glass px-3 py-1.5 text-zinc-300 hover:text-white" data-lang="{% if claim.language == 'kn' %}kn-IN{% else %}en-IN{% endif %}"
+  <footer class="px-5 py-3 border-t border-rule bg-ink-2 flex flex-wrap items-center gap-2 text-xs">
+    {% if live and user.can_vote and claim.status != "FINAL" %}<a href="{% url 'verify_review' claim.pk %}" class="btn btn-primary !py-1.5 !text-xs">{% translate "Review as verifier" %}</a>{% endif %}
+    <button type="button" class="listen chip" data-lang="{% if claim.language == 'kn' %}kn-IN{% else %}en-IN{% endif %}"
       data-text="{% if claim.status == 'FINAL' %}Verified verdict: {{ claim.get_verdict_display }}. {% else %}Provisional AI assessment: {{ run.get_label_display }}. Awaiting verified experts. {% endif %}{{ run.summary|truncatechars:600 }}"
       onclick="(function(b){if(!window.speechSynthesis){return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(b.dataset.text);u.lang=b.dataset.lang;const v=speechSynthesis.getVoices().find(x=>x.lang===b.dataset.lang)||speechSynthesis.getVoices().find(x=>x.lang==='en-IN');if(v)u.voice=v;speechSynthesis.speak(u)})(this)">{% translate "🔊 Listen" %}</button>
     {% if user.is_authenticated and claim.status != "FINAL" %}
     <form method="post" action="{% url 'recheck' claim.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.META.HTTP_REFERER|default:request.path }}">
-      <button class="rounded-lg glass px-3 py-1.5 text-zinc-300 hover:text-white" title="{% translate "Run the AI research again with today's sources" %}">{% translate "↻ Re-check with latest sources" %}</button></form>
+      <button class="chip" title="{% translate "Run the AI research again with today's sources" %}">{% translate "↻ Re-check with latest sources" %}</button></form>
     {% endif %}
-  </div>
+  </footer>
   {% endif %}
-</div>
+</article>

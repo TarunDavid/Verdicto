@@ -305,4 +305,40 @@ KN = {
     "Works at %(org)s, which this claim is about": "ಈ ಹೇಳಿಕೆ ಸಂಬಂಧಿಸಿದ %(org)s ನಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತಾರೆ",
     "Sources this AI agent used: %(n)s": "ಈ AI ಏಜೆಂಟ್ ಬಳಸಿದ ಮೂಲಗಳು: %(n)s",
     "See all %(n)s sources, quotes and each verifier's evidence": "ಎಲ್ಲಾ %(n)s ಮೂಲಗಳು, ಉಲ್ಲೇಖಗಳು ಮತ್ತು ಪ್ರತಿ ಪರಿಶೀಲಕರ ಸಾಕ್ಷ್ಯ ನೋಡಿ",
+    "AI agents together count for at most %(pct)s%% of the weight.": "ಎಲ್ಲಾ AI ಏಜೆಂಟ್‌ಗಳು ಸೇರಿ ಗರಿಷ್ಠ %(pct)s%% ತೂಕ ಮಾತ್ರ ಹೊಂದಿವೆ.",
+    "AI": "AI",
+    "AI VERIFIERS": "AI ಪರಿಶೀಲಕರು",
+    "%(a)s of %(e)s AI verifiers have answered": "%(e)s AI ಪರಿಶೀಲಕರಲ್ಲಿ %(a)s ಉತ್ತರಿಸಿದ್ದಾರೆ",
+    "more coming…": "ಇನ್ನಷ್ಟು ಬರುತ್ತಿವೆ…",
+    "Not enough evidence: %(n)s": "ಸಾಕಷ್ಟು ಸಾಕ್ಷ್ಯ ಇಲ್ಲ: %(n)s",
+    "Each AI verifier researches on its own sources. Together they count for at most half the weight; people make the final call.":
+        "ಪ್ರತಿ AI ಪರಿಶೀಲಕ ತನ್ನದೇ ಮೂಲಗಳಲ್ಲಿ ಸಂಶೋಧಿಸುತ್ತದೆ. ಎಲ್ಲವೂ ಸೇರಿ ಗರಿಷ್ಠ ಅರ್ಧ ತೂಕ; ಅಂತಿಮ ನಿರ್ಧಾರ ಜನರದು.",
+    # Redesign (fact desk look)
+    "The Karnataka fact desk": "ಕರ್ನಾಟಕದ ಸತ್ಯಶೋಧನಾ ಮೇಜು",
+    "Bengaluru": "ಬೆಂಗಳೂರು",
+    "EXPERT": "ತಜ್ಞ",
+    "Paste a forward. AI researches live sources in seconds, 26 AI verifiers weigh in, and human experts give the final verdict.":
+        "ಫಾರ್ವರ್ಡ್ ಅಂಟಿಸಿ. AI ಕ್ಷಣಗಳಲ್ಲಿ ಲೈವ್ ಮೂಲಗಳನ್ನು ಸಂಶೋಧಿಸುತ್ತದೆ, 26 AI ಪರಿಶೀಲಕರು ಅಭಿಪ್ರಾಯ ನೀಡುತ್ತಾರೆ, ಮತ್ತು ಮಾನವ ತಜ್ಞರು ಅಂತಿಮ ತೀರ್ಪು ನೀಡುತ್ತಾರೆ.",
+    "NEW CASE": "ಹೊಸ ಪ್ರಕರಣ",
+    "CASE": "ಪ್ರಕರಣ",
+    "Text, link or screenshot · English or Kannada": "ಪಠ್ಯ, ಲಿಂಕ್ ಅಥವಾ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ · ಇಂಗ್ಲಿಷ್ ಅಥವಾ ಕನ್ನಡ",
+    "Screenshot": "ಸ್ಕ್ರೀನ್‌ಶಾಟ್",
+    "How a verdict is made": "ತೀರ್ಪು ಹೇಗೆ ರೂಪುಗೊಳ್ಳುತ್ತದೆ",
+    "SECONDS": "ಕ್ಷಣಗಳು",
+    "MINUTES": "ನಿಮಿಷಗಳು",
+    "FINAL": "ಅಂತಿಮ",
+    "AI research": "AI ಸಂಶೋಧನೆ",
+    "26 AI verifiers": "26 AI ಪರಿಶೀಲಕರು",
+    "Human experts decide": "ಮಾನವ ತಜ್ಞರು ನಿರ್ಧರಿಸುತ್ತಾರೆ",
+    "News, official sites, fact-checkers and research papers, with quotes checked against each source.":
+        "ಸುದ್ದಿ, ಅಧಿಕೃತ ತಾಣಗಳು, ಸತ್ಯಶೋಧಕರು ಮತ್ತು ಸಂಶೋಧನಾ ಪ್ರಬಂಧಗಳು; ಪ್ರತಿ ಉಲ್ಲೇಖವನ್ನು ಮೂಲದೊಂದಿಗೆ ಹೋಲಿಸಲಾಗುತ್ತದೆ.",
+    "Each digs through its own sources and gives its own verdict, or says there isn't enough evidence.":
+        "ಪ್ರತಿಯೊಂದೂ ತನ್ನದೇ ಮೂಲಗಳನ್ನು ಶೋಧಿಸಿ ತನ್ನ ತೀರ್ಪು ನೀಡುತ್ತದೆ, ಅಥವಾ ಸಾಕಷ್ಟು ಸಾಕ್ಷ್ಯ ಇಲ್ಲ ಎನ್ನುತ್ತದೆ.",
+    "Verified experts vote, weighted by their track record. Insiders are asked first.":
+        "ಪರಿಶೀಲಿತ ತಜ್ಞರು ತಮ್ಮ ದಾಖಲೆಯ ತೂಕದೊಂದಿಗೆ ಮತ ಹಾಕುತ್ತಾರೆ. ಸಂಬಂಧಿತ ಸಂಸ್ಥೆಯವರನ್ನು ಮೊದಲು ಕೇಳಲಾಗುತ್ತದೆ.",
+    "YOU": "ನೀವು",
+    "TRUE": "ಸತ್ಯ",
+    "Final verdict by human verifiers": "ಮಾನವ ಪರಿಶೀಲಕರ ಅಂತಿಮ ತೀರ್ಪು",
+    "Assigned": "ನಿಯೋಜಿತ",
+    "Forwarded many times": "ಹಲವು ಬಾರಿ ಫಾರ್ವರ್ಡ್ ಮಾಡಲಾಗಿದೆ",
 }

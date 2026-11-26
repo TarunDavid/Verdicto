@@ -49,6 +49,14 @@ class EngineTests(SimpleTestCase):
         self.assertEqual(engine.lookup_record(stats, "education", "en"), (6, 8))
         self.assertEqual(engine.lookup_record([], "education", "en"), (0, 0))
 
+    def test_agents_together_capped_at_half_the_weight(self):
+        r = engine.compute_verdict([("TRUE", 0.5)], agent_votes=[("FALSE", 0.5)] * 10, agent_cap=0.5)
+        self.assertAlmostEqual(r.agent_scale, 0.1)
+        self.assertAlmostEqual(r.totals["FALSE"], 0.5)
+        self.assertEqual((r.vote_count, r.status), (11, "UNDER_REVIEW"))
+        r = engine.compute_verdict([("FALSE", 0.5)], agent_votes=[("FALSE", 0.5)] * 10, agent_cap=0.5)
+        self.assertEqual((r.status, r.verdict), ("FINAL", "FALSE"))
+
     def test_final_can_require_a_human_vote(self):
         votes = [("FALSE", 0.5)] * 3
         self.assertEqual(engine.compute_verdict(votes, human_votes=0, min_human=1).status, "UNDER_REVIEW")

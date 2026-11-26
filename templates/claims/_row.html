@@ -1,0 +1,14 @@
+{% load i18n %}{# One claim in a list (feed, past verdicts, verify queue). Needs claim; optional: href, extra, run. #}
+<a href="{{ href|default:'' }}{% if not href %}{% url 'claim_detail' claim.pk %}{% endif %}" class="ledger-row group grid grid-cols-[auto_1fr] sm:grid-cols-[4.5rem_1fr_auto] gap-x-5 gap-y-2 items-start">
+  <span class="case-no pt-1 hidden sm:block">№{{ claim.pk|stringformat:"04d" }}</span>
+  <div class="min-w-0 col-span-2 sm:col-span-1">
+    <p class="serif text-[17px] leading-snug text-zinc-100 group-hover:text-white">{{ claim.text|truncatechars:170 }}</p>
+    <p class="mt-2 eyebrow !tracking-[.08em] flex flex-wrap items-center gap-x-2">
+      {% if claim.urgency == "high" %}<span class="text-accent">{% translate "URGENT" %}</span><span>·</span>{% endif %}
+      <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %}</span>
+      {% if extra %}<span>· {{ extra }}</span>{% endif %}
+    </p>
+    {% if run and run.label and claim.status != "FINAL" %}<p class="mt-1.5 text-xs text-zinc-500">AI: <span class="text-zinc-300">{{ run.get_label_display }}</span>{% if run.truth_score is not None %} · <span class="mono">{{ run.truth_score|floatformat:0 }}/100</span>{% endif %}</p>{% endif %}
+  </div>
+  <div class="sm:text-right sm:pt-0.5 col-span-2 sm:col-span-1">{% include "_badge.html" %}</div>
+</a>

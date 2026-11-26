@@ -417,7 +417,7 @@ msgid "Apply to become a verifier"
 msgstr "ಪರಿಶೀಲಕರಾಗಲು ಅರ್ಜಿ ಸಲ್ಲಿಸಿ"
 
 msgid "Assigned"
-msgstr "ನಿಯೋಜಿಸಲಾಗಿದೆ"
+msgstr "ನಿಯೋಜಿತ"
 
 msgid "Done"
 msgstr "ಮುಗಿದಿದೆ"
@@ -796,3 +796,90 @@ msgstr "ಈ AI ಏಜೆಂಟ್ ಬಳಸಿದ ಮೂಲಗಳು: %(n)s"
 
 msgid "See all %(n)s sources, quotes and each verifier's evidence"
 msgstr "ಎಲ್ಲಾ %(n)s ಮೂಲಗಳು, ಉಲ್ಲೇಖಗಳು ಮತ್ತು ಪ್ರತಿ ಪರಿಶೀಲಕರ ಸಾಕ್ಷ್ಯ ನೋಡಿ"
+
+msgid "AI agents together count for at most %(pct)s%% of the weight."
+msgstr "ಎಲ್ಲಾ AI ಏಜೆಂಟ್‌ಗಳು ಸೇರಿ ಗರಿಷ್ಠ %(pct)s%% ತೂಕ ಮಾತ್ರ ಹೊಂದಿವೆ."
+
+msgid "AI"
+msgstr "AI"
+
+msgid "AI VERIFIERS"
+msgstr "AI ಪರಿಶೀಲಕರು"
+
+msgid "%(a)s of %(e)s AI verifiers have answered"
+msgstr "%(e)s AI ಪರಿಶೀಲಕರಲ್ಲಿ %(a)s ಉತ್ತರಿಸಿದ್ದಾರೆ"
+
+msgid "more coming…"
+msgstr "ಇನ್ನಷ್ಟು ಬರುತ್ತಿವೆ…"
+
+msgid "Not enough evidence: %(n)s"
+msgstr "ಸಾಕಷ್ಟು ಸಾಕ್ಷ್ಯ ಇಲ್ಲ: %(n)s"
+
+msgid "Each AI verifier researches on its own sources. Together they count for at most half the weight; people make the final call."
+msgstr "ಪ್ರತಿ AI ಪರಿಶೀಲಕ ತನ್ನದೇ ಮೂಲಗಳಲ್ಲಿ ಸಂಶೋಧಿಸುತ್ತದೆ. ಎಲ್ಲವೂ ಸೇರಿ ಗರಿಷ್ಠ ಅರ್ಧ ತೂಕ; ಅಂತಿಮ ನಿರ್ಧಾರ ಜನರದು."
+
+msgid "The Karnataka fact desk"
+msgstr "ಕರ್ನಾಟಕದ ಸತ್ಯಶೋಧನಾ ಮೇಜು"
+
+msgid "Bengaluru"
+msgstr "ಬೆಂಗಳೂರು"
+
+msgid "EXPERT"
+msgstr "ತಜ್ಞ"
+
+msgid "Paste a forward. AI researches live sources in seconds, 26 AI verifiers weigh in, and human experts give the final verdict."
+msgstr "ಫಾರ್ವರ್ಡ್ ಅಂಟಿಸಿ. AI ಕ್ಷಣಗಳಲ್ಲಿ ಲೈವ್ ಮೂಲಗಳನ್ನು ಸಂಶೋಧಿಸುತ್ತದೆ, 26 AI ಪರಿಶೀಲಕರು ಅಭಿಪ್ರಾಯ ನೀಡುತ್ತಾರೆ, ಮತ್ತು ಮಾನವ ತಜ್ಞರು ಅಂತಿಮ ತೀರ್ಪು ನೀಡುತ್ತಾರೆ."
+
+msgid "NEW CASE"
+msgstr "ಹೊಸ ಪ್ರಕರಣ"
+
+msgid "CASE"
+msgstr "ಪ್ರಕರಣ"
+
+msgid "Text, link or screenshot · English or Kannada"
+msgstr "ಪಠ್ಯ, ಲಿಂಕ್ ಅಥವಾ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ · ಇಂಗ್ಲಿಷ್ ಅಥವಾ ಕನ್ನಡ"
+
+msgid "Screenshot"
+msgstr "ಸ್ಕ್ರೀನ್‌ಶಾಟ್"
+
+msgid "How a verdict is made"
+msgstr "ತೀರ್ಪು ಹೇಗೆ ರೂಪುಗೊಳ್ಳುತ್ತದೆ"
+
+msgid "SECONDS"
+msgstr "ಕ್ಷಣಗಳು"
+
+msgid "MINUTES"
+msgstr "ನಿಮಿಷಗಳು"
+
+msgid "FINAL"
+msgstr "ಅಂತಿಮ"
+
+msgid "AI research"
+msgstr "AI ಸಂಶೋಧನೆ"
+
+msgid "26 AI verifiers"
+msgstr "26 AI ಪರಿಶೀಲಕರು"
+
+msgid "Human experts decide"
+msgstr "ಮಾನವ ತಜ್ಞರು ನಿರ್ಧರಿಸುತ್ತಾರೆ"
+
+msgid "News, official sites, fact-checkers and research papers, with quotes checked against each source."
+msgstr "ಸುದ್ದಿ, ಅಧಿಕೃತ ತಾಣಗಳು, ಸತ್ಯಶೋಧಕರು ಮತ್ತು ಸಂಶೋಧನಾ ಪ್ರಬಂಧಗಳು; ಪ್ರತಿ ಉಲ್ಲೇಖವನ್ನು ಮೂಲದೊಂದಿಗೆ ಹೋಲಿಸಲಾಗುತ್ತದೆ."
+
+msgid "Each digs through its own sources and gives its own verdict, or says there isn't enough evidence."
+msgstr "ಪ್ರತಿಯೊಂದೂ ತನ್ನದೇ ಮೂಲಗಳನ್ನು ಶೋಧಿಸಿ ತನ್ನ ತೀರ್ಪು ನೀಡುತ್ತದೆ, ಅಥವಾ ಸಾಕಷ್ಟು ಸಾಕ್ಷ್ಯ ಇಲ್ಲ ಎನ್ನುತ್ತದೆ."
+
+msgid "Verified experts vote, weighted by their track record. Insiders are asked first."
+msgstr "ಪರಿಶೀಲಿತ ತಜ್ಞರು ತಮ್ಮ ದಾಖಲೆಯ ತೂಕದೊಂದಿಗೆ ಮತ ಹಾಕುತ್ತಾರೆ. ಸಂಬಂಧಿತ ಸಂಸ್ಥೆಯವರನ್ನು ಮೊದಲು ಕೇಳಲಾಗುತ್ತದೆ."
+
+msgid "YOU"
+msgstr "ನೀವು"
+
+msgid "TRUE"
+msgstr "ಸತ್ಯ"
+
+msgid "Final verdict by human verifiers"
+msgstr "ಮಾನವ ಪರಿಶೀಲಕರ ಅಂತಿಮ ತೀರ್ಪು"
+
+msgid "Forwarded many times"
+msgstr "ಹಲವು ಬಾರಿ ಫಾರ್ವರ್ಡ್ ಮಾಡಲಾಗಿದೆ"

@@ -10,8 +10,7 @@ from claims.validators import sanitize_text, validate_safe_url
 from .models import DOMAINS, LANGUAGES, User
 from .phone import normalize_phone
 
-FIELD = ("w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-zinc-100 "
-         "placeholder-zinc-500 focus:outline-none focus:border-teal-400/60")
+FIELD = "field placeholder-zinc-600"   # see .field in static/css/input.css
 
 
 class LoginForm(AuthenticationForm):

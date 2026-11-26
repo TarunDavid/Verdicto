@@ -302,7 +302,10 @@ def assess(checkable_claim, sources, language, model=None):
         return empty, None
     by_id = {s["id"]: s for s in sources}
     stances = {}
-    for item in out.get("sources", []):
+    items = out.get("sources") if isinstance(out.get("sources"), list) else []
+    for item in items:
+        if not isinstance(item, dict):   # malformed reply: ignore that entry, keep the rest
+            continue
         try:
             sid = int(item.get("id"))
         except (TypeError, ValueError):

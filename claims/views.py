@@ -147,13 +147,23 @@ def detail(request, pk):
                                                   **share_context(request, claim)})
 
 
+def site_url(request):
+    """SITE_URL, or the address the visitor actually used when they came through a tunnel, so
+    WhatsApp share links work for them too."""
+    from factcheck.middleware import is_remote
+    if request is not None and is_remote(request):
+        return request.build_absolute_uri("/").rstrip("/")
+    return settings.SITE_URL.rstrip("/")
+
+
 def share_context(request, claim):
-    share_url = settings.SITE_URL.rstrip("/") + reverse("share", args=[claim.share_slug])
+    base = site_url(request)
+    share_url = base + reverse("share", args=[claim.share_slug])
     label = claim.get_verdict_display().upper() if claim.display_verdict else "PENDING VERIFICATION"
     title = f"{label}: {claim.text[:90]}"
     message = f"Fact-check — {title}\nConfidence {claim.confidence_pct}%. Details:"
     return {"share_url": share_url, "og_title": title,
-            "og_image": settings.SITE_URL.rstrip("/") + reverse("og_image", args=[claim.share_slug]),
+            "og_image": base + reverse("og_image", args=[claim.share_slug]),
             "whatsapp_url": "https://wa.me/?text=" + quote(f"{message} {share_url}")}
 
 

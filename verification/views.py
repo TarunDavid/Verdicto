@@ -113,5 +113,7 @@ def review(request, pk):
             return redirect("verify_dashboard")
         except AlreadyVoted as exc:
             form.add_error(None, str(exc))
-    ctx = {"claim": claim, **vote_context(request, claim, vote_form=form), "tab": "verify"}
+    from research.brief import ai_brief
+    ctx = {"claim": claim, **vote_context(request, claim, vote_form=form), "brief": ai_brief(claim),
+           "tab": "verify"}
     return render(request, "verification/review.html", ctx, status=400 if form.errors else 200)

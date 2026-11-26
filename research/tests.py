@@ -95,6 +95,14 @@ class AssessGuardTests(SimpleTestCase):
             out, _ = ai.assess("Schools closed", sources, "en")
         self.assertEqual(out["stances"][1][0], "refutes")
 
+    @override_settings(GROQ_API_KEY="test")
+    def test_malformed_reply_does_not_crash(self):
+        sources = [{"id": 1, "title": "t", "publisher": "x", "tier": "news", "snippet": "s"}]
+        for fake in ({"sources": ["1: refutes"]}, {"sources": "refutes"}, {"sources": [None, {"id": "x"}]}):
+            with mock.patch.object(ai, "chat_json", return_value=(fake, "m")):
+                out, model = ai.assess("Schools closed", sources, "en")
+            self.assertEqual((out["stances"], model), ({}, "m"))
+
 
 def make_verifier(name, domains, languages=("en",), approved=True, **kw):
     return User.objects.create_user(name, password="pw-123456", role=User.Role.VERIFIER,
@@ -126,10 +134,11 @@ class PipelineTests(TestCase):
         self.assertIn("Not a verdict", self.claim.logs.last().reason)
 
     def test_ai_provisional_label_does_not_finalise(self):
-        result = {"stances": {1: ("refutes", ""), 2: ("refutes", ""), 3: ("supports", "")},
-                  "summary": "Official sources deny it [1][2].", "facts": [], "assumptions": [],
-                  "conflicts": []}
-        with mock.patch.object(ai, "assess", return_value=(result, "m")):
+        def assess(claim, items, lang, model=None):   # the blog supports it, the others refute it
+            stances = {it["id"]: ("supports" if "randomblog" in it["url"] else "refutes", "") for it in items}
+            return {"stances": stances, "summary": "Official sources deny it [1][2].", "facts": [],
+                    "assumptions": [], "conflicts": []}, "m"
+        with mock.patch.object(ai, "assess", side_effect=assess):
             run = start_research(self.claim)
         run.refresh_from_db()
         self.claim.refresh_from_db()
@@ -254,3 +263,16 @@ class ChatTests(TestCase):
         resp = self.client.get(reverse("archive"))
         self.assertContains(resp, "Done one")
         self.assertNotContains(resp, "Open one")
+
+
+class RelevanceTests(SimpleTestCase):
+    def test_names_weigh_more_and_query_words_dont_count(self):
+        from .pipeline import _key_terms, _relevance
+        terms = _key_terms(["WhatsApp will start charging every user Rs 499 per month"])
+        self.assertGreater(_relevance({"title": "Fact check: WhatsApp is not becoming a paid app"}, terms),
+                           _relevance({"title": "Mobile data per user per month"}, terms))
+        self.assertEqual(_relevance({"title": "PIB Fact Check Unit"}, terms), 0)
+
+    def test_kannada_words_stay_whole(self):
+        from .pipeline import _key_terms
+        self.assertIn("ಚಿಕ್ಕಮಗಳೂರು", _key_terms(["ಚಿಕ್ಕಮಗಳೂರು ಜಿಲ್ಲೆಯ ಶಾಲೆಗಳಿಗೆ ರಜೆ"]))

@@ -1,5 +1,7 @@
 # Verdicto: AI-assisted, crowd-verified fact checking
 
+How the code fits together (every API call, every flow): [ARCHITECTURE.md](ARCHITECTURE.md).
+
 Implements [PRD2.md](PRD2.md) (chat-first, role-based sign-up, community votes) on top of
 [PRD.md](PRD.md) and the original [SPEC.md](SPEC.md) build.
 
@@ -18,6 +20,16 @@ stances, so the provisional label shows "Unclear".
 Browser tests (real Chromium): `pip install -r requirements-dev.txt && playwright install chromium`,
 then `python manage.py test claims.test_browser` (add `HEADED=1` to watch). Deploying: see [DEPLOY.md](DEPLOY.md).
 
+## Share with a friend (public link)
+```bash
+./scripts/share.sh
+```
+Starts the server if needed and opens a free Cloudflare quick tunnel (no account); it prints a
+`https://<random-words>.trycloudflare.com` link anyone can open. The link changes each time; stop with
+Ctrl+C. People using the link can't reach `/admin/` and never see debug pages
+(`factcheck.middleware.TunnelGuardMiddleware`); on your own laptop everything works as before. The
+`cloudflared` program lives in `tools/` (not committed).
+
 ## API keys
 Paste each key into `.env`, restart the server, then run `python manage.py checkkeys` to confirm it works.
 Every key is optional except Groq; a source without a key is skipped.
@@ -29,6 +41,14 @@ Every key is optional except Groq; a source without a key is skipped.
 | `SEMANTIC_SCHOLAR_API_KEY` | semanticscholar.org/product/api → "Request an API key" (free, approved by email) |
 | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET` | reddit.com/prefs/apps → "create another app" → type **script** → the ID is under the app name, the secret is labelled "secret" |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | twilio.com/console (Account Info) + a Twilio phone number; set `SMS_BACKEND=twilio` and `PHONE_OTP_ENABLED=True` |
+
+## Look and feel
+An editorial "fact desk": ink-black paper with grain, ivory type, hairline rules instead of cards,
+Fraunces (serif) for headlines and claims, JetBrains Mono for case numbers, weights and dates, and
+verdicts as rubber stamps (`.stamp-false`, `.stamp-true`…). Every claim is a numbered case file
+(`CASE №0101`); the AI truth score is a ruler from False to True; the AI verifiers' answers fill a
+26-segment bar as they arrive. Design tokens and components live in `static/css/input.css`; Tailwind's
+grey/teal/sky scales are remapped to the warm palette in `tailwind.config.js`.
 
 ## Front-end assets
 Tailwind CSS and HTMX are served from `static/` (no CDN). `static/css/app.css` is committed; after
@@ -63,7 +83,7 @@ Log in with a **phone number**. `seed_demo` prints all demo phones; they share o
 | Safe fetching | `research/fetch.py` (http/https only, blocks private/internal IPs on every redirect, size + time limits) |
 | Insider assignment | `verification/assignment.py:org_match`: a verifier whose organisation the claim is about (a VTU board member for a VTU claim, an Nvidia developer for an Nvidia claim) is assigned first, even outside their field. Matches the organisation name, its abbreviation (Visvesvaraya Technological University ↔ VTU), the verified work-email domain, and the organisations the AI picks out of the claim (`Claim.entities`). Approving a verifier also hands them open claims about their organisation. The claim page shows "Works at VTU, which this claim is about". |
 | Track records | Every verifier shows "_% accurate in _ verdicts" (all scored votes). Their weight comes from it (Beta prior: field+language record, else field, else overall), and assignment ranks insiders first, then by weight × fit × workload. |
-| AI agent verifiers | `research/agents.py`: three verifier accounts (News Desk, Research Desk, Fact-check Desk), each with its own sources (live web search + Google News + government sites; OpenAlex, PubMed, Semantic Scholar, Crossref, Wikipedia; fact-checkers). They read full pages, judge each source with Groq (verbatim quotes only), score with the same formula, and vote with their summary as the note and every source as evidence; they abstain when evidence is thin. Scored on their record like people. A claim still needs `FINAL_MIN_HUMAN_VOTES` (default 1) human votes to be final. They run automatically after AI research; `manage.py run_agents` runs them on older open claims. `AI_AGENTS_ENABLED=False` turns them off. |
+| AI verifiers | `research/agents.py`: **26 AI verifiers, each with its own name** (Sanskrit/Kannada words for their job, e.g. Satya = News Desk, Pramana = Fact-check, Sakshi = Indian fact-checkers, Arogya = Health, Vidya = Education, Raksha = Scams; full list in `NAMES`) and a 🤖 AI badge so readers know they aren't people. **As soon as a claim is posted**, right after its first AI research (~15 s), all of them give their own verdict: 3 at a time (`AI_AGENT_WORKERS`, one Groq model each), sharing searches and pages, retrying agents that hit Groq rate limits (`AI_AGENT_RETRIES`, `AI_AGENT_RETRY_DELAY`). All 26 take about 3-4 minutes; the chat card shows "12 of 26 AI verifiers have answered" live. Each searches its own sources (most use Google News restricted to trusted sites; a few use Groq web search; research databases), judges sources with Groq (verbatim quotes only), and votes with its summary and every source as evidence, or answers "not enough evidence". Scored on their record like people. All AI verifiers together count for at most `AI_AGENT_WEIGHT_CAP` (50%) of the weight, and a claim needs `FINAL_MIN_HUMAN_VOTES` (1) human vote to be final. `AI_AGENTS_PER_CLAIM=N` limits each claim to the best-suited N. Groq's free tier (~200k tokens per model per day) covers all 26 on roughly 3-6 claims a day. |
 | Public verdicts | The claim page's "Verified by / Verdicts so far" section shows each verifier (profession, organisation, track record, weight), their verdict, note and sources; for AI agents, every source they used with stance and quote. Visible to everyone, logged in or not; the share page lists the verifiers too. |
 | Verifier assignment | `verification/assignment.py` (domain × language × reliability × workload × locality). Overdue assignments are reassigned automatically (checked at most every 10 minutes during normal traffic); `manage.py reassign_stale` also works from cron. Admin approvals record `approved_by` / `approved_at`. |
 | Human verdict engine | `verification/engine.py` (weighted Beta-prior votes, unchanged from SPEC §6) |

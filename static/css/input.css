@@ -2,8 +2,116 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Shared look (was inline in base.html) */
-.glass { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); }
-.glow { background: radial-gradient(120% 60% at 50% -10%, rgba(45,212,191,.18), rgba(56,189,248,.08) 35%, transparent 65%), #14161b; }
-input[type=checkbox] { accent-color: #2dd4bf; }
-html[lang=kn] [class*="tracking-"] { letter-spacing: 0 !important; } /* spacing breaks Kannada letters apart */
+/* ==========================================================================
+   Verdicto — the fact desk. Ink paper, ivory type, hairline rules, stamps.
+   ========================================================================== */
+:root {
+  --ink: #0e0d0b; --ink-2: #151411; --ink-3: #1c1a16; --ink-4: #24211c;
+  --rule: #2b2823; --rule-strong: #3d3931;
+  --paper: #efe9dd; --muted: #a39b8b; --faint: #7d766a;
+  --signal: #E0383E; --signal-soft: #ff6b6f;
+  --true: #5bbf8c; --amber: #e7a93b; --orange: #ee8a4c; --blue: #86a6db; --brass: #d4ac55;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --wear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+}
+
+html { background: var(--ink); }
+body { background: var(--ink); color: var(--paper); font-feature-settings: "ss01", "cv11"; -webkit-font-smoothing: antialiased; }
+body::before { /* paper grain over everything */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: .045;
+  background-image: var(--grain); mix-blend-mode: screen;
+}
+::selection { background: rgba(224,56,62,.35); color: #fff; }
+input[type=checkbox], input[type=radio] { accent-color: var(--brass); }
+html[lang=kn] [class*="tracking-"], html[lang=kn] .eyebrow, html[lang=kn] .section-head, html[lang=kn] .stamp
+  { letter-spacing: 0 !important; } /* spacing breaks Kannada letters apart */
+
+@layer components {
+  /* Surfaces: flat ink with a hairline, no frosted glass */
+  .glass { background: var(--ink-2); border: 1px solid var(--rule); }
+  .glow { background: var(--ink); }
+  .panel { background: var(--ink-2); border: 1px solid var(--rule); border-radius: 10px; }
+  .panel-raised { background: var(--ink-3); border: 1px solid var(--rule-strong); border-radius: 10px;
+                  box-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 20px 40px -24px rgba(0,0,0,.8); }
+
+  /* Type */
+  .display { font-family: Fraunces, "Noto Serif Kannada", Georgia, serif; font-optical-sizing: auto;
+             font-variation-settings: "SOFT" 30, "WONK" 0; letter-spacing: -.02em; line-height: 1.04; }
+  .serif { font-family: Fraunces, "Noto Serif Kannada", Georgia, serif; font-optical-sizing: auto; }
+  .mono { font-family: "JetBrains Mono", "Noto Sans Kannada", ui-monospace, monospace; }
+  .eyebrow { font-family: "JetBrains Mono", "Noto Sans Kannada", ui-monospace, monospace; font-size: 11px;
+             letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+  .section-head { display: flex; align-items: center; gap: .75rem; margin: 2.5rem 0 .9rem;
+                  font-family: "JetBrains Mono", "Noto Sans Kannada", ui-monospace, monospace; font-size: 11px;
+                  letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+  .section-head::after { content: ""; flex: 1; border-top: 1px solid var(--rule); }
+  .case-no { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; letter-spacing: .12em; color: var(--faint); }
+  .quote-mark { font-family: Fraunces, Georgia, serif; color: var(--signal); line-height: .6; }
+
+  /* Buttons and chips */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 7px;
+         padding: .55rem 1rem; font-weight: 600; font-size: .875rem; transition: background .15s, color .15s, border-color .15s; }
+  .btn-primary { background: var(--paper); color: var(--ink); }
+  .btn-primary:hover { background: #fff; }
+  .btn-signal { background: var(--signal); color: #fff; }
+  .btn-signal:hover { background: #ec4a50; }
+  .btn-ghost { border: 1px solid var(--rule-strong); color: var(--paper); }
+  .btn-ghost:hover { border-color: var(--muted); }
+  .chip { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid var(--rule-strong); border-radius: 999px;
+          padding: .3rem .75rem; color: #c4bcac; font-size: .8rem; transition: border-color .15s, color .15s; }
+  .chip:hover { border-color: var(--muted); color: var(--paper); }
+  .field { width: 100%; background: var(--ink); border: 1px solid var(--rule-strong); border-radius: 7px;
+           padding: .6rem .8rem; color: var(--paper); }
+  .field:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px rgba(212,172,85,.15); }
+
+  /* Rubber stamps for verdicts */
+  .stamp { display: inline-flex; align-items: center; gap: .4em; font-family: "JetBrains Mono", "Noto Sans Kannada", ui-monospace, monospace;
+           font-weight: 800; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; line-height: 1;
+           padding: .42em .75em .38em; border: 1.5px solid currentColor; border-radius: 3px;
+           box-shadow: inset 0 0 0 1.5px var(--ink-2), inset 0 0 0 2.5px currentColor; transform: rotate(-1.5deg);
+           -webkit-mask-image: var(--wear); mask-image: var(--wear); -webkit-mask-size: 120px 60px; mask-size: 120px 60px; white-space: nowrap; }
+  .stamp-lg { font-size: 15px; padding: .5em 1em .45em; border-width: 2.5px; transform: rotate(-5deg);
+              box-shadow: inset 0 0 0 2.5px var(--ink-2), inset 0 0 0 4px currentColor; }
+  .stamp-xl { font-size: 26px; padding: .45em 1em .4em; border-width: 3.5px; transform: rotate(-7deg);
+              box-shadow: inset 0 0 0 3.5px var(--ink), inset 0 0 0 5.5px currentColor; }
+  .stamp-false { color: var(--signal-soft); }
+  .stamp-true { color: var(--true); }
+  .stamp-partial { color: var(--amber); }
+  .stamp-misleading { color: var(--orange); }
+  .stamp-unverified { color: #c9b98f; }
+  .stamp-review { color: var(--blue); }
+  .stamp-pending { color: var(--muted); }
+  .stamp-researching { color: var(--brass); animation: inkpulse 1.6s ease-in-out infinite; }
+  .stamp-held { color: var(--faint); }
+  @keyframes inkpulse { 50% { opacity: .45; } }
+
+  /* Truth ruler: a measuring scale from False (0) to True (100) */
+  .ruler { position: relative; height: 26px; }
+  .ruler-track { position: absolute; left: 0; right: 0; top: 10px; height: 6px; border-radius: 2px;
+                 background: linear-gradient(90deg, var(--signal) 0%, #b4553a 30%, #8a7a52 50%, #5f9a6f 70%, var(--true) 100%); opacity: .85; }
+  .ruler-ticks { position: absolute; left: 0; right: 0; top: 18px; height: 6px;
+                 background: repeating-linear-gradient(90deg, var(--rule-strong) 0 1px, transparent 1px 10%); }
+  .ruler-mark { position: absolute; top: 2px; width: 2px; height: 22px; background: var(--paper); transform: translateX(-1px);
+                box-shadow: 0 0 0 3px var(--ink-2); border-radius: 1px; }
+
+  /* Ledger rows (feeds, sources) */
+  .ledger > * + * { border-top: 1px solid var(--rule); }
+  .ledger-row { display: block; padding: 1.1rem 1.1rem; transition: background .15s; }
+  a.ledger-row:hover { background: rgba(239,233,221,.025); }
+  .idx { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--faint); }
+
+  /* Nav */
+  .nav-link { display: flex; align-items: center; gap: .75rem; padding: .5rem .6rem; border-radius: 6px; color: #c4bcac; }
+  .nav-link:hover { color: var(--paper); background: rgba(239,233,221,.03); }
+  .nav-link.is-active { color: var(--paper); background: var(--ink-3); box-shadow: inset 2px 0 0 var(--signal); }
+  .tab { padding: .35rem .15rem; color: var(--muted); border-bottom: 2px solid transparent; }
+  .tab:hover { color: var(--paper); }
+  .tab.is-active { color: var(--paper); border-color: var(--signal); }
+
+  .fade-up { animation: fadeup .5s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes fadeup { from { transform: translateY(8px); } }   /* no opacity: content stays visible even if animations are paused */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up, .stamp-researching { animation: none; }
+}

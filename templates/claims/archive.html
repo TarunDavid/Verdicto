@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block mainclass %}max-w-4xl{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-medium pt-2 mb-4">{% translate "News & Verdicts" %}</h1>
+<header class="pt-10 pb-6">
+  <p class="eyebrow">{% now "l, j F Y" %}</p>
+  <h1 class="display text-[40px] sm:text-[52px] font-medium mt-2">{% translate "News & Verdicts" %}</h1>
+</header>
 {% include "claims/_news_tabs.html" %}
-<form class="flex gap-2 mb-5 text-sm"><input name="q" value="{{ q }}" placeholder="{% translate "Search past verdicts" %}" class="flex-1 rounded-xl glass px-3 py-2 focus:outline-none"><button class="rounded-xl bg-white/10 px-4">{% translate "Search" %}</button></form>
-<div class="space-y-3">
+<form class="flex gap-2 mb-6 text-sm"><input name="q" value="{{ q }}" placeholder="{% translate "Search past verdicts" %}" class="field flex-1 !py-2"><button class="btn btn-ghost !py-2">{% translate "Search" %}</button></form>
+<div class="ledger border-y border-rule">
 {% for claim in claims %}
-  <a href="{% url 'claim_detail' claim.pk %}" class="block glass rounded-2xl p-4 bg-[#1a1c20] hover:border-accent/60">
-    <div class="flex items-center gap-2 text-xs text-zinc-400">{% include "_badge.html" %}<span>{{ claim.get_domain_display }} · verified {{ claim.finalized_at|date:"d M Y" }}</span><span class="ml-auto">{{ claim.confidence_pct }}% agreement</span></div>
-    <p class="mt-2">{{ claim.text|truncatechars:180 }}</p>
-  </a>
-{% empty %}<p class="text-zinc-400">No past verdicts match.</p>{% endfor %}
+  {% with fin=claim.finalized_at|date:"d M Y" %}{% include "claims/_row.html" with extra=fin %}{% endwith %}
+{% empty %}<p class="py-10 text-center text-zinc-400">No past verdicts match.</p>{% endfor %}
 </div>
 {% endblock %}

@@ -2,7 +2,7 @@
 External services are stubbed."""
 from unittest import mock
 
-from django.test import TestCase, override_settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
 
 from accounts.models import User
@@ -74,10 +74,53 @@ class OrganisationMatchTests(TestCase):
         self.assertEqual([a.claim for a in assign_open_claims_to(dev)], [claim])
 
 
-@override_settings(GROQ_API_KEY="test-key", RATELIMIT_ENABLE=False, FINAL_MIN_HUMAN_VOTES=1)
+class AgentRosterTests(TestCase):
+    def test_more_than_twenty_distinct_agents(self):
+        names = [a["username"] for a in agents.AGENTS]
+        self.assertGreater(len(names), 20)
+        self.assertEqual(len(names), len(set(names)))
+        users = agents.ensure_agents()
+        self.assertTrue(all(u.is_ai_agent and u.can_vote and not u.has_usable_password() for u, _ in users))
+        display = [u.display_name for u, _ in users]
+        self.assertEqual(len(set(display)), len(display))                    # each has its own name
+        self.assertFalse(any("AI Agent" in d for d in display))
+        self.assertEqual(users[0][0].display_name, "Satya")
+
+    def test_picks_field_specialists_plus_generalist_fact_checkers(self):
+        roster = agents.ensure_agents()
+        claim = Claim.objects.create(text="VTU cancelled exams", domain="education", language="en")
+        picked = [s["username"] for _, s in agents.pick_agents(claim, roster, 6)]
+        self.assertEqual(len(picked), 6)
+        self.assertIn("ai_education_desk", picked)
+        self.assertIn("ai_exams_desk", picked)
+        self.assertIn("ai_news_desk", picked)
+        self.assertNotIn("ai_health_desk", picked)
+        self.assertNotIn("ai_kannada_media", picked)               # English claim
+        kn = Claim.objects.create(text="ಶಾಲೆಗಳಿಗೆ ರಜೆ", domain="education", language="kn")
+        self.assertIn("ai_kannada_media", [s["username"] for _, s in agents.pick_agents(kn, roster, 6)])
+
+    def test_better_track_record_gets_picked(self):
+        roster = agents.ensure_agents()
+        claim = Claim.objects.create(text="Dengue cure", domain="health", language="en")
+        before = [s["username"] for _, s in agents.pick_agents(claim, roster, 4)]
+        star = next(u for u, s in roster if s["username"] == "ai_reference_desk")   # a generalist not picked
+        self.assertNotIn("ai_reference_desk", before)
+        VerifierStat.objects.create(verifier=star, domain="health", language="en", correct=20, total=20)
+        self.assertIn("ai_reference_desk", [s["username"] for _, s in agents.pick_agents(claim, roster, 4)])
+
+
+@override_settings(GROQ_API_KEY="test-key", RATELIMIT_ENABLE=False, FINAL_MIN_HUMAN_VOTES=1,
+                   AI_AGENTS_PER_CLAIM=3, AI_AGENT_WEIGHT_CAP=0.5, AI_AGENT_WORKERS=1, AI_AGENT_RETRIES=0)
 class AIAgentTests(TestCase):
     def setUp(self):
-        stub = {name: (lambda q, l: [dict(s) for s in SOURCES]) for name in connectors.CONNECTORS}
+        self.calls = []
+
+        def stub_for(name):
+            def search(q, l):
+                self.calls.append((name, q, l))
+                return [dict(s) for s in SOURCES]
+            return search
+        stub = {name: stub_for(name) for name in connectors.CONNECTORS}
         for p in (mock.patch.dict(connectors.CONNECTORS, stub),
                   mock.patch("research.pipeline.fetch_article", return_value=("", ""))):
             p.start()
@@ -107,12 +150,45 @@ class AIAgentTests(TestCase):
         cast_vote(self.claim, verifier("ravi"), "FALSE", "No circular on vtu.ac.in", ["https://vtu.ac.in/"])
         self.claim.refresh_from_db()
         self.assertEqual((self.claim.status, self.claim.verdict), ("FINAL", "FALSE"))
-        agent = User.objects.get(username="ai_news_desk")
+        agent = votes[0].verifier
         self.assertEqual((agent.verdict_accuracy, agent.verdicts_scored), (100, 1))  # scored like people
+
+        # Agents shared searches: no identical request went out twice.
+        self.assertEqual(len(self.calls), len(set(self.calls)))
 
         # Running again does nothing (one vote each).
         with mock.patch.object(ai, "assess", return_value=REFUTES):
             self.assertEqual(agents.run_agents(self.claim), [])
+
+    def test_many_agents_cannot_outweigh_people(self):
+        with mock.patch.object(ai, "assess", return_value=REFUTES):
+            agents.run_agents(self.claim, n=6)                     # 6 agents say FALSE
+        self.assertEqual(Vote.objects.count(), 6)
+        cast_vote(self.claim, verifier("p1"), "TRUE", "Saw the notice", ["https://vtu.ac.in/a"])
+        cast_vote(self.claim, verifier("p2"), "TRUE", "Confirmed", ["https://vtu.ac.in/b"])
+        self.claim.refresh_from_db()
+        # people TRUE 1.0; agents FALSE 3.0 scaled to 1.0 (cap 50%) -> a tie, not a FALSE verdict
+        self.assertEqual(self.claim.status, "UNDER_REVIEW")
+        self.assertAlmostEqual(self.claim.confidence, 0.5)
+        page = self.client.get(reverse("claim_detail", args=[self.claim.pk]))
+        self.assertContains(page, "AI agents: 6 votes, weights × 0.33")
+
+    @override_settings(AI_AGENTS_PER_CLAIM=0)
+    def test_all_agents_give_a_verdict_by_default(self):
+        with mock.patch.object(ai, "assess", return_value=REFUTES):
+            votes = agents.run_agents(self.claim)
+        self.assertEqual(len(votes), len(agents.AGENTS))                   # all 26, Kannada desk too
+        self.assertEqual({v.verifier.display_name for v in votes}, set(agents.NAMES.values()))
+
+    @override_settings(AI_AGENT_RETRIES=1, AI_AGENT_RETRY_DELAY=0)
+    def test_rate_limited_agents_are_retried_automatically(self):
+        calls = []
+
+        def flaky(claim, items, lang, model=None):
+            calls.append(model)
+            return (NOTHING[0], None) if len(calls) <= 9 else REFUTES   # first round: every model fails
+        with mock.patch.object(ai, "assess", side_effect=flaky):
+            self.assertEqual(len(agents.run_agents(self.claim)), 3)
 
     def test_agents_abstain_without_enough_evidence(self):
         with mock.patch.object(ai, "assess", return_value=NOTHING):
@@ -152,9 +228,31 @@ class AIAgentTests(TestCase):
         self.assertContains(page, "Works at VTU, which this claim is about")
         self.assertContains(page, "Checked with the exam section")
         self.assertContains(page, "https://vtu.ac.in/notices")
-        self.assertContains(page, "AI agent")
+        self.assertContains(page, "🤖 AI")
+        self.assertContains(page, "AI VERIFIERS")
+        self.assertContains(page, "3 of 3 AI verifiers have answered")
         self.assertContains(page, "Sources this AI agent used: 2")
         self.assertContains(page, "No cancellation, says VTU")
         self.assertContains(page, "91% accurate in 11 verdicts")   # 9/10 before + this one, now final
         share = self.client.get(reverse("share", args=[self.claim.share_slug]))
         self.assertContains(share, "Nandini")
+
+
+@override_settings(GROQ_API_KEY="test-key", RATELIMIT_ENABLE=False, AI_AGENTS_PER_CLAIM=0, AI_AGENT_WORKERS=3,
+                   AI_AGENT_RETRIES=0, AI_AGENT_WEIGHT_CAP=0.5)
+class ParallelAgentTests(TransactionTestCase):
+    """Real threads (TransactionTestCase: other threads can see the data)."""
+
+    def test_all_agents_vote_in_parallel_without_lost_votes(self):
+        stub = {name: (lambda q, l: [dict(s) for s in SOURCES]) for name in connectors.CONNECTORS}
+        claim = Claim.objects.create(text="URGENT: VTU has cancelled all 5th semester exams", domain="education",
+                                     status="PENDING")
+        with mock.patch.dict(connectors.CONNECTORS, stub), \
+                mock.patch("research.pipeline.fetch_article", return_value=("", "")), \
+                mock.patch.object(ai, "assess", return_value=REFUTES):
+            votes = agents.run_agents(claim)
+        self.assertEqual(len(votes), len(agents.AGENTS))
+        self.assertEqual(Vote.objects.filter(claim=claim).count(), len(agents.AGENTS))
+        claim.refresh_from_db()
+        self.assertEqual((claim.status, claim.leading, claim.confidence), ("UNDER_REVIEW", "FALSE", 1.0))
+        self.assertEqual(ResearchRun.all_runs.filter(claim=claim, status="done").count(), len(agents.AGENTS))

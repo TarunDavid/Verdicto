@@ -1,8 +1,6 @@
-{# Our own emblem: a glass orb with a check mark. size = Tailwind size classes #}
-<div class="relative {{ size|default:'w-20 h-20' }} rounded-full shrink-0"
-     style="background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.85) 0 6%, rgba(255,255,255,0) 18%),
-                         radial-gradient(circle at 70% 75%, rgba(45,212,191,.75), rgba(45,212,191,0) 55%),
-                         radial-gradient(circle at 40% 45%, #E0383E, #7f1d2d 70%, #2a0d14);
-            box-shadow: 0 0 40px rgba(224,56,62,.35), 0 0 80px rgba(45,212,191,.15), inset 0 -6px 18px rgba(0,0,0,.45);">
-  <svg viewBox="0 0 24 24" class="absolute inset-0 m-auto w-1/2 h-1/2 text-white/90" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
-</div>
+{# Verdicto seal: an inked ring with a check, like a desk stamp. size = Tailwind size classes #}
+<svg viewBox="0 0 48 48" class="{{ size|default:'w-20 h-20' }} shrink-0 text-accent" aria-hidden="true">
+  <circle cx="24" cy="24" r="21.5" fill="none" stroke="currentColor" stroke-width="2.2"/>
+  <circle cx="24" cy="24" r="17.6" fill="none" stroke="currentColor" stroke-width=".9" stroke-dasharray="1.6 1.9"/>
+  <path d="M15.5 24.6l5.6 5.6L33 17.6" fill="none" stroke="#efe9dd" stroke-width="3.4" stroke-linecap="square"/>
+</svg>

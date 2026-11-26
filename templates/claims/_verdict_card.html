@@ -1,0 +1,40 @@
+{% load i18n %}{# One verifier's verdict: who, track record, verdict, note, sources. Needs r (a breakdown row). #}
+{% with v=r.vote u=r.vote.verifier %}
+  <article class="panel text-sm overflow-hidden">
+    <div class="flex items-start gap-4 p-4">
+      <div class="w-10 h-10 shrink-0 rounded-full border {% if u.is_ai_agent %}border-sky-500/40 bg-sky-500/10 text-sky-300{% else %}border-rule-strong bg-ink-3 text-zinc-200{% endif %} grid place-items-center serif font-semibold">{% if u.is_ai_agent %}{{ u.display_name|slice:":1" }}{% else %}{{ u.initials }}{% endif %}</div>
+      <div class="min-w-0 flex-1">
+        <p class="font-semibold text-[15px]">{% include "_name.html" with u=u %}</p>
+        <p class="text-xs text-zinc-400 mt-0.5">{% if u.profession %}{{ u.profession }}{% endif %}{% if u.profession and u.organisation %} · {% endif %}{% if u.organisation %}{{ u.organisation }}{% endif %}{% if u.work_email_verified %} · <span class="text-[#8fd8b0]">{% translate "work email verified" %}</span>{% endif %}</p>
+        <p class="text-xs mt-1 mono">{% include "_record.html" with u=u %} · <span class="text-zinc-500">{% translate "weight" %} {{ v.weight_at_vote|floatformat:2 }}</span></p>
+        {% if r.insider %}<p class="text-xs mt-1.5 inline-flex items-center gap-1.5 text-sky-300"><span class="w-1 h-1 rotate-45 bg-sky-300"></span>{% blocktranslate with org=r.insider %}Works at {{ org }}, which this claim is about{% endblocktranslate %}</p>{% endif %}
+      </div>
+      <div class="text-right shrink-0">
+        <span class="stamp {% if v.verdict == 'FALSE' %}stamp-false{% elif v.verdict == 'TRUE' %}stamp-true{% elif v.verdict == 'UNVERIFIED' %}stamp-unverified{% elif v.verdict == 'PARTIALLY_TRUE' %}stamp-partial{% else %}stamp-misleading{% endif %}">{{ v.get_verdict_display }}</span>
+        <p class="mono text-[10px] text-zinc-500 mt-2">{{ v.created_at|date:"d M Y, H:i" }}</p>
+      </div>
+    </div>
+    {% if v.note %}<p class="px-4 pb-4 -mt-1 sm:pl-[4.5rem] text-zinc-200 whitespace-pre-line leading-relaxed">{{ v.note }}</p>{% endif %}
+    {% if r.agent_run %}{% with sources=r.agent_run.sources.all %}
+    <details class="border-t border-rule bg-ink group"{% if open_sources %} open{% endif %}>
+      <summary class="cursor-pointer list-none px-4 py-2.5 eyebrow hover:!text-zinc-300 flex items-center gap-2"><span class="transition group-open:rotate-90">▸</span>{% blocktranslate with n=sources|length %}Sources this AI agent used: {{ n }}{% endblocktranslate %}{% if r.agent_run.models_used %} <span class="normal-case tracking-normal text-zinc-600">· {{ r.agent_run.models_used|join:", " }}</span>{% endif %}</summary>
+      <ol class="ledger px-4 pb-2">{% for s in sources %}
+        <li class="py-2 text-xs flex gap-3"><span class="idx w-6 shrink-0 pt-0.5">{{ forloop.counter|stringformat:"02d" }}</span>
+          <div class="min-w-0">
+            <span class="mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm {% if s.stance == 'supports' %}bg-[#5bbf8c]/15 text-[#8fd8b0]{% elif s.stance == 'refutes' %}bg-accent/15 text-[#ff8a8d]{% else %}bg-white/5 text-zinc-500{% endif %}">{{ s.get_stance_display }}</span>
+            <span class="mono text-[10px] text-zinc-500 uppercase ml-1">{{ s.tier }}</span>
+            <a href="{{ s.url }}" target="_blank" rel="nofollow noopener noreferrer" class="block mt-1 text-[13px] text-zinc-200 underline decoration-zinc-700 underline-offset-2 hover:decoration-zinc-300">{{ s.title|default:s.url|truncatechars:90 }}</a>
+            <span class="text-zinc-500">— {{ s.publisher }} · {{ s.connector }}{% if s.published %}, {{ s.published|date:"d M Y" }}{% endif %}</span>
+            {% if s.quote %}<p class="mt-1 serif italic text-zinc-400">“{{ s.quote }}”</p>{% endif %}
+          </div>
+        </li>{% empty %}<li class="py-2 text-xs text-zinc-500">{% translate "No sources found." %}</li>{% endfor %}
+      </ol>
+    </details>
+    {% endwith %}{% else %}{% with ev=v.evidence.all %}{% if ev %}
+    <div class="border-t border-rule bg-ink px-4 py-3">
+      <p class="eyebrow">{% translate "Sources:" %}</p>
+      <ul class="mt-1.5 space-y-1 text-xs">{% for e in ev %}<li class="flex gap-2"><span class="idx">{{ forloop.counter|stringformat:"02d" }}</span><a href="{{ e.url }}" rel="nofollow noopener noreferrer" target="_blank" class="underline decoration-zinc-700 break-all text-zinc-300 hover:text-white">{{ e.url }}</a>{% if e.is_official %} <span class="mono text-[10px] text-[#8fd8b0] uppercase">{% translate "Official source" %}</span>{% endif %}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}{% endwith %}{% endif %}
+  </article>
+{% endwith %}

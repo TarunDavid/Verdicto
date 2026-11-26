@@ -1,31 +1,27 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block mainclass %}max-w-4xl{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-medium pt-2 mb-4">{% translate "News & Verdicts" %}</h1>
+<header class="pt-10 pb-6">
+  <p class="eyebrow">{% now "l, j F Y" %}</p>
+  <h1 class="display text-[40px] sm:text-[52px] font-medium mt-2">{% translate "News & Verdicts" %}</h1>
+</header>
 {% include "claims/_news_tabs.html" %}
-<form class="flex flex-wrap gap-2 mb-5 text-sm">
+<form class="flex flex-wrap gap-2 mb-6 text-sm">
   <input type="hidden" name="sort" value="{{ f.sort }}">
-  <input name="q" value="{{ f.q }}" placeholder="{% translate "Search claims" %}" class="flex-1 min-w-[10rem] rounded-xl glass px-3 py-2 focus:outline-none">
-  <select name="language" class="rounded-xl glass px-2 py-2 bg-transparent">{% for v, l in langs %}<option class="bg-zinc-900" value="{{ v }}" {% if v == f.language %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
-  <select name="domain" class="rounded-xl glass px-2 py-2 bg-transparent">{% for v, l in domains %}<option class="bg-zinc-900" value="{{ v }}" {% if v == f.domain %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
-  <select name="status" class="rounded-xl glass px-2 py-2 bg-transparent">
-    <option class="bg-zinc-900" value="">{% translate "All verdicts" %}</option>
-    {% for v, l in status_options %}<option class="bg-zinc-900" value="{{ v }}" {% if f.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+  <input name="q" value="{{ f.q }}" placeholder="{% translate "Search claims" %}" class="field flex-1 min-w-[12rem] !py-2">
+  <select name="language" class="field !w-auto !py-2">{% for v, l in langs %}<option class="bg-ink-3" value="{{ v }}" {% if v == f.language %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="domain" class="field !w-auto !py-2">{% for v, l in domains %}<option class="bg-ink-3" value="{{ v }}" {% if v == f.domain %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="status" class="field !w-auto !py-2">
+    <option class="bg-ink-3" value="">{% translate "All verdicts" %}</option>
+    {% for v, l in status_options %}<option class="bg-ink-3" value="{{ v }}" {% if f.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
   </select>
-  <button class="rounded-xl bg-white/10 px-4">{% translate "Filter" %}</button>
+  <button class="btn btn-ghost !py-2">{% translate "Filter" %}</button>
 </form>
-<div class="space-y-3">
+<div class="ledger border-y border-rule">
 {% for claim in claims %}
-  <a href="{% url 'claim_detail' claim.pk %}" class="block glass rounded-2xl p-4 bg-[#1a1c20] hover:border-accent/60">
-    <div class="flex items-center gap-2 text-xs text-zinc-400 flex-wrap">
-      {% include "_badge.html" %}
-      {% if claim.urgency == "high" %}<b class="text-red-400">{% translate "URGENT" %}</b> ·{% endif %}
-      <span>{{ claim.get_language_display }} · {{ claim.get_domain_display }}{% if claim.district %} · {{ claim.district }}{% endif %}</span>
-      <span class="ml-auto">{% blocktranslate with n=claim.submission_count %}reported {{ n }}×{% endblocktranslate %} · {% blocktranslate with t=claim.created_at|timesince %}{{ t }} ago{% endblocktranslate %}</span>
-    </div>
-    <p class="mt-2 text-zinc-100">{{ claim.text|truncatechars:180 }}</p>
-    {% if claim.status != "FINAL" %}{% with run=claim.runs.0 %}{% if run and run.label %}<p class="mt-1 text-xs text-zinc-500">AI: {{ run.get_label_display }}{% if run.truth_score is not None %} · {{ run.truth_score|floatformat:0 }}/100{% endif %}</p>{% endif %}{% endwith %}{% endif %}
-  </a>
-{% empty %}<p class="text-zinc-400">{% translate "No claims match these filters." %}</p>{% endfor %}
+  {% blocktranslate asvar ago with n=claim.submission_count %}reported {{ n }}×{% endblocktranslate %}
+  {% include "claims/_row.html" with run=claim.runs.0 extra=ago %}
+{% empty %}<p class="py-10 text-center text-zinc-400">{% translate "No claims match these filters." %}</p>{% endfor %}
 </div>
 {% endblock %}

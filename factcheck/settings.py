@@ -8,6 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
+# Sharing the dev server through a tunnel (scripts/share.sh): accept Cloudflare quick-tunnel addresses.
+# Admin and debug pages stay hidden from tunnel visitors (factcheck.middleware.TunnelGuardMiddleware).
+TUNNEL_HOSTS = config("TUNNEL_HOSTS", default=".trycloudflare.com", cast=Csv())
+ALLOWED_HOSTS += [h for h in TUNNEL_HOSTS if h not in ALLOWED_HOSTS]
 SITE_URL = config("SITE_URL", default="http://127.0.0.1:8000")
 
 INSTALLED_APPS = [
@@ -26,6 +30,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "factcheck.middleware.TunnelGuardMiddleware",                # tunnel visitors: no /admin/, no debug pages
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",                # English / Kannada UI
@@ -64,8 +69,12 @@ def _database(url):
     """SQLite by default; DATABASE_URL=postgres://user:pass@host:5432/name for production
     (needs the psycopg package)."""
     if not url:
+        # Research and the AI verifiers write from background threads: WAL lets readers and the
+        # writer work at the same time, and IMMEDIATE transactions wait for the write lock instead
+        # of failing with "database is locked".
         return {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3",
-                "OPTIONS": {"timeout": 20}}  # research runs in a background thread
+                "OPTIONS": {"timeout": 20, "transaction_mode": "IMMEDIATE",
+                            "init_command": "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;"}}
     from urllib.parse import unquote, urlparse
     u = urlparse(url)
     if u.scheme not in ("postgres", "postgresql"):
@@ -161,6 +170,15 @@ AI_AGENTS_ENABLED = config("AI_AGENTS_ENABLED", default=True, cast=bool) and "te
 # Model per agent (spread across models: Groq limits tokens per minute per model).
 GROQ_AGENT_MODELS = config("GROQ_AGENT_MODELS", default="qwen/qwen3.8-27b,openai/gpt-oss-20b,openai/gpt-oss-120b",
                            cast=lambda v: [m.strip() for m in v.split(",") if m.strip()])
+# How many of the 26 agents give a verdict on each claim: 0 = all of them (default), or the
+# best-suited N. Each agent spends ~2-4k Groq tokens per claim; Groq's free tier allows ~200k tokens
+# per model per day, so all 26 on every claim fits about 3-6 claims a day on the free tier.
+AI_AGENTS_PER_CLAIM = config("AI_AGENTS_PER_CLAIM", default=0, cast=int)
+AI_AGENT_WORKERS = config("AI_AGENT_WORKERS", default=3, cast=int)        # agents working at once
+AI_AGENT_RETRIES = config("AI_AGENT_RETRIES", default=2, cast=int)        # rounds for rate-limited agents
+AI_AGENT_RETRY_DELAY = config("AI_AGENT_RETRY_DELAY", default=60, cast=int)  # seconds between rounds
+# All AI agents together count for at most this share of the total weight (people decide).
+AI_AGENT_WEIGHT_CAP = config("AI_AGENT_WEIGHT_CAP", default=0.5, cast=float)
 # A verdict only becomes final with at least this many votes from people (0 = AI agents alone can
 # finalise a claim).
 FINAL_MIN_HUMAN_VOTES = config("FINAL_MIN_HUMAN_VOTES", default=1, cast=int)
@@ -186,11 +204,13 @@ LOGGING = {
 
 # ---------- Production hardening (applies when DEBUG=False) ----------
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+CSRF_TRUSTED_ORIGINS += ["https://*" + h if h.startswith(".") else "https://" + h for h in TUNNEL_HOSTS]
+# Tunnels and reverse proxies say the visitor used https; trust that so links and redirects use https.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 SESSION_COOKIE_HTTPONLY = True
 if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
