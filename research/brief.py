@@ -6,7 +6,7 @@ automatically on their behalf."""
 from claims.models import Claim, Verdict
 
 from .agents import AGENTS, LABEL_TO_VERDICT
-from .models import ResearchRun
+from .models import ResearchRun, Source
 
 LABELS = dict(Verdict.choices)
 MAX_LINKS = 3
@@ -47,7 +47,15 @@ def ai_brief(claim):
         for s in run.sources.filter(stance__in=["supports", "refutes"]).order_by("-tier_weight"):
             if s.url not in links and len(s.url) <= 500:
                 links.append(s.url)
-    links = links[:MAX_LINKS]
+    # Direct links to the publisher make better evidence than Google News redirect links.
+    links = sorted(links, key=lambda u: "news.google.com" in u)[:MAX_LINKS]
+    # Show each link by its title and publisher (Google News links are unreadable redirects).
+    known = {}
+    for src in Source.objects.filter(run__claim=claim, url__in=links).order_by("-tier_weight"):
+        known.setdefault(src.url, src)
+    sources = [{"url": u, "title": (known[u].title if u in known else "") or u,
+                "publisher": known[u].publisher if u in known else "",
+                "stance": known[u].stance if u in known else ""} for u in links]
 
     draft = ""
     if suggested:
@@ -72,6 +80,7 @@ def ai_brief(claim):
         "share": share,
         "basis": basis,
         "links": links,
+        "sources": sources,
         "draft": draft,
         "is_open": claim.status in (Claim.Status.PENDING, Claim.Status.UNDER_REVIEW),
     }

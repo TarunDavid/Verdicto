@@ -341,4 +341,25 @@ KN = {
     "Final verdict by human verifiers": "ಮಾನವ ಪರಿಶೀಲಕರ ಅಂತಿಮ ತೀರ್ಪು",
     "Assigned": "ನಿಯೋಜಿತ",
     "Forwarded many times": "ಹಲವು ಬಾರಿ ಫಾರ್ವರ್ಡ್ ಮಾಡಲಾಗಿದೆ",
+    # My checks + AI brief for verifiers
+    "My checks": "ನನ್ನ ಪರಿಶೀಲನೆಗಳು",
+    "See all →": "ಎಲ್ಲಾ ನೋಡಿ →",
+    "Every claim you've checked and where it stands: the AI's answer, the AI verifiers and the final human verdict.":
+        "ನೀವು ಪರಿಶೀಲಿಸಿದ ಪ್ರತಿ ಹೇಳಿಕೆ ಮತ್ತು ಅದರ ಸ್ಥಿತಿ: AI ಉತ್ತರ, AI ಪರಿಶೀಲಕರು ಮತ್ತು ಅಂತಿಮ ಮಾನವ ತೀರ್ಪು.",
+    "All checks": "ಎಲ್ಲಾ ಪರಿಶೀಲನೆಗಳು",
+    "Awaiting verdict": "ತೀರ್ಪಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ",
+    "Found false": "ಸುಳ್ಳು ಎಂದು ಕಂಡುಬಂದಿದೆ",
+    "Checked": "ಪರಿಶೀಲಿಸಿದ್ದು",
+    "AI BRIEF": "AI ಸಾರಾಂಶ",
+    "AI verifiers": "AI ಪರಿಶೀಲಕರು",
+    "None found enough evidence to call it.": "ಯಾರಿಗೂ ತೀರ್ಮಾನಿಸಲು ಸಾಕಷ್ಟು ಸಾಕ್ಷ್ಯ ಸಿಗಲಿಲ್ಲ.",
+    "Still researching…": "ಇನ್ನೂ ಸಂಶೋಧಿಸುತ್ತಿದೆ…",
+    "AI suggestion:": "AI ಸಲಹೆ:",
+    "%(p)s%% of the AI verifiers' weight": "AI ಪರಿಶೀಲಕರ ತೂಕದ %(p)s%%",
+    "from the AI research": "AI ಸಂಶೋಧನೆಯಿಂದ",
+    "Use AI suggestion": "AI ಸಲಹೆ ಬಳಸಿ",
+    "It fills in the verdict, a draft note and these links. Open the links, check them yourself and edit before you submit: your verdict is your own.":
+        "ಇದು ತೀರ್ಪು, ಕರಡು ಟಿಪ್ಪಣಿ ಮತ್ತು ಈ ಲಿಂಕ್‌ಗಳನ್ನು ತುಂಬುತ್ತದೆ. ಲಿಂಕ್‌ಗಳನ್ನು ತೆರೆದು ನೀವೇ ಪರಿಶೀಲಿಸಿ, ಸಲ್ಲಿಸುವ ಮೊದಲು ತಿದ್ದಿ: ತೀರ್ಪು ನಿಮ್ಮದೇ.",
+    "Each AI verifier's verdict": "ಪ್ರತಿ AI ಪರಿಶೀಲಕರ ತೀರ್ಪು",
+    "All their sources on the claim page ↗": "ಅವರ ಎಲ್ಲಾ ಮೂಲಗಳು ಹೇಳಿಕೆಯ ಪುಟದಲ್ಲಿ ↗",
 }

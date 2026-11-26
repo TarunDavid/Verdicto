@@ -165,13 +165,14 @@ Check which keys work: `python manage.py checkkeys` (`research/management/comman
 | `/chat/send/`, `/chat/<id>/send/` | `chat/views.py:48` `send` — new claim / follow-up | logged in |
 | `/chat/<id>/` | a chat thread | owner |
 | `/chat/card/<claim_id>/` | `chat/views.py:143` `card` — **HTMX partial** for the live result card | logged in |
+| `/my-checks/` | `chat/views.py` `my_checks` — every claim the user has checked, with AI answer, AI verifiers' tally and final verdict; filters and search | logged in |
 | `/news/`, `/news/past/` | `claims/views.py:44` `feed`, `:70` `archive` | logged in |
 | `/claims/<id>/` | `claims/views.py:142` `detail` — public claim page | **public** |
 | `/claims/<id>/opinion/` | `claims/views.py:82` community vote | regular users |
 | `/claims/<id>/vote/` | `verification/views.py:20` expert vote | approved verifiers |
 | `/claims/<id>/recheck/` | `research/views.py:28` re-run research | logged in |
 | `/claims/<id>/override/` | `verification/views.py:59` admin override (reason required, logged) | admins |
-| `/verify/`, `/verify/<id>/` | `verification/views.py:80` Verify Queue, `:105` two-pane review | approved verifiers |
+| `/verify/`, `/verify/<id>/` | `verification/views.py:80` Verify Queue, `:105` two-pane review with the **AI brief** | approved verifiers |
 | `/sources/<id>/feedback/` | `research/views.py:18` 👍/👎 on an AI source | verifiers |
 | `/c/<slug>/`, `/c/<slug>/og.png` | `claims/views.py:192` share page, `:171` WhatsApp preview image | **public** |
 | `/api/claims/<id>/` | `verification/views.py:70` JSON status | **public** |
@@ -243,6 +244,12 @@ reassigned by `reassign_stale()` `:202`, run automatically (throttled) from `fac
 - Database writes go one at a time through `DB_LOCK` (SQLite has a single writer).
 - Live tally shown in chat and on the claim page: `claims/templatetags/verdicto.py:19` `agent_tally`.
 - Run on older claims: `python manage.py run_agents`.
+- **AI brief for human verifiers** (`research/brief.py` `ai_brief()`, shown by
+  `templates/verification/_ai_brief.html` on the review screen): the AI research result, the AI
+  verifiers' tally and each one's verdict, and a suggested verdict (weighted by the agents' track
+  records, or from the AI research if no agent voted) with the 3 best evidence links. "Use AI
+  suggestion" only pre-fills the form (verdict, draft note, links); the verifier checks, edits and
+  submits. Nothing is voted on their behalf.
 
 ---
 
@@ -313,13 +320,13 @@ reassigned by `reassign_stale()` `:202`, run automatically (throttled) from `fac
 
 ---
 
-## 12. Tests (`manage.py test`, 127 tests)
+## 12. Tests (`manage.py test`, 130 tests)
 
 | File | Covers |
 |---|---|
 | `verification/tests.py` | Verdict maths, weights, caps, assignment, append-only log |
 | `research/tests.py` | Pipeline, scoring, connectors, quote guard, relevance ranking |
-| `research/test_agents.py` | Insider matching, track records, 26 AI verifiers (incl. real parallel threads), weight cap, retries |
+| `research/test_agents.py` | Insider matching, track records, 26 AI verifiers (incl. real parallel threads), weight cap, retries, AI brief, My checks |
 | `claims/tests.py` | Pages, feed, duplicates, uploads, share/OG image, Kannada (every template string translated) |
 | `claims/test_journey.py` | Full journey: sign-up → chat → research → votes → final → share; Twilio |
 | `claims/test_browser.py` | Real Chromium (Playwright): sign-up, check, vote, Kannada, verifier review |

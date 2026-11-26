@@ -883,3 +883,57 @@ msgstr "ಮಾನವ ಪರಿಶೀಲಕರ ಅಂತಿಮ ತೀರ್ಪು
 
 msgid "Forwarded many times"
 msgstr "ಹಲವು ಬಾರಿ ಫಾರ್ವರ್ಡ್ ಮಾಡಲಾಗಿದೆ"
+
+msgid "My checks"
+msgstr "ನನ್ನ ಪರಿಶೀಲನೆಗಳು"
+
+msgid "See all →"
+msgstr "ಎಲ್ಲಾ ನೋಡಿ →"
+
+msgid "Every claim you've checked and where it stands: the AI's answer, the AI verifiers and the final human verdict."
+msgstr "ನೀವು ಪರಿಶೀಲಿಸಿದ ಪ್ರತಿ ಹೇಳಿಕೆ ಮತ್ತು ಅದರ ಸ್ಥಿತಿ: AI ಉತ್ತರ, AI ಪರಿಶೀಲಕರು ಮತ್ತು ಅಂತಿಮ ಮಾನವ ತೀರ್ಪು."
+
+msgid "All checks"
+msgstr "ಎಲ್ಲಾ ಪರಿಶೀಲನೆಗಳು"
+
+msgid "Awaiting verdict"
+msgstr "ತೀರ್ಪಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ"
+
+msgid "Found false"
+msgstr "ಸುಳ್ಳು ಎಂದು ಕಂಡುಬಂದಿದೆ"
+
+msgid "Checked"
+msgstr "ಪರಿಶೀಲಿಸಿದ್ದು"
+
+msgid "AI BRIEF"
+msgstr "AI ಸಾರಾಂಶ"
+
+msgid "AI verifiers"
+msgstr "AI ಪರಿಶೀಲಕರು"
+
+msgid "None found enough evidence to call it."
+msgstr "ಯಾರಿಗೂ ತೀರ್ಮಾನಿಸಲು ಸಾಕಷ್ಟು ಸಾಕ್ಷ್ಯ ಸಿಗಲಿಲ್ಲ."
+
+msgid "Still researching…"
+msgstr "ಇನ್ನೂ ಸಂಶೋಧಿಸುತ್ತಿದೆ…"
+
+msgid "AI suggestion:"
+msgstr "AI ಸಲಹೆ:"
+
+msgid "%(p)s%% of the AI verifiers' weight"
+msgstr "AI ಪರಿಶೀಲಕರ ತೂಕದ %(p)s%%"
+
+msgid "from the AI research"
+msgstr "AI ಸಂಶೋಧನೆಯಿಂದ"
+
+msgid "Use AI suggestion"
+msgstr "AI ಸಲಹೆ ಬಳಸಿ"
+
+msgid "It fills in the verdict, a draft note and these links. Open the links, check them yourself and edit before you submit: your verdict is your own."
+msgstr "ಇದು ತೀರ್ಪು, ಕರಡು ಟಿಪ್ಪಣಿ ಮತ್ತು ಈ ಲಿಂಕ್‌ಗಳನ್ನು ತುಂಬುತ್ತದೆ. ಲಿಂಕ್‌ಗಳನ್ನು ತೆರೆದು ನೀವೇ ಪರಿಶೀಲಿಸಿ, ಸಲ್ಲಿಸುವ ಮೊದಲು ತಿದ್ದಿ: ತೀರ್ಪು ನಿಮ್ಮದೇ."
+
+msgid "Each AI verifier's verdict"
+msgstr "ಪ್ರತಿ AI ಪರಿಶೀಲಕರ ತೀರ್ಪು"
+
+msgid "All their sources on the claim page ↗"
+msgstr "ಅವರ ಎಲ್ಲಾ ಮೂಲಗಳು ಹೇಳಿಕೆಯ ಪುಟದಲ್ಲಿ ↗"

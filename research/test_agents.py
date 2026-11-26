@@ -256,3 +256,61 @@ class ParallelAgentTests(TransactionTestCase):
         claim.refresh_from_db()
         self.assertEqual((claim.status, claim.leading, claim.confidence), ("UNDER_REVIEW", "FALSE", 1.0))
         self.assertEqual(ResearchRun.all_runs.filter(claim=claim, status="done").count(), len(agents.AGENTS))
+
+
+@override_settings(GROQ_API_KEY="test-key", RATELIMIT_ENABLE=False, AI_AGENTS_PER_CLAIM=3, AI_AGENT_WORKERS=1,
+                   AI_AGENT_RETRIES=0)
+class AIBriefAndMyChecksTests(TestCase):
+    def setUp(self):
+        stub = {name: (lambda q, l: [dict(s) for s in SOURCES]) for name in connectors.CONNECTORS}
+        for p in (mock.patch.dict(connectors.CONNECTORS, stub),
+                  mock.patch("research.pipeline.fetch_article", return_value=("", ""))):
+            p.start()
+            self.addCleanup(p.stop)
+        self.claim = Claim.objects.create(text="URGENT: VTU has cancelled all 5th semester exams",
+                                          domain="education", status="PENDING")
+
+    def test_verifier_sees_ai_brief_and_can_start_from_the_suggestion(self):
+        from research.brief import ai_brief
+        with mock.patch.object(ai, "assess", return_value=REFUTES):
+            agents.run_agents(self.claim)
+        brief = ai_brief(self.claim)
+        self.assertEqual((brief["suggested"], brief["share"], brief["basis"]), ("FALSE", 100, "agents"))
+        self.assertEqual(sorted(brief["links"]), sorted(s["url"] for s in SOURCES))
+        self.assertIn("AI verifiers: 3 of 3 said False", brief["draft"])
+        ravi = verifier("ravi")
+        self.client.force_login(ravi)
+        page = self.client.get(reverse("verify_review", args=[self.claim.pk]))
+        self.assertContains(page, "AI BRIEF")
+        self.assertContains(page, "Use AI suggestion")
+        self.assertContains(page, "100% of the AI verifiers' weight")
+        self.assertContains(page, "Each AI verifier's verdict")
+        self.assertFalse(Vote.objects.filter(verifier=ravi).exists())       # nothing is voted for them
+
+    def test_suggestion_falls_back_to_ai_research_without_agent_votes(self):
+        from research.brief import ai_brief
+        run = ResearchRun.objects.create(claim=self.claim, status="done", label="LIKELY_TRUE", truth_score=90)
+        run.sources.create(url="https://pib.gov.in/x", title="t", connector="x", tier="official",
+                           tier_weight=1.0, stance="supports")
+        brief = ai_brief(self.claim)
+        self.assertEqual((brief["suggested"], brief["basis"], brief["links"]),
+                         ("TRUE", "research", ["https://pib.gov.in/x"]))
+
+    def test_my_checks_lists_every_claim_the_user_checked(self):
+        from chat.models import ChatThread
+        asha = User.objects.create_user("asha", password=PW, phone="+919845011112")
+        other = User.objects.create_user("bob", password=PW, phone="+919845011113")
+        final = Claim.objects.create(text="Old rumour about dengue cures", status="FINAL", verdict="FALSE")
+        for c in (self.claim, final):
+            ChatThread.objects.create(owner=asha, title=c.text[:80], claim=c)
+        ChatThread.objects.create(owner=other, title="not mine", claim=Claim.objects.create(text="Bob's claim here"))
+        self.client.force_login(asha)
+        page = self.client.get(reverse("my_checks"))
+        self.assertContains(page, "VTU has cancelled")
+        self.assertContains(page, "Old rumour about dengue")
+        self.assertNotContains(page, "Bob&#x27;s claim")
+        self.assertEqual(page.context["stats"], {"total": 2, "open": 1, "verified": 1, "false": 1})
+        listed = lambda **f: [t.claim.text for t in self.client.get(reverse("my_checks"), f).context["threads"]]
+        self.assertEqual(listed(state="false"), ["Old rumour about dengue cures"])
+        self.assertEqual(listed(state="open"), [self.claim.text])
+        self.assertEqual(listed(q="dengue"), ["Old rumour about dengue cures"])
