@@ -43,6 +43,37 @@ def chat_home(request, pk=None):
     })
 
 
+def my_checks(request):
+    """Every claim this user has checked, newest first, with where each one stands."""
+    from research.models import ResearchRun
+    from django.db.models import Prefetch
+
+    threads = (_threads_for(request).filter(claim__isnull=False)
+               .select_related("claim")
+               .prefetch_related(Prefetch("claim__research_runs",
+                                          queryset=ResearchRun.objects.order_by("-created_at"), to_attr="runs"))
+               .order_by("-created_at"))
+    q = request.GET.get("q", "").strip()
+    state = request.GET.get("state", "")
+    if q:
+        threads = threads.filter(Q(title__icontains=q) | Q(claim__text__icontains=q))
+    if state == "open":
+        threads = threads.exclude(claim__status=Claim.Status.FINAL)
+    elif state == "verified":
+        threads = threads.filter(claim__status=Claim.Status.FINAL)
+    elif state == "false":
+        threads = threads.filter(claim__status=Claim.Status.FINAL, claim__verdict="FALSE")
+    mine = _threads_for(request).filter(claim__isnull=False)
+    stats = {
+        "total": mine.count(),
+        "open": mine.exclude(claim__status=Claim.Status.FINAL).count(),
+        "verified": mine.filter(claim__status=Claim.Status.FINAL).count(),
+        "false": mine.filter(claim__status=Claim.Status.FINAL, claim__verdict="FALSE").count(),
+    }
+    return render(request, "chat/my_checks.html", {"threads": threads[:300], "stats": stats, "q": q,
+                                                   "state": state, "tab": "checks"})
+
+
 @require_POST
 @ratelimit(key="user", rate="30/h", method="POST", block=True)
 def send(request, pk=None):

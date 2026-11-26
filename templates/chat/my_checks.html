@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n verdicto %}
+{% block mainclass %}max-w-5xl{% endblock %}
+{% block content %}
+<header class="pt-10 pb-6">
+  <p class="eyebrow">{% include "_name.html" with u=user nolink=True %}</p>
+  <h1 class="display text-[40px] sm:text-[52px] font-medium mt-2">{% translate "My checks" %}</h1>
+  <p class="text-sm text-zinc-400 mt-2">{% translate "Every claim you've checked and where it stands: the AI's answer, the AI verifiers and the final human verdict." %}</p>
+</header>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 border border-rule rounded-lg overflow-hidden divide-x divide-rule mb-6">
+  <a href="?" class="p-4 bg-ink-2 hover:bg-ink-3 {% if not state %}shadow-[inset_0_-2px_0_#E0383E]{% endif %}"><p class="display text-3xl">{{ stats.total }}</p><p class="eyebrow mt-1">{% translate "All checks" %}</p></a>
+  <a href="?state=open" class="p-4 bg-ink-2 hover:bg-ink-3 {% if state == 'open' %}shadow-[inset_0_-2px_0_#E0383E]{% endif %}"><p class="display text-3xl text-sky-300">{{ stats.open }}</p><p class="eyebrow mt-1">{% translate "Awaiting verdict" %}</p></a>
+  <a href="?state=verified" class="p-4 bg-ink-2 hover:bg-ink-3 {% if state == 'verified' %}shadow-[inset_0_-2px_0_#E0383E]{% endif %}"><p class="display text-3xl">{{ stats.verified }}</p><p class="eyebrow mt-1">{% translate "Verified" %}</p></a>
+  <a href="?state=false" class="p-4 bg-ink-2 hover:bg-ink-3 {% if state == 'false' %}shadow-[inset_0_-2px_0_#E0383E]{% endif %}"><p class="display text-3xl text-[#ff6b6f]">{{ stats.false }}</p><p class="eyebrow mt-1">{% translate "Found false" %}</p></a>
+</div>
+
+<form class="flex gap-2 mb-6 text-sm">
+  {% if state %}<input type="hidden" name="state" value="{{ state }}">{% endif %}
+  <input name="q" value="{{ q }}" placeholder="{% translate "Search your checks" %}" class="field flex-1 !py-2">
+  <button class="btn btn-ghost !py-2">{% translate "Search" %}</button>
+</form>
+
+<div class="ledger border-y border-rule">
+{% for t in threads %}{% with claim=t.claim run=t.claim.runs.0 %}{% agent_tally claim as tally %}
+  <a href="{% url 'chat_thread' t.pk %}" class="ledger-row group grid sm:grid-cols-[4.5rem_1fr_auto] gap-x-5 gap-y-2 items-start">
+    <span class="case-no pt-1 hidden sm:block">№{{ claim.pk|stringformat:"04d" }}</span>
+    <div class="min-w-0">
+      <p class="serif text-[17px] leading-snug text-zinc-100 group-hover:text-white">{{ claim.text|truncatechars:170 }}</p>
+      <p class="mt-2 eyebrow !tracking-[.08em]">{% translate "Checked" %} {{ t.created_at|date:"d M Y, H:i" }} · {{ claim.get_language_display }} · {{ claim.get_domain_display }}</p>
+      <div class="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
+        <span class="text-zinc-500">{% translate "AI research" %}: {% if run and run.label %}<span class="{% if run.label == 'LIKELY_FALSE' %}text-[#ff8a8d]{% elif run.label == 'LIKELY_TRUE' %}text-[#8fd8b0]{% elif run.label == 'MIXED' %}text-[#f2a877]{% else %}text-zinc-300{% endif %}">{{ run.get_label_display }}</span>{% if run.truth_score is not None %} <span class="mono text-zinc-500">{{ run.truth_score|floatformat:0 }}/100</span>{% endif %}{% elif run and run.is_running %}<span class="text-teal-300">{{ run.step }}…</span>{% else %}—{% endif %}</span>
+        <span class="text-zinc-500">🤖 {{ tally.answered }}/{{ tally.expected }}{% for code, label, n in tally.rows %} · <span class="{% if code == 'FALSE' %}text-[#ff8a8d]{% elif code == 'TRUE' %}text-[#8fd8b0]{% else %}text-[#f2a877]{% endif %}">{{ label }} {{ n }}</span>{% endfor %}</span>
+      </div>
+    </div>
+    <div class="sm:text-right sm:pt-0.5">{% include "_badge.html" %}
+      {% if claim.status == "FINAL" %}<p class="mono text-[10px] text-zinc-500 mt-2">{{ claim.confidence_pct }}% {% translate "weighted agreement" %}</p>{% endif %}</div>
+  </a>
+{% endwith %}{% empty %}
+  <div class="py-14 text-center">
+    <p class="text-zinc-400">{% if q or state %}{% translate "No matches." %}{% else %}{% translate "Nothing checked yet." %}{% endif %}</p>
+    <a href="{% url 'chat' %}" class="btn btn-signal mt-4">{% translate "New check" %}</a>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

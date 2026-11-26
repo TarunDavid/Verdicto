@@ -51,13 +51,15 @@
         <span class="idx w-5">03</span>{% translate "Verify Queue" %}
         {% if queue_count %}<span class="ml-auto mono text-[11px] bg-accent text-white rounded px-1.5">{{ queue_count }}</span>{% endif %}</a>
       {% endif %}
+      <a href="{% url 'my_checks' %}" class="nav-link {% if tab == 'checks' %}is-active{% endif %}">
+        <span class="idx w-5">{% if user.can_vote %}04{% else %}03{% endif %}</span>{% translate "My checks" %}</a>
       <a href="{% url 'my_votes' %}" class="nav-link {% if tab == 'votes' %}is-active{% endif %}">
-        <span class="idx w-5">{% if user.can_vote %}04{% else %}03{% endif %}</span>{% translate "My votes" %}</a>
+        <span class="idx w-5">{% if user.can_vote %}05{% else %}04{% endif %}</span>{% translate "My votes" %}</a>
       {% if user.is_staff %}<a href="/admin/" class="nav-link"><span class="idx w-5">—</span>{% translate "Admin" %}</a>{% endif %}
     </nav>
 
     <div class="px-3 mt-6 flex-1 min-h-0 flex flex-col">
-      <p class="eyebrow px-2 mb-1.5">{% translate "YOUR CHECKS" %}</p>
+      <p class="eyebrow px-2 mb-1.5 flex items-center">{% translate "YOUR CHECKS" %}<a href="{% url 'my_checks' %}" class="ml-auto normal-case tracking-normal text-zinc-500 hover:text-white">{% translate "See all →" %}</a></p>
       <div class="flex-1 overflow-y-auto -mx-1 px-1 space-y-px">
         {% for t in sidebar_threads %}
           {% with c=t.claim %}
